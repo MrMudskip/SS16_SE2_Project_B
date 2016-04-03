@@ -1,0 +1,2 @@
+Hier kommt das Android Studio Projekt rein.
+Sobald die Daten vom Kundengespräch bekannt sind, kann einer das Projekt richig anlegen und alle anderen importieren sich das angelegte Projekt in ihre Android Studio IDE.
