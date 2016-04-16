@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Mauerhuepfer</string>
+
+    <string name="title_activity_game_board">GameBoardActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
