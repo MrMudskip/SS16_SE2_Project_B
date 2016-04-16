@@ -3,5 +3,6 @@
 
     <string name="title_activity_game_board">GameBoardActivity</string>
     <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_content">Spielbrett hier</string>
+    <string name="button_NewGame">Neues Spiel</string>
 </resources>
