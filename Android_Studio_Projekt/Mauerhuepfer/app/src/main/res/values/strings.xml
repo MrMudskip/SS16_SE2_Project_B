@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Mauerhuepfer</string>
-
+    <string name="service_id">com.project_b.se2.mauerhuepfer</string>
     <string name="title_activity_game_board">GameBoardActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">Spielbrett hier</string>
