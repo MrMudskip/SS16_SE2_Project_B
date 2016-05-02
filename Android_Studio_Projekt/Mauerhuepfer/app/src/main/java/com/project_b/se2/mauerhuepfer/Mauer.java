@@ -6,28 +6,21 @@ package com.project_b.se2.mauerhuepfer;
 public class Mauer {
     int position1;
     int position2;
-    int[] mauer1_3 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    int[] mauer2_4 = {12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    int[] mauer1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
     public int wuerfeln(){
         return (int)(Math.random() * 6 + 1);
     }
 
-    private void mauer1_3(){
+    private void mauer1(){
         int gewürfelt;
 
         gewürfelt=wuerfeln();
 
-        if (mauer1_3.length==gewürfelt){
+        if (mauer1.length==gewürfelt){
             position1=position2;
         }
 
-    }
-
-    public void mauer2_4(){
-        if (mauer2_4.length==wuerfeln()){
-            position1=position2;
-        }
     }
 
 
