@@ -11,7 +11,7 @@
     <TextView
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="320dp"
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
@@ -24,6 +24,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         android:fitsSystemWindows="true">
 
         <LinearLayout
@@ -31,6 +32,7 @@
             style="?metaButtonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="50dp"
             android:layout_gravity="bottom|center_horizontal"
             android:background="@color/black_overlay"
             android:orientation="horizontal"
@@ -40,11 +42,46 @@
                 android:id="@+id/dummy_button"
                 style="?metaButtonBarButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_weight="1"
-                android:text="@string/dummy_button" />
+                android:text="@string/dummy_button"
+                />
 
         </LinearLayout>
+
+
     </FrameLayout>
+
+    <ImageView
+        android:id="@+id/wuerfel2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="15dp"
+        android:src="@drawable/w6n"
+        android:layout_gravity="right|bottom" />
+
+    <ImageView
+        android:id="@+id/wuerfel"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="80dp"
+        android:src="@drawable/w5n"
+        android:layout_gravity="right|bottom" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Würfeln"
+        android:layout_gravity="center_horizontal|bottom" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="144dp"
+        android:layout_height="50dp"
+        android:paddingLeft="10dp"
+        android:text="Bitte würfeln"
+        android:layout_gravity="left|bottom" />
+
 
 </FrameLayout>
