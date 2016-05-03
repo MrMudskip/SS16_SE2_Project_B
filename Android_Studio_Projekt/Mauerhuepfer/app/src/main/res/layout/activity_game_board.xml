@@ -21,21 +21,31 @@
         android:layout_height="wrap_content"
         android:background="@color/black_overlay"
         android:orientation="horizontal"
-        tools:ignore="UselessParent">
-
-        <ImageView
-            android:id="@+id/wuerfel2"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginRight="15dp"
-            android:src="@drawable/w6n" />
+        tools:ignore="UselessParent"
+        android:padding="5dp">
 
         <ImageView
             android:id="@+id/wuerfel"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginRight="80dp"
-            android:src="@drawable/w5n"/>
+            android:src="@drawable/w5n"
+            android:layout_marginRight="10dp" />
+
+        <ImageView
+            android:id="@+id/wuerfel2"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/w6n" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Bitte würfeln"
+            android:textAlignment="center"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp" />
 
         <Button
             android:id="@+id/button1"
@@ -43,12 +53,7 @@
             android:layout_height="50dp"
             android:text="Würfeln"/>
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="144dp"
-            android:layout_height="50dp"
-            android:paddingLeft="10dp"
-            android:text="Bitte würfeln" />
+
     </LinearLayout>
 
 </LinearLayout>
