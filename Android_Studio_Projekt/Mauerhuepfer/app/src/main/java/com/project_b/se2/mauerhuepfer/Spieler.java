@@ -26,21 +26,21 @@ public class Spieler {
     }
 
     public void mauer(){
-        Mauer m = new Mauer(position, wuerfel);
+        Mauer m = new Mauer(position, wuerfel, spielfeld);
         
         while (spielfeld.length<=7){
             m.mauer1();
         }
-        while (spielfeld.length>9 || spielfeld.length<=17){
+        while (spielfeld.length>=10 || spielfeld.length<=17){
             m.mauer2();
         }
-        while (spielfeld.length>19 || spielfeld.length<=27){
+        while (spielfeld.length>=20 || spielfeld.length<=27){
             m.mauer3();
         }
-        while (spielfeld.length>29 || spielfeld.length<=37){
+        while (spielfeld.length>=30 || spielfeld.length<=37){
             m.mauer4();
         }
-        while (spielfeld.length>40 || spielfeld.length<=47){
+        while (spielfeld.length>=41 || spielfeld.length<=47){
             m.mauer5();
         }
         if (spielfeld.length==40){
