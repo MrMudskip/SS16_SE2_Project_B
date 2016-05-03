@@ -8,50 +8,28 @@ import java.util.Vector;
 public class Spieler {
     private String name;                //Name des Spielers
     private int position;
-    private int[] spielfeld = {58};
+    private int kegel;                  //Anzahl der Kegel im Spiel
+
     private int anzahl;                 //Anzahl der Kegel im Ziel
-    private int wuerfel;
 
 
     public Spieler(String name){
         this.name=name;
         this.position=-1;
+        this.kegel=0;
     }
 
     public void entferne(){
         this.position=-1;
     }
 
-    public void mauer(){
-        Mauer m = new Mauer(position, wuerfel, spielfeld);
-        
-        while (spielfeld.length<=7){
-            m.mauer1();
-        }
-        while (spielfeld.length>=10 || spielfeld.length<=17){
-            m.mauer2();
-        }
-        while (spielfeld.length>=20 || spielfeld.length<=27){
-            m.mauer3();
-        }
-        while (spielfeld.length>=30 || spielfeld.length<=37){
-            m.mauer4();
-        }
-        while (spielfeld.length>=41 || spielfeld.length<=47){
-            m.mauer5();
-        }
-        if (spielfeld.length==40){
-            position=spielfeld[58];
-        }
-    }
-
     public boolean gewonnen(){
+        anzahl=kegel;
         if (anzahl==4){
             System.out.println("Du hast gewonnen!");
             return true;
         } return false;
     }
-
 
 
 
