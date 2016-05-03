@@ -9,16 +9,13 @@ public class Spieler {
     private String name;                //Name des Spielers
     private int position;
     private int[] spielfeld = {58};
-    private int anzahl;                 //Anzahl der Kegel
+    private int anzahl;                 //Anzahl der Kegel im Ziel
     private int wuerfel;
+
 
     public Spieler(String name){
         this.name=name;
         this.position=-1;
-    }
-
-    public void bewege(int newposition){
-        this.position=newposition;
     }
 
     public void entferne(){
@@ -46,6 +43,13 @@ public class Spieler {
         if (spielfeld.length==40){
             position=spielfeld[58];
         }
+    }
+
+    public boolean gewonnen(){
+        if (anzahl==4){
+            System.out.println("Du hast gewonnen!");
+            return true;
+        } return false;
     }
 
 
