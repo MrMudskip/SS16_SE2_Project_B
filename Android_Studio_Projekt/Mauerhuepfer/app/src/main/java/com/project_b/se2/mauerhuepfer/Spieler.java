@@ -26,7 +26,7 @@ public class Spieler {
     }
 
     public void mauer(){
-        Mauer m = new Mauer(position, wuerfel);
+        Mauer m = new Mauer(position, wuerfel, spielfeld);
         
         while (spielfeld.length<=7){
             m.mauer1();
