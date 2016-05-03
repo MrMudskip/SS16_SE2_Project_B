@@ -97,18 +97,19 @@ public class GameBoardActivity extends AppCompatActivity {
     };
 
     // Dice attributes
-    private int randomDice1;
-    private int randomDice2;
-    private ImageView diceImage1;
-    private ImageView diceImage2;
+    private int zufallWuerfel1;
+    private int zufallWuerfel2;
+    private ImageView image1;
+    private ImageView image2;
+    private int wurfCounter;
     private boolean drag1 = true;
     private boolean drag2 = true;
-    private TextView infoText;
-    private Button diceButton;
+    private TextView text;
+    private Button but;
     private SensorManager mgr;
     private float max = 0;
 
-    Drawable tempImage;
+    Drawable neubild;
     MediaPlayer but_sound;
 
     @Override
@@ -139,65 +140,56 @@ public class GameBoardActivity extends AppCompatActivity {
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
-        diceImage1 = (ImageView) findViewById(R.id.wuerfel);
-        diceImage2 = (ImageView) findViewById(R.id.wuerfel2);
-        infoText = (TextView) findViewById(R.id.textView);
-        diceButton = (Button) findViewById(R.id.button1);
+        image1 = (ImageView) findViewById(R.id.wuerfel);
+        image2 = (ImageView) findViewById(R.id.wuerfel2);
+        text = (TextView) findViewById(R.id.textView);
 
         mgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mgr.registerListener(listener, mgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 
-
-        diceButton.setOnClickListener(new View.OnClickListener() {
+        buttondruecken();
+        image1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                diceButton();
+                if(!drag1) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Ich ziehe " + zufallWuerfel1, Toast.LENGTH_SHORT);
+                    toast.show();
+                }if (drag1 && drag2){
+                    Toast toast = Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT);
+                    toast.show();
+                }if(drag1 && !drag2){
+                    Toast toast = Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                if (!drag1) {
+                    text.setText("Zu ziehen : " + zufallWuerfel2);
+                    drag1 = true;
+                }
+                if (drag1 && drag2)
+                    text.setText("Bitte würfeln");
             }
         });
-        diceImage1.setOnClickListener(new View.OnClickListener() {
+        image2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clickOnDice1();
+                if(!drag2) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Ich ziehe " + zufallWuerfel2, Toast.LENGTH_SHORT);
+                    toast.show();
+                }if (drag1 && drag2){
+                    Toast toast = Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT);
+                    toast.show();
+                }if(drag2 && !drag1){
+                    Toast toast = Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                if (!drag2) {
+                    text.setText("Zu ziehen : " + zufallWuerfel1);
+                    drag2 = true;
+                }
+                if (drag1 && drag2)
+                    text.setText("Bitte würfeln");
             }
         });
-        diceImage2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clickOnDice2();
-            }
-        });
-    }
-
-    private void clickOnDice1() {
-        if (drag1 && !drag2) {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
-        } else if (!drag1) {
-            Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice1, Toast.LENGTH_SHORT).show();
-        } else if (drag1 && drag2) {
-            Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-        }
-        if (!drag1) {
-            infoText.setText("Zu ziehen : " + randomDice2);
-            drag1 = true;
-        }
-        if (drag1 && drag2)
-            infoText.setText("Bitte würfeln");
-    }
-
-    private void clickOnDice2() {
-        if (drag2 && !drag1) {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
-        } else if (!drag2) {
-            Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice2, Toast.LENGTH_SHORT).show();
-        } else if (drag1 && drag2) {
-            Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-        }
-        if (!drag2) {
-            infoText.setText("Zu ziehen : " + randomDice1);
-            drag2 = true;
-        }
-        if (drag1 && drag2)
-            infoText.setText("Bitte würfeln");
     }
 
     @Override
@@ -263,93 +255,97 @@ public class GameBoardActivity extends AppCompatActivity {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+    private void buttondruecken() {
 
-    private void diceButton() {
-        if (drag1 && drag2) {
-            ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
-            randomDice1 = (int) (Math.random() * (6)) + 1;
-            rollDice(randomDice1);
-            image1.setImageDrawable(tempImage);
+        but = (Button) findViewById(R.id.button1);
+        but.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (drag1 && drag2) {
+                    ImageView bild = (ImageView) findViewById(R.id.wuerfel);
+                    zufallWuerfel1 = (int) (Math.random() * (6)) + 1;
+                    rollDice(zufallWuerfel1);
+                    bild.setImageDrawable(neubild);
 
-            ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
-            randomDice2 = (int) (Math.random() * (6)) + 1;
-            rollDice(randomDice2);
-            image2.setImageDrawable(tempImage);
-            infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
-            drag1 = false;
-            drag2 = false;
+                    ImageView bild2 = (ImageView) findViewById(R.id.wuerfel2);
+                    zufallWuerfel2 = (int) (Math.random() * (6)) + 1;
+                    rollDice(zufallWuerfel2);
+                    bild2.setImageDrawable(neubild);
+                    text.setText("Zu ziehen : " + zufallWuerfel1 + " und: " + zufallWuerfel2);
+                    drag1 = false;
+                    drag2 = false;
 
-        } else {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
-        }
+                }else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+
     }
-
-
-    private void rollDice(int zu) {
-        switch (zu) {
+    private void rollDice(int zu){
+        switch (zu){
 
             case 1:
-                tempImage = getResources().getDrawable(R.drawable.w1n);
+                neubild = getResources().getDrawable(R.drawable.w1n);
                 break;
             case 2:
-                tempImage = getResources().getDrawable(R.drawable.w2n);
+                neubild = getResources().getDrawable(R.drawable.w2n);
                 break;
             case 3:
-                tempImage = getResources().getDrawable(R.drawable.w3n);
+                neubild = getResources().getDrawable(R.drawable.w3n);
                 break;
             case 4:
-                tempImage = getResources().getDrawable(R.drawable.w4n);
+                neubild = getResources().getDrawable(R.drawable.w4n);
                 break;
             case 5:
-                tempImage = getResources().getDrawable(R.drawable.w5n);
+                neubild = getResources().getDrawable(R.drawable.w5n);
                 break;
             case 6:
-                tempImage = getResources().getDrawable(R.drawable.w6n);
+                neubild = getResources().getDrawable(R.drawable.w6n);
                 break;
         }
     }
-
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         mgr.unregisterListener(listener);
     }
-
     private SensorEventListener listener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER)
+            {
 
-                float x, y, z;
-                x = event.values[0];
+                float x,y,z;
+                x=event.values[0];
 
-                if (x > max) {
-                    max = x;
-                }
+                if(x>max)
+                { max=x; }
 
-                if (max > 10) {
+                if(max>10) {
                     if (drag1 && drag2) {
                         but_sound = MediaPlayer.create(GameBoardActivity.this, R.raw.klack);
                         but_sound.setVolume(1.0f, 1.0f);
                         but_sound.start();
 
                         ImageView bild = (ImageView) findViewById(R.id.wuerfel);
-                        randomDice1 = (int) (Math.random() * (6)) + 1;
-                        rollDice(randomDice1);
-                        bild.setImageDrawable(tempImage);
+                        zufallWuerfel1 = (int) (Math.random() * (6)) + 1;
+                        rollDice(zufallWuerfel1);
+                        bild.setImageDrawable(neubild);
 
                         ImageView bild2 = (ImageView) findViewById(R.id.wuerfel2);
-                        randomDice2 = (int) (Math.random() * (6)) + 1;
-                        rollDice(randomDice2);
-                        bild2.setImageDrawable(tempImage);
-
-                        infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
+                        zufallWuerfel2 = (int) (Math.random() * (6)) + 1;
+                        rollDice(zufallWuerfel2);
+                        bild2.setImageDrawable(neubild);
+                        text.setText("Zu ziehen : " + zufallWuerfel1 + " und: " + zufallWuerfel2);
                         drag1 = false;
                         drag2 = false;
                         max = 1;
 
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast toast = Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT);
+                        toast.show();
                         max = 1;
                     }
                 }
