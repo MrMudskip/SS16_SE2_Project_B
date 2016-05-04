@@ -23,7 +23,7 @@ public class Spiel {
         int i;
         int j;
         for (i = -1; i<16; i++){
-            if (spieler.getPosition()==i){
+            if (spieler.getPosition()==i){      //wenn
                 spieler.kommtRaus();
             }
 
