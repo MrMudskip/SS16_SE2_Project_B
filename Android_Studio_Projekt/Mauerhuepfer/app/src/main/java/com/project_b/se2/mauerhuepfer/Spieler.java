@@ -7,7 +7,6 @@ import java.util.Vector;
  */
 public class Spieler {
     private String name;                    //Name des Spielers
-
     private int position;
     private int kegel;                      //Anzahl der Kegel im Spiel
     private int anzahl;                     //Anzahl der Kegel im Ziel
@@ -19,13 +18,18 @@ public class Spieler {
         this.position = -1;
         this.kegel = 0;
         this.nr = nr;
-
     }
 
+    public int getPosition() {
+        return position;
+    }
+    
     public void kommtRaus() {
         kegel = kegel + 1;
         position = 0;
     }
+
+
 
     /*public boolean gewonnen(){
         anzahl=kegel;

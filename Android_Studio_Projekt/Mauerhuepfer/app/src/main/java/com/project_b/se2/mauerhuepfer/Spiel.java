@@ -10,15 +10,25 @@ public class Spiel {
     private int wuerfel;
     private int position;
     private int neueposition;
+    private int[][] spiel = {{16},{58}};        //16 Figuren, 58 Felder
+    private Spieler spieler = null;
 
 
-    public Spiel (){
-
+    public Spiel (Spieler spieler){
+        this.spieler=spieler;
         this.position=-1;
     }
 
     public void spiel(){
-        position=spielfeld[0];
+        int i;
+        int j;
+        for (i = -1; i<16; i++){
+            if (spieler.getPosition()==i){
+                spieler.kommtRaus();
+            }
+
+        }
+        /*position=spielfeld[0];
         while (position < spielfeld[58]){
             //gewürfelt
             neueposition=position+wuerfel;
@@ -28,7 +38,7 @@ public class Spiel {
 
             }
 
-        }
+        }*/
 
     }
 
