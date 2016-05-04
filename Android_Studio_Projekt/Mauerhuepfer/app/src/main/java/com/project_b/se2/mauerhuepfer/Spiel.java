@@ -10,7 +10,7 @@ public class Spiel {
     private int wuerfel;
     private int position;
     private int neueposition;
-    private Vector<Spieler> spieler = null;
+
 
     public Spiel (){
 
@@ -24,6 +24,8 @@ public class Spiel {
             neueposition=position+wuerfel;
             if (neueposition == 0){
                 position=neueposition;
+            } else if (neueposition != 0){
+
             }
 
         }
