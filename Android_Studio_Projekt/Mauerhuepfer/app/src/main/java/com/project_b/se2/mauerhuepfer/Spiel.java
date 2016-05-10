@@ -10,7 +10,7 @@ public class Spiel {
     private int wuerfel;
     private int position;
     private int neueposition;
-    private int[][] spiel = {{16},{58}};        //16 Figuren, 58 Felder
+    private int[][] spiel = {{16},{}};        //16 Figuren, 58 Felder
     private Spieler spieler = null;
 
 
@@ -20,11 +20,12 @@ public class Spiel {
     }
 
     public void spiel(){
-        int i;
-        int j;
-        for (i = -1; i<16; i++){
-            if (spieler.getPosition()==i){      //wenn
+        for (int i = -1; i<16; i++){
+            if (spielfeld[0]==0){      //wenn
                 spieler.kommtRaus();
+            }
+            for (int j=0; j<58; j++){
+
             }
 
         }
@@ -43,7 +44,7 @@ public class Spiel {
     }
 
     public void mauer(){
-        Mauer m = new Mauer(position, wuerfel, spielfeld);
+        Mauer m = new Mauer(position, wuerfel, spielfeld);      //die position wo der Kegel gerade steht und wo diese position im Spielfeld ist
 
         while (spielfeld.length<=7){
             m.mauer1();

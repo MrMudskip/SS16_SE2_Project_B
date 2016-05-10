@@ -11,6 +11,7 @@ public class Spieler {
     private int kegel;                      //Anzahl der Kegel im Spiel
     private int anzahl;                     //Anzahl der Kegel im Ziel
     private int nr;                         //Nummer des Spielers
+    private Vector<Kegel> figur = null;
 
 
     public Spieler(String name, int nr) {
@@ -18,12 +19,17 @@ public class Spieler {
         this.position = -1;
         this.kegel = 0;
         this.nr = nr;
+        this.figur=new Vector<Kegel>(4);
+
+        for (int i=0; i<4; i++){
+            this.figur.add(new Kegel(this));
+        }
     }
 
-    public int getPosition() {
-        return position;
+    public void spiel(){
+
     }
-    
+
     public void kommtRaus() {
         kegel = kegel + 1;
         position = 0;
