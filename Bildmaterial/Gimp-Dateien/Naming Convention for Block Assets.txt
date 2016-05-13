@@ -1,0 +1,19 @@
+Order:
+[Type]_[Colour]_[Connections]_[Special]
+
+Specifiers:
+Type = circle, player, wall
+Colour = red, yellow, blue, green, black, white
+Connections = combination of {u,r,d,l} (up, right, down, left), starting with "up" and going clockwise
+Special = Things like "arrow" or {1,2,3,4,5,6} (wall numbers)
+
+Notes:
+If a specifier is not applyable, leave it out.
+Only use lower case letters.
+
+Examples:
+circle_white_l_arrow
+circle_red_rl
+player_green
+wall_3
+
