@@ -11,11 +11,11 @@ import java.io.Serializable;
 import java.io.StreamCorruptedException;
 
 /**
- * Created by ckari on 27.04.2016.
+ * Created by rohrbe on 14.05.2016.
  */
 public class ObjectSerializer {
-    public static byte[] Serialize(Serializable s)
-    {
+
+    public static byte[] Serialize(Serializable s)    {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
 

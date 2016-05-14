@@ -1,5 +1,6 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -10,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -35,22 +37,16 @@ import java.util.List;
  * Created by rohrbe on 22.04.16.
  */
 public class NetworkActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        Connections.ConnectionRequestListener,
-        Connections.MessageListener,
-        Connections.EndpointDiscoveryListener,
-        View.OnClickListener {
+        View.OnClickListener,
+        INetworkManager {
 
-    private static final int STATE_DISCONNECTED = 1023;
-    private static final int STATE_CONNECTED = 1024;
-    private int currentState = STATE_CONNECTED;
+    /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * Diverse Variablen
-     */
+    private static final String TAG = "TEMP"; //MainActivity.class.getSimpleName();
+    private NetworkManager mNetworkManager;
+
+    /*
     private GoogleApiClient mGoogleApiClient;
-
     private TextView mStatusText;
     private Button mHostButton;
     private Button mJoinButton;
@@ -61,22 +57,179 @@ public class NetworkActivity extends AppCompatActivity implements
 
     private ArrayAdapter<String> mMessageAdapter;
 
-    private boolean mIsHost;
-    private boolean mIsConnected;
+    //private boolean mIsHost;
+    //private boolean mIsConnected;
 
+    /* ------------------------------------------------------------------------------------------ */
+
+    /**
+     * Views and Dialogs
+     **/
+    private TextView mDebugInfo;
+    private EditText mMessageText;
+    //private AlertDialog mConnectionRequestDialog;
+    //private MyListDialog mMyListDialog;
+    /* ------------------------------------------------------------------------------------------ */
+
+    /**
+     * The current state of the application
+     **/
+    private int currentState = NetworkManager.STATE_IDLE;
+
+    /* ------------------------------------------------------------------------------------------ */
+
+    /**
+     * The endpoint ID of the connected peer, used for messaging
+     **//*
     private String mRemoteHostEndpoint;
     private List<String> mRemotePeerEndpoints = new ArrayList<String>();
     private List<String> adapterArr = new ArrayList<String>();
 
-    private static final long CONNECTION_TIME_OUT = 10000L;
+    /* ------------------------------------------------------------------------------------------ */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_network);
 
-    private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI,
-            ConnectivityManager.TYPE_ETHERNET};
+        // Button listeners
+        findViewById(R.id.button_advertise).setOnClickListener(this);
+        findViewById(R.id.button_discover).setOnClickListener(this);
+        findViewById(R.id.button_send).setOnClickListener(this);
+
+        // EditText
+        mMessageText = (EditText) findViewById(R.id.edittext_message);
+
+        // Debug text view
+        mDebugInfo = (TextView) findViewById(R.id.debug_text);
+        mDebugInfo.setMovementMethod(new ScrollingMovementMethod());
+
+        // Initialize Google API Client for Nearby Connections. Note: if you are using Google+
+        // sign-in with your project or any other API that requires Authentication you may want
+        // to use a separate Google API Client for Nearby Connections.  This API does not
+        // require the user to authenticate so it can be used even when the user does not want to
+        // sign in or sign-in has failed.
+        /*mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Nearby.CONNECTIONS_API)
+                .build();*/
+
+        mNetworkManager = new NetworkManager(this);
+        mNetworkManager.addMessageReceiverListener(this);
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+        mNetworkManager.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+
+        mNetworkManager.disconnect();
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.button_advertise:
+                mNetworkManager.startAdvertising();
+                break;
+            case R.id.button_discover:
+                mNetworkManager.startDiscovery();
+                break;
+            case R.id.button_send:
+                String msg = mMessageText.getText().toString();
+                UpdateState s = new UpdateState();
+                s.msg = msg;
+                mNetworkManager.sendMessage(s);
+                mMessageText.setText(null);
+                break;
+        }
+    }
+
+    /* ------------------------------------------------------------------------------------------ *
+
+    @Override
+    public void updateState(@NetworkManager.NearbyConnectionState int state) {
+        updateViewVisibility(state);
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
 
     /**
-     * ------------------------------------------------------------------------
+     * Change the application state and update the visibility on on-screen views '
+     * based on the new state of the application.
+     *
+     * @param newState the state to move to (should be NearbyConnectionState)
      */
+    public void updateState(@NetworkManager.NearbyConnectionState int newState) {
+        currentState = newState;
+        switch (currentState) {
+            case NetworkManager.STATE_IDLE:
+                // The GoogleAPIClient is not connected, we can't yet start advertising or
+                // discovery so hide all buttons
+                findViewById(R.id.layout_nearby_buttons).setVisibility(View.GONE);
+                findViewById(R.id.layout_message).setVisibility(View.GONE);
+                mDebugInfo.append("\n State: IDLE");
+                break;
+            case NetworkManager.STATE_READY:
+                // The GoogleAPIClient is connected, we can begin advertising or discovery.
+                findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
+                findViewById(R.id.layout_message).setVisibility(View.GONE);
+                mDebugInfo.append("\n State: READY");
+                break;
+            case NetworkManager.STATE_ADVERTISING:
+                mDebugInfo.append("\n State: ADVERTISING");
+                break;
+            case NetworkManager.STATE_DISCOVERING:
+                mDebugInfo.append("\n State: DISCOVERING");
+                break;
+            case NetworkManager.STATE_CONNECTED:
+                mDebugInfo.append("\n State: CONNECTED");
+                // We are connected to another device via the Connections API, so we can
+                // show the message UI.
+                findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
+                findViewById(R.id.layout_message).setVisibility(View.VISIBLE);
+                break;
+        }
+    }
 
+    /* ------------------------------------------------------------------------------------------ */
+
+    @Override
+    public void receiveMessage(UpdateState status) {
+        mDebugInfo.append("\n" + status.toString());
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,174 +262,6 @@ public class NetworkActivity extends AppCompatActivity implements
                 .build();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }
-
-    /**
-     * Host Methode
-     * fist check if the device is connected to a network
-     */
-    private void advertise() {
-        if (!isConnectedToNetwork()) {
-            mStatusText.setText("No Network Connection");
-            return;
-        }
-
-        String name = "NearbyHost";
-
-        Nearby.Connections.startAdvertising(mGoogleApiClient, name, null, CONNECTION_TIME_OUT, this)
-                .setResultCallback(new ResultCallback<Connections.StartAdvertisingResult>() {
-
-                    @Override
-                    public void onResult(Connections.StartAdvertisingResult result) {
-                        if (result.getStatus().isSuccess()) {
-                            mStatusText.setText("Hosting...");
-                        } else {
-                            mStatusText.setText("Hosting Failure");
-                        }
-                    }
-                });
-        mIsHost = true;
-
-    }
-
-    /**
-     * Checks connection to network - in this case checking wifi and ethernet
-     *
-     * @return true if there is a wifi or ethernet connection
-     */
-    private boolean isConnectedToNetwork() {
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        for (int networkType : NETWORK_TYPES) {
-            NetworkInfo info = connManager.getNetworkInfo(networkType);
-            if (info != null && info.isConnectedOrConnecting()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Once your host application is advertising, it will be able to receive connection requests from peers.
-     * When a device attempts to connect, the following method will be called:
-     * Using this method, you can either accept or reject the connection.
-     *
-     * @param remoteEndpointId
-     * @param remoteDeviceId
-     * @param remoteEndpointName
-     * @param payload
-     */
-    @Override
-    public void onConnectionRequest(final String remoteEndpointId, final String remoteDeviceId, final String remoteEndpointName, byte[] payload) {
-        if (mIsHost) {
-            Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, remoteEndpointId, payload, this)
-                    .setResultCallback(new ResultCallback<Status>() {
-
-                        @Override
-                        public void onResult(Status status) {
-                            if (status.isSuccess()) {
-                                if (!mRemotePeerEndpoints.contains(remoteEndpointId)) {
-                                    mRemotePeerEndpoints.add(remoteEndpointId);
-                                }
-                                sendMessage(remoteDeviceId + " connected!");
-                            } else {
-                                mStatusText.setText("onConnectionRequest Failure");
-                            }
-                        }
-                    });
-
-        } else {
-            Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, remoteEndpointId);
-        }
-    }
-
-
-    /**
-     * Client Methode
-     */
-    private void discover() {
-        if (!isConnectedToNetwork()) {
-            mStatusText.setText("No Network Connection");
-            return;
-        }
-
-        String serviceId = getString(R.string.service_id);
-        Nearby.Connections.startDiscovery(mGoogleApiClient, serviceId, 10000L, this)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        if (status.isSuccess()) {
-                            mStatusText.setText("Discovering");
-                        } else {
-                            Log.e("TutsPlus", "Discovering failed: " + status.getStatusMessage());
-                        }
-                    }
-                });
-        mIsHost = false;
-    }
-
-    /**
-     * When the device detects a host that is currently advertising using the predefined service identifier,
-     * the onEndpointFound callback will be triggered.
-     * It should be noted that this method can be called multiple times if there are multiple hosts broadcasting.
-     * In this situation, you can create a dialog for your users that displays all available hosts
-     * so that they can select which they would like to be connected to.
-     *
-     * @param endpointId
-     * @param deviceId
-     * @param serviceId
-     * @param endpointName
-     */
-    @Override
-    public void onEndpointFound(String endpointId, String deviceId,
-                                final String serviceId, String endpointName) {
-        byte[] payload = null;
-
-        Nearby.Connections.sendConnectionRequest(mGoogleApiClient, deviceId,
-                endpointId, payload, new Connections.ConnectionResponseCallback() {
-
-                    @Override
-                    public void onConnectionResponse(String endpointId, Status status, byte[] bytes) {
-                        if (status.isSuccess()) {
-                            mStatusText.setText("Connected to: " + endpointId);
-                            Nearby.Connections.stopDiscovery(mGoogleApiClient, serviceId);
-                            mRemoteHostEndpoint = endpointId;
-
-                            if (!mIsHost) {
-                                mIsConnected = true;
-                            }
-                        } else {
-                            mStatusText.setText("Connection to " + endpointId + " failed");
-                            if (!mIsHost) {
-                                mIsConnected = false;
-                            }
-                        }
-                    }
-                }, this);
-    }
-
-    @Override
-    public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
-        if (mIsHost) {
-            sendMessage(new String(payload));
-        } else {
-            mMessageAdapter.add(new String(payload));
-            mMessageAdapter.notifyDataSetChanged();
-        }
-    }
 
     private void sendMessage(String message) {
         if (mIsHost) {
@@ -290,9 +275,6 @@ public class NetworkActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Disconnect Method
-     */
     private void disconnect() {
         if (!isConnectedToNetwork())
             return;
@@ -317,40 +299,6 @@ public class NetworkActivity extends AppCompatActivity implements
         }
 
         mIsConnected = false;
-    }
-
-    /**
-     * In a situation where you listen for multiple endpoints to present a choice for your users,
-     * the onEndpointLost method will let you know if a host has stopped advertising before your user has attempted to connect to it.
-     * The onDisconnected callback is also available for client devices and can be used for reconnecting to advertising hosts
-     * in the event of an unexpected disconnect.
-     *
-     * @param s
-     */
-    @Override
-    public void onEndpointLost(String s) {
-
-    }
-
-    /**
-     * The onDisconnected callback is also available for client devices and can be used for reconnecting to advertising hosts
-     * in the event of an unexpected disconnect.
-     *
-     * @param s
-     */
-    @Override
-    public void onDisconnected(String s) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
     }
 
     @Override
@@ -384,9 +332,5 @@ public class NetworkActivity extends AppCompatActivity implements
         }
 
     }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
+    */
 }
