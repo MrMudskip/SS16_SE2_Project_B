@@ -45,21 +45,6 @@ public class NetworkActivity extends AppCompatActivity implements
     private static final String TAG = "TEMP"; //MainActivity.class.getSimpleName();
     private NetworkManager mNetworkManager;
 
-    /*
-    private GoogleApiClient mGoogleApiClient;
-    private TextView mStatusText;
-    private Button mHostButton;
-    private Button mJoinButton;
-    private Button mSendButton;
-    private Button mDiscoButton;
-    private ListView mListView;
-    private EditText mSendEditText;
-
-    private ArrayAdapter<String> mMessageAdapter;
-
-    //private boolean mIsHost;
-    //private boolean mIsConnected;
-
     /* ------------------------------------------------------------------------------------------ */
 
     /**
@@ -67,8 +52,7 @@ public class NetworkActivity extends AppCompatActivity implements
      **/
     private TextView mDebugInfo;
     private EditText mMessageText;
-    //private AlertDialog mConnectionRequestDialog;
-    //private MyListDialog mMyListDialog;
+
     /* ------------------------------------------------------------------------------------------ */
 
     /**
@@ -78,14 +62,6 @@ public class NetworkActivity extends AppCompatActivity implements
 
     /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * The endpoint ID of the connected peer, used for messaging
-     **//*
-    private String mRemoteHostEndpoint;
-    private List<String> mRemotePeerEndpoints = new ArrayList<String>();
-    private List<String> adapterArr = new ArrayList<String>();
-
-    /* ------------------------------------------------------------------------------------------ */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,16 +127,10 @@ public class NetworkActivity extends AppCompatActivity implements
                 UpdateState s = new UpdateState();
                 s.msg = msg;
                 mNetworkManager.sendMessage(s);
+                mDebugInfo.append("\n" + msg); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
                 mMessageText.setText(null);
                 break;
         }
-    }
-
-    /* ------------------------------------------------------------------------------------------ *
-
-    @Override
-    public void updateState(@NetworkManager.NearbyConnectionState int state) {
-        updateViewVisibility(state);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -212,125 +182,4 @@ public class NetworkActivity extends AppCompatActivity implements
 
     /* ------------------------------------------------------------------------------------------ */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_launch);
-        updateView();
-        Intent intent = getIntent();
-
-        // Buttons
-        mHostButton = (Button) findViewById(R.id.buttonHost);
-        mJoinButton = (Button) findViewById(R.id.buttonJoin);
-        mSendButton = (Button) findViewById(R.id.buttonSend);
-        mDiscoButton = (Button) findViewById(R.id.buttonDisco);
-        findViewById(R.id.buttonHost).setOnClickListener(this);
-        findViewById(R.id.buttonJoin).setOnClickListener(this);
-        findViewById(R.id.buttonSend).setOnClickListener(this);
-        findViewById(R.id.buttonDisco).setOnClickListener(this);
-
-        mMessageAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, adapterArr);
-        mStatusText = (TextView) findViewById(R.id.statusText);
-        mListView = (ListView) findViewById(R.id.activityList);
-        if (mListView != null) {
-            mListView.setAdapter(mMessageAdapter);
-        }
-        mSendEditText = (EditText) findViewById(R.id.editText);
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Nearby.CONNECTIONS_API)
-                .build();
-    }
-
-
-    private void sendMessage(String message) {
-        if (mIsHost) {
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mRemotePeerEndpoints, message.getBytes());
-
-            mMessageAdapter.add(message);
-            mMessageAdapter.notifyDataSetChanged();
-        } else {
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mRemoteHostEndpoint,
-                    (Nearby.Connections.getLocalDeviceId(mGoogleApiClient) + " says: " + message).getBytes());
-        }
-    }
-
-    private void disconnect() {
-        if (!isConnectedToNetwork())
-            return;
-
-        if (mIsHost) {
-            sendMessage("Shutting down host");
-            Nearby.Connections.stopAdvertising(mGoogleApiClient);
-            Nearby.Connections.stopAllEndpoints(mGoogleApiClient);
-            mIsHost = false;
-            mStatusText.setText("Not connected");
-            mRemotePeerEndpoints.clear();
-        } else {
-            if (!mIsConnected || TextUtils.isEmpty(mRemoteHostEndpoint)) {
-                Nearby.Connections.stopDiscovery(mGoogleApiClient, getString(R.string.service_id));
-                return;
-            }
-
-            sendMessage("Disconnecting");
-            Nearby.Connections.disconnectFromEndpoint(mGoogleApiClient, mRemoteHostEndpoint);
-            mRemoteHostEndpoint = null;
-            mStatusText.setText("Disconnected");
-        }
-
-        mIsConnected = false;
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.buttonHost:
-                advertise();
-                break;
-            case R.id.buttonJoin:
-                discover();
-                break;
-            case R.id.buttonDisco:
-                disconnect();
-                break;
-            case R.id.buttonSend:
-                sendMessage(mSendEditText.getText().toString());
-                break;
-        }
-    }
-
-    private void updateView() {
-        switch (currentState) {
-            case STATE_CONNECTED:
-                findViewById(R.id.buttonSend).setVisibility(View.VISIBLE);
-                findViewById(R.id.editText).setVisibility(View.VISIBLE);
-                break;
-            case STATE_DISCONNECTED:
-                findViewById(R.id.buttonSend).setVisibility(View.GONE);
-                findViewById(R.id.editText).setVisibility(View.GONE);
-                break;
-        }
-
-    }
-    */
 }

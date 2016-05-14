@@ -8,7 +8,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.util.Log;
-import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -72,7 +71,6 @@ public class NetworkManager implements
     /**
      * Views and Dialogs
      **/
-    //private EditText mMessageText;
     private AlertDialog mConnectionRequestDialog;
     private MyListDialog mMyListDialog;
     /* ------------------------------------------------------------------------------------------ */
@@ -270,8 +268,6 @@ public class NetworkManager implements
         // delivered faster than reliable messages.
 
         Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
-
-        //mMessageText.setText(null);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -453,7 +449,6 @@ public class NetworkManager implements
         mMyListDialog.show();
     }
 
-
     /*
     @Override
     public void onEndpointFound(String endpointId, String deviceId, final String serviceId, String endpointName) {
@@ -510,24 +505,11 @@ public class NetworkManager implements
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
         // A message has been received from a remote endpoint.
-        //String msg = new String(payload);
 
-        UpdateState sc = (UpdateState) ObjectSerializer.DeSerialize(payload);
-        debugLog("onMessageReceived:" + endpointId + ":" + sc.toString());
-        messageReciever(sc);
+        UpdateState us = (UpdateState) ObjectSerializer.DeSerialize(payload);
+        debugLog("onMessageReceived:" + endpointId + ":" + us.toString());
+        messageReciever(us);
     }
-
-    /*
-    @Override
-    public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
-        if (mIsHost) {
-            sendMessage(new String(payload));
-        } else {
-            mMessageAdapter.add(new String(payload));
-            mMessageAdapter.notifyDataSetChanged();
-        }
-    }
-    */
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -540,7 +522,6 @@ public class NetworkManager implements
     @Override
     public void onDisconnected(String endpointId) {
         debugLog("onDisconnected:" + endpointId);
-
         mContext.updateState(STATE_READY);
     }
 
@@ -555,7 +536,7 @@ public class NetworkManager implements
     /* ------------------------------------------------------------------------------------------ */
 
     /**
-     * Print a message to the DEBUG LogCat and to the on-screen debug panel.
+     * Print a message to the DEBUG LogCat and to the on-screen debug panel (if needed).
      *
      * @param msg the message to print and display.
      */
@@ -573,14 +554,10 @@ public class NetworkManager implements
     }
 
     protected void messageReciever(UpdateState s) {
-        Object[] listeners = MessageReceiverListeners.toArray();
         // loop through each listener and pass on the event if needed
-        int numListeners = listeners.length;
-        for (int i = 0; i < numListeners; i += 1) {
+        for (Object l : MessageReceiverListeners) {
             // pass the event to the listeners event dispatch method
-            ((INetworkManager) listeners[i]).receiveMessage(s);
+            ((INetworkManager) l).receiveMessage(s);
         }
     }
-
-
 }

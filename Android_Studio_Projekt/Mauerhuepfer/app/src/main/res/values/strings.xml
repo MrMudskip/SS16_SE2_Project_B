@@ -6,9 +6,9 @@
     <string name="dummy_content">Spielbrett hier</string>
     <string name="button_NewGame">Neues Spiel</string>
 
-    <string name="advertise">Advertise</string>
-    <string name="discover">Discover</string>
+    <string name="advertise">Host</string>
+    <string name="discover">Join</string>
     <string name="send">Send</string>
     <string name="message">Message</string>
-    <string name="debug_label">Debug Info:</string>
+    <string name="debug_label">Info:</string>
 </resources>
