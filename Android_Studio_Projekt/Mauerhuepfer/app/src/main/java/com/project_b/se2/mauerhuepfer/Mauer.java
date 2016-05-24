@@ -5,8 +5,9 @@ package com.project_b.se2.mauerhuepfer;
  */
 public class Mauer {
     int p;     //position alt
-    int p2;     //position neu
-    int wuerfel;
+    int cube1;
+    int cube2;
+    int wuerfel = cube1 + cube2;
     int[] mauer1 = {1, 5, 6, 5, 4, 3, 2, 1};
     int[] mauer2 = {1, 2, 3, 4, 5, 6, 5, 4};
     int[] mauer3 = {1, 5, 6, 5, 4, 3, 2, 1};
@@ -15,15 +16,15 @@ public class Mauer {
 
     private int[] spielfeld = {58};
 
-    public Mauer (int p, int wuerfel, int[] spielfeld){
+    public Mauer (int p, int cube1, int cube2){
         this.p=p;
-        this.wuerfel=wuerfel;
-        this.spielfeld=spielfeld;
+        this.cube1=cube1;
+        this.cube2=cube2;
     }
 
     public void mauer1(){
 
-        if (mauer1.length==wuerfel){
+        if (mauer1.length==wuerfel || mauer1.length==cube1 || mauer1.length==cube2){
             if (p==0){
                 p=spielfeld[18];
             } else if (p==1){
@@ -48,7 +49,7 @@ public class Mauer {
 
     public void mauer2(){
 
-        if (mauer2.length==wuerfel){
+        if (mauer2.length==wuerfel || mauer2.length==cube1 || mauer2.length==cube2){
             if (p==10){
                 p=spielfeld[28];
             } else if (p==11){
@@ -71,7 +72,7 @@ public class Mauer {
 
     public void mauer3(){
 
-        if (mauer3.length==wuerfel){
+        if (mauer3.length==wuerfel || mauer3.length==cube1 || mauer3.length==cube2){
             if (p==20){
                 p=spielfeld[38];
             } else if (p==21){
@@ -94,7 +95,7 @@ public class Mauer {
 
     public void mauer4(){
 
-        if (mauer4.length==wuerfel) {
+        if (mauer4.length==wuerfel || mauer4.length==cube1 || mauer4.length==cube2) {
             if (p == 30) {
                 p = spielfeld[48];
             } else if (p == 31) {
@@ -118,7 +119,7 @@ public class Mauer {
 
     public void mauer5(){
 
-        if (mauer5.length==wuerfel){
+        if (mauer5.length==wuerfel || mauer5.length==cube1 || mauer5.length==cube2){
             if (p==41){
                 p=spielfeld[57];
             } else if (p==42){
