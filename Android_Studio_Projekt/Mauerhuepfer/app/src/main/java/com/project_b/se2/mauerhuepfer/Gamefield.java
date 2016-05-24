@@ -7,7 +7,7 @@ import java.util.Vector;
  */
 public class Gamefield {
     private int cube1;
-    private int cube2;
+    private int cube2;  // I think these should be called dice ("Spielfürfel") ~Julian
     private Spieler spieler;
     private int position;
     private int[] block = {};        //Height, Length
