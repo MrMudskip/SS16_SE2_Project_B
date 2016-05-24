@@ -1,6 +1,6 @@
 package com.project_b.se2.mauerhuepfer;
 
-import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 
 /**
  * Created by Julian Janda on 24.05.2016.
@@ -8,12 +8,17 @@ import android.graphics.Bitmap;
 public class Block {
 
     private int type;
-    private Bitmap image; // TODO: decide if bitmap is the right choice here
+    private Drawable image;
+
 
 
     public Block(int type) {
         this.type = type;
     }
+
+
+
+    // Getters and setters below this line ---------------------------
 
     public int getType() {
         return type;
@@ -21,5 +26,13 @@ public class Block {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public Drawable getImage() {
+        return image;
+    }
+
+    public void setImage(Drawable image) {
+        this.image = image;
     }
 }
