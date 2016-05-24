@@ -1,11 +1,5 @@
 package com.project_b.se2.mauerhuepfer;
 
-import android.content.res.Resources;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
-import android.view.View;
-import android.widget.ImageView;
 /**
  * Created by Anita on 03.05.2016.
  */
@@ -33,13 +27,16 @@ public class Gamefield {
     private int dice2;
     private Spieler player;
     private int position;
-    private int[] block = {};        //Height, Length
+
+
+    //TODO those are not needed anymore.
+/*    private int[] block = {};        //Height, Length
     private Block house;
     private Block field;
-    private Block fin;
+    private Block fin; */
 
-    // 2D array containing all the blocks that make up the game field.
-    // TODO initiate all blocks of the game field.
+
+    // 2D array containing all the blocks that make up the game field.     // TODO initiate all blocks of the game field.
     private Block[][] gameField = {
             {new Block(H),new Block(H),new Block(H),new Block(H)},
             {new Block(H),new Block(H),new Block(H),new Block(H)},
@@ -62,9 +59,9 @@ public class Gamefield {
                 // TODO handle this type.
             }
             case H: {
-                Resources res = mContext.getResources(); // TODO execute this on some higher level (only once).
-                Drawable img = res.getDrawable(R.drawable.w1n); // TODO Replace placeholder image
-                block.setImage(img);
+//                Resources res = mContext.getResources(); // TODO execute this on some higher level (only once).
+//                Drawable img = res.getDrawable(R.drawable.w1n); // TODO Replace placeholder image
+//                block.setImage(img);
             }
             // TODO handle the other block types.
         }
@@ -79,6 +76,8 @@ public class Gamefield {
         }
     }
 
+
+/*  //TODO resolve errors in this method.
     public void moveFigure(){
         player.figureOnField();
         for (int i=0; i<block.length; i++){
@@ -97,6 +96,7 @@ public class Gamefield {
 
         }
     }
+*/
 
     public void finish(){
 
