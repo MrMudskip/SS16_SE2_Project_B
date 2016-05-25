@@ -1,87 +1,61 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:orientation="vertical"
+    android:background="#bdad71"
     tools:context="com.project_b.se2.mauerhuepfer.GameBoardActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-    <TextView
+    <!-- The primary full-screen view. -->
+    <ImageView
         android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:layout_height="320dp"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-
-        android:fitsSystemWindows="true">
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="?metaButtonBarStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="50dp"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent">
-
-            <Button
-                android:id="@+id/dummy_button"
-                style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:text="@string/dummy_button"
-                />
-
-        </LinearLayout>
-
-
-    </FrameLayout>
-
-    <ImageView
-        android:id="@+id/wuerfel2"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginRight="15dp"
-        android:src="@drawable/w6n"
-        android:layout_gravity="right|bottom" />
-
-    <ImageView
-        android:id="@+id/wuerfel"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginRight="80dp"
-        android:src="@drawable/w5n"
-        android:layout_gravity="right|bottom" />
-
-    <Button
-        android:id="@+id/button1"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="Würfeln"
-        android:layout_gravity="center_horizontal|bottom" />
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:src="@drawable/gameboard_full_transparent_portrait" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="144dp"
-        android:layout_height="50dp"
-        android:paddingLeft="10dp"
-        android:text="Bitte würfeln"
-        android:layout_gravity="left|bottom" />
+    <LinearLayout
+        android:id="@+id/fullscreen_content_controls"
+        style="?metaButtonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black_overlay"
+        android:orientation="horizontal"
+        tools:ignore="UselessParent"
+        android:padding="5dp">
+
+        <ImageView
+            android:id="@+id/wuerfel"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/w5n"
+            android:layout_marginRight="10dp" />
+
+        <ImageView
+            android:id="@+id/wuerfel2"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/w6n" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Bitte würfeln"
+            android:textAlignment="center"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp" />
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Würfeln"/>
 
 
-</FrameLayout>
+    </LinearLayout>
+
+</LinearLayout>
+
+
