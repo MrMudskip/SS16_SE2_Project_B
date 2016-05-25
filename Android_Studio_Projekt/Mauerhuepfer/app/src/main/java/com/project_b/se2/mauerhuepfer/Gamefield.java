@@ -29,7 +29,7 @@ public class Gamefield {
     // Other variables
     private Context context;
     private Resources resources;
-    private int unit = 25; // TODO compute unit size dynamically.
+    private int unit;
 
     private int dice1;
     private int dice2;
@@ -58,6 +58,9 @@ public class Gamefield {
 
     public Gamefield(Context context) {
         this.context = context;
+        this.resources = this.context.getResources();
+        this.unit = 25; // TODO compute unit size dynamically.
+
         if(initializeGameField()){
             drawGameField();
         }
@@ -107,7 +110,7 @@ public class Gamefield {
         for (int col = 0; col < gameField.length; col++) {
             for (int row = 0; row < gameField[col].length; row++) {
                 //gameField[col][row].getImage().draw(); //TODO find a way to draw these.
-                imageView.setImageDrawable(gameField[col][row].getImage());
+                //imageView.setImageDrawable(gameField[col][row].getImage());
             }
         }
     }
