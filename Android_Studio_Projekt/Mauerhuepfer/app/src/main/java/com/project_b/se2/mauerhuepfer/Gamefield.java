@@ -1,5 +1,9 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+
 /**
  * Created by Anita on 03.05.2016.
  */
@@ -23,6 +27,10 @@ public class Gamefield {
     static final int GB = 14;
 
     // Other variables
+    private Context context;
+    private Resources resources;
+    private int unit = 25; // TODO compute unit size dynamically.
+
     private int dice1;
     private int dice2;
     private Spieler player;
@@ -48,20 +56,47 @@ public class Gamefield {
             {new Block(H),new Block(H),new Block(H),new Block(H)},
     };
 
+    public Gamefield(Context context) {
+        this.context = context;
+        if(initializeGameField()){
+            drawGameField();
+        }
+
+    }
+
+/* //TODO Is this constructor still needed?
     public Gamefield(Spieler player) {
         this.player=player;
         this.position=-1;
+        initializeGameField();
+    }
+*/
+    public boolean initializeGameField(){
+        for (int col = 0; col < gameField.length; col++) {
+            for (int row = 0; row < gameField[col].length; row++) {
+                setBlockParametersByType(gameField[col][row], gameField[col][row].getType(), col, row);
+
+            }
+        }
+        return true;
     }
 
-    public void setBlockParametersByType(Block block, int type) {
+
+    public void setBlockParametersByType(Block block, int type, int col, int row) {
         switch (type) {
             case S: {
-                // TODO handle this type.
+                Drawable img = resources.getDrawable(R.drawable.w6n); // TODO Replace placeholder image
+                int lengthPos = col * unit;
+                int heightPos = row * unit;
+                img.setBounds(lengthPos, heightPos, (lengthPos + unit), (heightPos + unit));
+                block.setImage(img);
             }
             case H: {
-//                Resources res = mContext.getResources(); // TODO execute this on some higher level (only once).
-//                Drawable img = res.getDrawable(R.drawable.w1n); // TODO Replace placeholder image
-//                block.setImage(img);
+                Drawable img = resources.getDrawable(R.drawable.w1n); // TODO Replace placeholder image
+                int lengthPos = col * unit;
+                int heightPos = row * unit;
+                img.setBounds(lengthPos, heightPos, (lengthPos + unit), (heightPos + unit));
+                block.setImage(img);
             }
             // TODO handle the other block types.
         }
@@ -69,9 +104,10 @@ public class Gamefield {
 
     public void drawGameField(){
 
-        for (int i = 0; i < gameField.length; i++) {
-            for (int j = 0; j < gameField[i].length; j++) {
-
+        for (int col = 0; col < gameField.length; col++) {
+            for (int row = 0; row < gameField[col].length; row++) {
+                //gameField[col][row].getImage().draw(); //TODO find a way to draw these.
+                imageView.setImageDrawable(gameField[col][row].getImage());
             }
         }
     }
