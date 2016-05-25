@@ -100,6 +100,10 @@ public class GameBoardActivity extends AppCompatActivity {
                 clickOnDice2();
             }
         });
+
+
+        // start a new game
+        Gamefield game = new Gamefield(this);
     }
 
     private void clickOnDice1() {

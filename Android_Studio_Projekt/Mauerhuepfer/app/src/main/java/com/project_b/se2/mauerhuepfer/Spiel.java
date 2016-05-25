@@ -6,6 +6,7 @@ import java.util.Vector;
  * Created by Anita on 03.05.2016.
  */
 public class Spiel {
+/* // TODO Can this class be deleted?
     private int[] spielfeld = {58};
     private int wuerfel;
     private int position;
@@ -29,7 +30,7 @@ public class Spiel {
             }
 
         }
-        /*position=spielfeld[0];
+        position=spielfeld[0];
         while (position < spielfeld[58]){
             //gewürfelt
             neueposition=position+wuerfel;
@@ -39,7 +40,7 @@ public class Spiel {
 
             }
 
-        }*/
+        }
 
     }
 
@@ -65,5 +66,5 @@ public class Spiel {
             position=spielfeld[58];
         }
     }
-
+*/
 }

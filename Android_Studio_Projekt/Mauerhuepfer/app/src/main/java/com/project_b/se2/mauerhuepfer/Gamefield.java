@@ -1,8 +1,13 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -37,14 +42,14 @@ public class Gamefield {
     private int position;
 
 
-    //TODO those are not needed anymore.
+    //TODO I think those are not needed anymore.
 /*    private int[] block = {};        //Height, Length
     private Block house;
     private Block field;
     private Block fin; */
 
 
-    // 2D array containing all the blocks that make up the game field.     // TODO initiate all blocks of the game field.
+    // 2D array containing all the blocks that make up the game field.     // TODO initiate all blocks of the game field and add their respective type.
     private Block[][] gameField = {
             {new Block(H),new Block(H),new Block(H),new Block(H)},
             {new Block(H),new Block(H),new Block(H),new Block(H)},
@@ -53,13 +58,13 @@ public class Gamefield {
             {new Block(H),new Block(H),new Block(H),new Block(H)},
             {new Block(H),new Block(H),new Block(H),new Block(H)},
             {new Block(H),new Block(H),new Block(H),new Block(H)},
-            {new Block(H),new Block(H),new Block(H),new Block(H)},
+            {new Block(H),new Block(H),new Block(H),new Block(S)},
     };
 
     public Gamefield(Context context) {
         this.context = context;
         this.resources = this.context.getResources();
-        this.unit = 25; // TODO compute unit size dynamically.
+        this.unit = 10; // TODO compute unit size dynamically.
 
         if(initializeGameField()){
             drawGameField();
@@ -78,7 +83,6 @@ public class Gamefield {
         for (int col = 0; col < gameField.length; col++) {
             for (int row = 0; row < gameField[col].length; row++) {
                 setBlockParametersByType(gameField[col][row], gameField[col][row].getType(), col, row);
-
             }
         }
         return true;
@@ -88,14 +92,14 @@ public class Gamefield {
     public void setBlockParametersByType(Block block, int type, int col, int row) {
         switch (type) {
             case S: {
-                Drawable img = resources.getDrawable(R.drawable.w6n); // TODO Replace placeholder image
+                Drawable img = resources.getDrawable(R.drawable.player_black); // TODO Replace placeholder image
                 int lengthPos = col * unit;
                 int heightPos = row * unit;
                 img.setBounds(lengthPos, heightPos, (lengthPos + unit), (heightPos + unit));
                 block.setImage(img);
             }
             case H: {
-                Drawable img = resources.getDrawable(R.drawable.w1n); // TODO Replace placeholder image
+                Drawable img = resources.getDrawable(R.drawable.circle_black); // TODO Replace placeholder image
                 int lengthPos = col * unit;
                 int heightPos = row * unit;
                 img.setBounds(lengthPos, heightPos, (lengthPos + unit), (heightPos + unit));
@@ -109,11 +113,21 @@ public class Gamefield {
 
         for (int col = 0; col < gameField.length; col++) {
             for (int row = 0; row < gameField[col].length; row++) {
-                //gameField[col][row].getImage().draw(); //TODO find a way to draw these.
-                //imageView.setImageDrawable(gameField[col][row].getImage());
+                /*
+                // TODO Draw multiple images at different positions (maybe uses canvas?)
+                Drawable drawable = gameField[col][row].getImage();
+                ImageView imgView = (ImageView) ((Activity) context).findViewById(R.id.fullscreen_content);
+                //imgView.setImageDrawable(drawable);
+
+                //Experimental code
+                Canvas canvas = new Canvas();
+                drawable.draw(canvas);
+                */
             }
         }
     }
+
+
 
 
 /*  //TODO resolve errors in this method.
