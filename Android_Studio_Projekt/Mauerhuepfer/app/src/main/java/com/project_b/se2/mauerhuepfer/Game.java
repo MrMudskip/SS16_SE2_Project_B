@@ -1,18 +1,13 @@
 package com.project_b.se2.mauerhuepfer;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
 
 /**
  * Created by Anita on 03.05.2016.
  */
-public class Gamefield {
+public class Game {
 
     // Block types
     static final int S = 0;
@@ -38,7 +33,7 @@ public class Gamefield {
 
     private int dice1;
     private int dice2;
-    private Spieler player;
+    private Player player;
     private int position;
 
 
@@ -61,7 +56,7 @@ public class Gamefield {
             {new Block(H),new Block(H),new Block(H),new Block(S)},
     };
 
-    public Gamefield(Context context) {
+    public Game(Context context) {
         this.context = context;
         this.resources = this.context.getResources();
         this.unit = 10; // TODO compute unit size dynamically.
@@ -73,7 +68,7 @@ public class Gamefield {
     }
 
 /* //TODO Is this constructor still needed?
-    public Gamefield(Spieler player) {
+    public Game(Player player) {
         this.player=player;
         this.position=-1;
         initializeGameField();

@@ -5,12 +5,12 @@ import java.util.Vector;
 /**
  * Created by Anita on 02.05.2016.
  */
-public class Spieler {
+public class Player {
     private String name=null;                            //Name des Spielers
     private int onwnerID;                                //Nummer des Spielers
     private Figure figure = new Figure(name,onwnerID);
 
-    public Spieler(String name, int ownerID) {
+    public Player(String name, int ownerID) {
         this.name=name;
         this.onwnerID=ownerID;
     }

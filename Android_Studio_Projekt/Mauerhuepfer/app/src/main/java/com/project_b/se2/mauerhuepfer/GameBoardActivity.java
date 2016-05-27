@@ -103,7 +103,7 @@ public class GameBoardActivity extends AppCompatActivity {
 
 
         // start a new game
-        Gamefield game = new Gamefield(this);
+        Game game = new Game(this);
     }
 
     private void clickOnDice1() {

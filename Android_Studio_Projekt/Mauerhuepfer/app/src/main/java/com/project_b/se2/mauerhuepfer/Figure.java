@@ -3,7 +3,7 @@ package com.project_b.se2.mauerhuepfer;
 /**
  * Created by Anita on 04.05.2016.
  */
-public class Figure extends Spieler{
+public class Figure extends Player {
     private String owner;
     private int position;
     private int ownerID;
