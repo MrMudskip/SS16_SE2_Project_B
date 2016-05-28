@@ -9,6 +9,7 @@
     <string name="advertise">Host</string>
     <string name="discover">Join</string>
     <string name="send">Send</string>
+    <string name="startGame">Start Game</string>
     <string name="message">Message</string>
     <string name="debug_label">Info:</string>
 </resources>

@@ -35,7 +35,7 @@ public class NetworkManager implements
         Connections.EndpointDiscoveryListener {
 
     private static String TAG;
-    ArrayList MessageReceiverListeners = new ArrayList();
+    private ArrayList MessageReceiverListeners = new ArrayList();
 
     // Timeouts...
     private static final long TIMEOUT_ADVERTISE = 1000L * 30L;
@@ -66,13 +66,14 @@ public class NetworkManager implements
      * GoogleApiClient for connecting to the Nearby Connections API
      **/
     private GoogleApiClient mGoogleApiClient;
+
     /* ------------------------------------------------------------------------------------------ */
 
     /**
      * Views and Dialogs
      **/
-    private AlertDialog mConnectionRequestDialog;
     private MyListDialog mMyListDialog;
+
     /* ------------------------------------------------------------------------------------------ */
 
     /**
@@ -80,7 +81,13 @@ public class NetworkManager implements
      **/
     private String mOtherEndpointId;
 
-    private INetworkManager mContext;
+    private ICommunication mContext;
+
+    private boolean mIsHost;
+
+    public boolean getHostinfo(){
+        return mIsHost;
+    }
 
     /**
      * Network Types...
@@ -90,7 +97,7 @@ public class NetworkManager implements
     /* ------------------------------------------------------------------------------------------ */
 
     /**
-     * Konstruktor...
+     * Constructor...
      */
     public NetworkManager(Context c) {
         mGoogleApiClient = new GoogleApiClient.Builder(c)
@@ -101,7 +108,7 @@ public class NetworkManager implements
 
         TAG = NetworkManager.class.getSimpleName();
 
-        mContext = (INetworkManager) c;
+        mContext = (ICommunication) c;
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -155,7 +162,6 @@ public class NetworkManager implements
             return;
         }
 
-
         // Advertising with an AppIdentifer lets other devices on the network discover
         // this application and prompt the user to install the application.
         List<AppIdentifier> appIdentifierList = new ArrayList<>();
@@ -174,7 +180,7 @@ public class NetworkManager implements
                         if (result.getStatus().isSuccess()) {
                             debugLog("startAdvertising: SUCCESS");
                             mContext.updateState(STATE_ADVERTISING);
-
+                            mIsHost = true;
                         } else {
                             debugLog("startAdvertising: FAILURE ");
 
@@ -203,6 +209,7 @@ public class NetworkManager implements
             debugLog("startDiscovery: not connected to network.");
             return;
         }
+        mIsHost = false;
 
         // Discover nearby apps that are advertising with the required service ID.
         String serviceId = ((Context) mContext).getString(R.string.service_id);
@@ -231,77 +238,6 @@ public class NetworkManager implements
                 });
     }
 
-    /*
-    private void discover() {
-        if (!isConnectedToNetwork()) {
-            mStatusText.setText("No Network Connection");
-            return;
-        }
-
-        String serviceId = getString(R.string.service_id);
-        Nearby.Connections.startDiscovery(mGoogleApiClient, serviceId, 10000L, this)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        if (status.isSuccess()) {
-                            mStatusText.setText("Discovering");
-                        } else {
-                            Log.e("TutsPlus", "Discovering failed: " + status.getStatusMessage());
-                        }
-                    }
-                });
-        mIsHost = false;
-    }
-     */
-
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * Send a reliable message to the connected peer. Takes the contents of the EditText and
-     * sends the message as a byte[].
-     */
-    public void sendMessage(UpdateState s) {
-        // Sends a reliable message, which is guaranteed to be delivered eventually and to respect
-        // message ordering from sender to receiver. Nearby.Connections.sendUnreliableMessage
-        // should be used for high-frequency messages where guaranteed delivery is not required, such
-        // as showing one player's cursor location to another. Unreliable messages are often
-        // delivered faster than reliable messages.
-
-        Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
-    }
-
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * Send a connection request to a given endpoint.
-     *
-     * @param endpointId   the endpointId to which you want to connect.
-     * @param endpointName the name of the endpoint to which you want to connect. Not required to
-     *                     make the connection, but used to display after success or failure.
-     */
-    private void connectTo(String endpointId, final String endpointName) {
-        debugLog("connectTo:" + endpointId + ":" + endpointName);
-
-        // Send a connection request to a remote endpoint. By passing 'null' for the name,
-        // the Nearby Connections API will construct a default name based on device model
-        // such as 'LGE Nexus 5'.
-        String myName = null;
-        byte[] myPayload = null;
-        Nearby.Connections.sendConnectionRequest(mGoogleApiClient, myName, endpointId, myPayload, new Connections.ConnectionResponseCallback() {
-            @Override
-            public void onConnectionResponse(String endpointId, Status status, byte[] bytes) {
-                Log.d(TAG, "onConnectionResponse:" + endpointId + ":" + status);
-                if (status.isSuccess()) {
-                    debugLog("onConnectionResponse: " + endpointName + " SUCCESS");
-                    mOtherEndpointId = endpointId;
-                    mContext.updateState(STATE_CONNECTED);
-                } else {
-                    debugLog("onConnectionResponse: " + endpointName + " FAILURE");
-                }
-            }
-        }, this);
-    }
-
     /* ------------------------------------------------------------------------------------------ */
 
     @Override
@@ -328,77 +264,35 @@ public class NetworkManager implements
      * When a device attempts to connect, the following method will be called:
      * Using this method, you can either accept or reject the connection.
      *
-     * @param endpointId
-     * @param deviceId
-     * @param endpointName
+     * @param endpointId   Client ID
+     * @param deviceId     Client Device
+     * @param endpointName Client Name
      * @param payload
      */
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
         debugLog("onConnectionRequest:" + endpointId + ":" + endpointName);
 
-        // This device is advertising and has received a connection request. Show a dialog asking
-        // the user if they would like to connect and accept or reject the request accordingly.
-        mConnectionRequestDialog = new AlertDialog.Builder((Context) mContext)
-                .setTitle("Connection Request")
-                .setMessage("Do you want to connect to " + endpointName + "?")
-                .setCancelable(false)
-                .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        byte[] payload = null;
-                        Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId,
-                                payload, NetworkManager.this)
-                                .setResultCallback(new ResultCallback<Status>() {
-                                    @Override
-                                    public void onResult(Status status) {
-                                        if (status.isSuccess()) {
-                                            debugLog("acceptConnectionRequest: SUCCESS");
-
-                                            mOtherEndpointId = endpointId;
-                                            mContext.updateState(STATE_CONNECTED);
-                                        } else {
-                                            debugLog("acceptConnectionRequest: FAILURE");
-                                        }
-                                    }
-                                });
-                    }
-                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, endpointId);
-                    }
-                }).create();
-
-        mConnectionRequestDialog.show();
-    }
-
-    /*
-       public void onConnectionRequest(final String remoteEndpointId, final String remoteDeviceId, final String remoteEndpointName, byte[] payload) {
         if (mIsHost) {
-            Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, remoteEndpointId, payload, this)
+            Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId, payload, this)
                     .setResultCallback(new ResultCallback<Status>() {
 
                         @Override
                         public void onResult(Status status) {
                             if (status.isSuccess()) {
-                                if (!mRemotePeerEndpoints.contains(remoteEndpointId)) {
-                                    mRemotePeerEndpoints.add(remoteEndpointId);
-                                }
-                                sendMessage(remoteDeviceId + " connected!");
+                                debugLog("acceptConnectionRequest: SUCCESS");
+
+                                mOtherEndpointId = endpointId;
+                                mContext.updateState(STATE_CONNECTED);
                             } else {
-                                mStatusText.setText("onConnectionRequest Failure");
+                                debugLog("acceptConnectionRequest: FAILURE");
                             }
                         }
                     });
-
         } else {
-            Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, remoteEndpointId);
+            Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, endpointId);
         }
     }
-     */
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -409,9 +303,9 @@ public class NetworkManager implements
      * In this situation, you can create a dialog for your users that displays all available hosts
      * so that they can select which they would like to be connected to.
      *
-     * @param endpointId
-     * @param deviceId
-     * @param serviceId
+     * @param endpointId   Host ID
+     * @param deviceId     Host Device
+     * @param serviceId    Service ID
      * @param endpointName
      */
     @Override
@@ -449,34 +343,35 @@ public class NetworkManager implements
         mMyListDialog.show();
     }
 
-    /*
-    @Override
-    public void onEndpointFound(String endpointId, String deviceId, final String serviceId, String endpointName) {
-        byte[] payload = null;
+    /* ------------------------------------------------------------------------------------------ */
 
-        Nearby.Connections.sendConnectionRequest(mGoogleApiClient, deviceId,
-                endpointId, payload, new Connections.ConnectionResponseCallback() {
-
-                    @Override
-                    public void onConnectionResponse(String endpointId, Status status, byte[] bytes) {
-                        if (status.isSuccess()) {
-                            mStatusText.setText("Connected to: " + endpointId);
-                            Nearby.Connections.stopDiscovery(mGoogleApiClient, serviceId);
-                            mRemoteHostEndpoint = endpointId;
-
-                            if (!mIsHost) {
-                                mIsConnected = true;
-                            }
-                        } else {
-                            mStatusText.setText("Connection to " + endpointId + " failed");
-                            if (!mIsHost) {
-                                mIsConnected = false;
-                            }
-                        }
-                    }
-                }, this);
-    }
+    /**
+     * Send a connection request to a remote endpoint. By passing 'null' for the name,
+     * the Nearby Connections API will construct a default name based on device model.
+     *
+     * @param endpointId   the endpointId to which you want to connect.
+     * @param endpointName the name of the endpoint to which you want to connect.
+     *                     Not required to make the connection, but used to display after success or failure.
      */
+    private void connectTo(String endpointId, final String endpointName) {
+        debugLog("connectTo:" + endpointId + ":" + endpointName);
+
+        String myName = null;
+        byte[] myPayload = null;
+        Nearby.Connections.sendConnectionRequest(mGoogleApiClient, myName, endpointId, myPayload, new Connections.ConnectionResponseCallback() {
+            @Override
+            public void onConnectionResponse(String endpointId, Status status, byte[] bytes) {
+                Log.d(TAG, "onConnectionResponse:" + endpointId + ":" + status);
+                if (status.isSuccess()) {
+                    debugLog("onConnectionResponse: " + endpointName + " SUCCESS");
+                    mOtherEndpointId = endpointId;
+                    mContext.updateState(STATE_CONNECTED);
+                } else {
+                    debugLog("onConnectionResponse: " + endpointName + " FAILURE");
+                }
+            }
+        }, this);
+    }
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -500,15 +395,36 @@ public class NetworkManager implements
         }
     }
 
+   /* ------------------------------------------------------------------------------------------ */
+
+    /**
+     * Send a reliable message to the connected peer. Takes the contents of the EditText and
+     * sends the message as a byte[].
+     * <p/>
+     * Sends a reliable message, which is guaranteed to be delivered eventually and to respect
+     * message ordering from sender to receiver. Nearby.Connections.sendUnreliableMessage
+     * should be used for high-frequency messages where guaranteed delivery is not required, such
+     * as showing one player's cursor location to another. Unreliable messages are often
+     * delivered faster than reliable messages.
+     */
+    public void sendMessage(UpdateState s) {
+        Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
+    }
+
     /* ------------------------------------------------------------------------------------------ */
 
+    /**
+     * A message has been received from a remote endpoint.
+     *
+     * @param endpointId
+     * @param payload
+     * @param isReliable
+     */
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
-        // A message has been received from a remote endpoint.
-
-        UpdateState us = (UpdateState) ObjectSerializer.DeSerialize(payload);
-        debugLog("onMessageReceived:" + endpointId + ":" + us.toString());
-        messageReciever(us);
+        UpdateState updateS = (UpdateState) ObjectSerializer.DeSerialize(payload);
+        debugLog("onMessageReceived:" + endpointId + ":" + updateS.toString());
+        messageReciever(updateS);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -545,19 +461,23 @@ public class NetworkManager implements
         //mDebugInfo.append("\n" + msg);
     }
 
-    public void addMessageReceiverListener(INetworkManager listener) {
+    public void addMessageReceiverListener(ICommunication listener) {
         MessageReceiverListeners.add(listener);
     }
 
-    public void removeMessageReceiverListener(INetworkManager listener) {
+    public void removeMessageReceiverListener(ICommunication listener) {
         MessageReceiverListeners.remove(listener);
     }
 
+    /**
+     * loop through each listener and pass on the event if needed
+     * pass the event to the listeners event dispatch method
+     *
+     * @param s UpdateState Object
+     */
     protected void messageReciever(UpdateState s) {
-        // loop through each listener and pass on the event if needed
         for (Object l : MessageReceiverListeners) {
-            // pass the event to the listeners event dispatch method
-            ((INetworkManager) l).receiveMessage(s);
+            ((ICommunication) l).receiveMessage(s);
         }
     }
 }
