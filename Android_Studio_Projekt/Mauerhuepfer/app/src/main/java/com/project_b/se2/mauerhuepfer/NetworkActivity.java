@@ -1,6 +1,8 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -14,27 +16,23 @@ import android.widget.TextView;
  */
 public class NetworkActivity extends AppCompatActivity implements
         View.OnClickListener,
-        ICommunication {
+        IUpdateView,
+        IRecieveMessage {
 
     /* ------------------------------------------------------------------------------------------ */
 
-    private static final String TAG = "TEMP"; //MainActivity.class.getSimpleName();
-    private NetworkManager mNetworkManager;
-
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * Views and Dialogs
-     **/
+    private static final String TAG = "NetworkActivity"; //MainActivity.class.getSimpleName();
+    public static NetworkManager mNetworkManager;
+    private static String playerName;
     private TextView mDebugInfo;
     private EditText mMessageText;
+    private int currentState = NetworkManager.STATE_IDLE;
 
     /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * The current state of the application
-     **/
-    private int currentState = NetworkManager.STATE_IDLE;
+    public static INetworkManager getmNetworkManager() {
+        return mNetworkManager;
+    }
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -42,6 +40,13 @@ public class NetworkActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_network);
+
+        SharedPreferences settings = getSharedPreferences(getString(R.string.memory), 0);
+        playerName = settings.getString("playerName", null);
+
+        if (playerName.equals("")) {
+            playerName = "" + ((int) (Math.random() * 1000000));
+        }
 
         // Button listeners
         findViewById(R.id.button_advertise).setOnClickListener(this);
@@ -62,19 +67,17 @@ public class NetworkActivity extends AppCompatActivity implements
 
     /* ------------------------------------------------------------------------------------------ */
 
-    @Override
     public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart");
         mNetworkManager.connect();
     }
 
-    @Override
     public void onStop() {
         super.onStop();
         Log.d(TAG, "onStop");
 
-        mNetworkManager.disconnect();
+        //mNetworkManager.disconnect();
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -83,15 +86,11 @@ public class NetworkActivity extends AppCompatActivity implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_startGame:
-                Intent myIntent = new Intent(NetworkActivity.this, GameBoardActivity.class);
-                NetworkActivity.this.startActivity(myIntent);
-                // ------------------------------------------- //
-                //TODO: Game für Clients Starten
+                Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+                startActivity(intent);
                 UpdateState starterState = new UpdateState();
-                starterState.setMsg("Start");
-                starterState.setPosition(815);
+                starterState.setStartGame(true);
                 mNetworkManager.sendMessage(starterState);
-                // ------------------------------------------- //
                 break;
             case R.id.button_advertise:
                 mNetworkManager.startAdvertising();
@@ -103,36 +102,33 @@ public class NetworkActivity extends AppCompatActivity implements
                 String msg = mMessageText.getText().toString();
                 UpdateState s = new UpdateState();
                 s.setMsg(msg);
+                s.setPlayer(playerName);
                 mNetworkManager.sendMessage(s);
-                mDebugInfo.append("\n" + s.toString()); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
+                mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg()); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
                 mMessageText.setText(null);
                 break;
         }
     }
+
     /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * Change the application state and update the visibility on on-screen views '
-     * based on the new state of the application.
-     *
-     * @param newState the state to move to (should be NearbyConnectionState)
-     */
-    public void updateState(@NetworkManager.NearbyConnectionState int newState) {
+    @Override
+    public void updateView(@NetworkManager.NearbyConnectionState int newState) {
         currentState = newState;
         switch (currentState) {
             case NetworkManager.STATE_IDLE:
                 // The GoogleAPIClient is not connected, we can't yet start advertising or
                 // discovery so hide all buttons
-                findViewById(R.id.button_startGame).setVisibility(View.GONE);
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.GONE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
+                findViewById(R.id.button_startGame).setVisibility(View.GONE);
                 mDebugInfo.append("\n State: IDLE");
                 break;
             case NetworkManager.STATE_READY:
                 // The GoogleAPIClient is connected, we can begin advertising or discovery.
-                findViewById(R.id.button_startGame).setVisibility(View.GONE);
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
+                findViewById(R.id.button_startGame).setVisibility(View.GONE);
                 mDebugInfo.append("\n State: READY");
                 break;
             case NetworkManager.STATE_ADVERTISING:
@@ -154,18 +150,15 @@ public class NetworkActivity extends AppCompatActivity implements
         }
     }
 
-    /* ------------------------------------------------------------------------------------------ */
-
     @Override
     public void receiveMessage(UpdateState status) {
-        mDebugInfo.append("\n" + status.toString());
+        if (status.getMsg() != null) {
+            mDebugInfo.append("\n" + status.getPlayer() + ": " + status.getMsg());
+        }
 
-        //TODO: Client Start Game
-        if (status.getMsg().equals("Start") && status.getPosition() == 815 && !mNetworkManager.getHostinfo()) {
-
+        if (status.getStartGame()) {
+            Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+            startActivity(intent);
         }
     }
-
-    /* ------------------------------------------------------------------------------------------ */
-
 }

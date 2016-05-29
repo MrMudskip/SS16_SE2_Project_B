@@ -9,10 +9,11 @@ import java.io.Serializable;
  */
 public class UpdateState implements Serializable {
     private String msg;
-    private int player;
+    private String player;
     private int position;
     private int w1;
     private int w2;
+    private boolean startGame = false;
 
     @Override
     public String toString() {
@@ -27,11 +28,11 @@ public class UpdateState implements Serializable {
         this.msg = msg;
     }
 
-    public int getPlayer() {
+    public String getPlayer() {
         return player;
     }
 
-    public void setPlayer(int player) {
+    public void setPlayer(String player) {
         this.player = player;
     }
 
@@ -65,5 +66,13 @@ public class UpdateState implements Serializable {
         } else {
             Log.e("ERROR", "Set w2 Failure: " + w2);
         }
+    }
+
+    public boolean getStartGame() {
+        return startGame;
+    }
+
+    public void setStartGame(boolean start) {
+        startGame = start;
     }
 }

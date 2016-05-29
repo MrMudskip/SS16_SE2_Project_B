@@ -20,8 +20,7 @@ import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class GameBoardActivity extends AppCompatActivity {
-
+public class GameBoardActivity extends AppCompatActivity implements IRecieveMessage {
 
     // Dice attributes
     private int randomDice1;
@@ -37,14 +36,15 @@ public class GameBoardActivity extends AppCompatActivity {
 
     private SensorManager mSensorManager;
     private ShakeDetector mSensorListener;
+    private static INetworkManager mNetworkManager;
 
     Drawable tempImage;
     MediaPlayer but_sound;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class GameBoardActivity extends AppCompatActivity {
                     but_sound = MediaPlayer.create(GameBoardActivity.this, R.raw.klack);
                     but_sound.setVolume(1.0f, 1.0f);
                     but_sound.start();
-                }else {
+                } else {
                     Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -100,6 +100,9 @@ public class GameBoardActivity extends AppCompatActivity {
                 clickOnDice2();
             }
         });
+
+        mNetworkManager = NetworkActivity.getmNetworkManager();
+        mNetworkManager.addMessageReceiverListener(this);
     }
 
     private void clickOnDice1() {
@@ -134,7 +137,6 @@ public class GameBoardActivity extends AppCompatActivity {
             infoText.setText("Bitte würfeln");
     }
 
-
     private void diceButton() {
         if (drag1 && drag2) {
             ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
@@ -150,11 +152,15 @@ public class GameBoardActivity extends AppCompatActivity {
             drag1 = false;
             drag2 = false;
 
+            UpdateState updateDice = new UpdateState();
+            updateDice.setW1(randomDice1);
+            updateDice.setW2(randomDice2);
+            mNetworkManager.sendMessage(updateDice);
+
         } else {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     private void rollDice(int zu) {
         switch (zu) {
@@ -194,7 +200,17 @@ public class GameBoardActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    public void receiveMessage(UpdateState status) {
+        //TODO: UPDATE GAMESTATE
 
+        ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
+        rollDice(status.getW1());
+        image1.setImageDrawable(tempImage);
+
+        ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
+        rollDice(status.getW2());
+        image2.setImageDrawable(tempImage);
+        infoText.setText("Kollega würfelt : " + status.getW1() + " und: " + status.getW2());
+    }
 }
-
-

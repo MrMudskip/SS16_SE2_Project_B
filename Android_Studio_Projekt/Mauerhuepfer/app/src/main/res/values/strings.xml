@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Mauerhuepfer</string>
     <string name="service_id">com.project_b.se2.mauerhuepfer</string>
+    <string name="memory">MyMauerhuepferSpeicherSpace</string>
     <string name="title_activity_game_board">GameBoardActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">Spielbrett hier</string>
@@ -12,4 +13,11 @@
     <string name="startGame">Start Game</string>
     <string name="message">Message</string>
     <string name="debug_label">Info:</string>
+
+    <string name="optionLbl">Options</string>
+    <string name="playerLbl">Player Name:</string>
+    <string name="playerLbl_hint">z.B.: Hubertus</string>
+    <string name="hostLbl">Host Name:</string>
+    <string name="hostLbl_hint">z.B.: myPhone</string>
+    <string name="button_save">SAVE</string>
 </resources>

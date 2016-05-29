@@ -12,8 +12,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="false"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
         android:visibility="gone"
         tools:visibility="visible"
         android:layout_alignParentTop="true"

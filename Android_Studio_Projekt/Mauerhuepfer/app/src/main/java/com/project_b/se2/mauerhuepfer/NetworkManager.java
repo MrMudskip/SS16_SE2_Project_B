@@ -3,6 +3,7 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class NetworkManager implements
         GoogleApiClient.OnConnectionFailedListener,
         Connections.ConnectionRequestListener,
         Connections.MessageListener,
-        Connections.EndpointDiscoveryListener {
+        Connections.EndpointDiscoveryListener, INetworkManager {
 
     private static String TAG;
     private ArrayList MessageReceiverListeners = new ArrayList();
@@ -81,11 +82,11 @@ public class NetworkManager implements
      **/
     private String mOtherEndpointId;
 
-    private ICommunication mContext;
+    private IUpdateView mContext;
 
     private boolean mIsHost;
 
-    public boolean getHostinfo(){
+    public boolean getHostinfo() {
         return mIsHost;
     }
 
@@ -108,7 +109,7 @@ public class NetworkManager implements
 
         TAG = NetworkManager.class.getSimpleName();
 
-        mContext = (ICommunication) c;
+        mContext = (IUpdateView) c;
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -158,20 +159,18 @@ public class NetworkManager implements
         debugLog("startAdvertising");
         if (!isConnectedToNetwork()) {
             debugLog("startAdvertising: not connected to network.");
-            mContext.updateState(STATE_READY);
+            mContext.updateView(STATE_READY);
             return;
         }
 
-        // Advertising with an AppIdentifer lets other devices on the network discover
-        // this application and prompt the user to install the application.
         List<AppIdentifier> appIdentifierList = new ArrayList<>();
         appIdentifierList.add(new AppIdentifier(mGoogleApiClient.getContext().getPackageName()));
         AppMetadata appMetadata = new AppMetadata(appIdentifierList);
 
-        // Advertise for Nearby Connections. This will broadcast the service id defined in
-        // AndroidManifest.xml. By passing 'null' for the name, the Nearby Connections API
-        // will construct a default name based on device model such as 'LGE Nexus 5'.
-        Nearby.Connections.startAdvertising(mGoogleApiClient, null, appMetadata, TIMEOUT_ADVERTISE, this)
+        SharedPreferences settings = ((Context) mContext).getSharedPreferences(((Context) mContext).getString(R.string.memory), 0);
+        String hostName = settings.getString("hostName", null);
+
+        Nearby.Connections.startAdvertising(mGoogleApiClient, hostName, appMetadata, TIMEOUT_ADVERTISE, this)
                 .setResultCallback(new ResultCallback<Connections.StartAdvertisingResult>() {
 
                     @Override
@@ -179,7 +178,7 @@ public class NetworkManager implements
                         Log.d(TAG, "startAdvertising: onResult:" + result);
                         if (result.getStatus().isSuccess()) {
                             debugLog("startAdvertising: SUCCESS");
-                            mContext.updateState(STATE_ADVERTISING);
+                            mContext.updateView(STATE_ADVERTISING);
                             mIsHost = true;
                         } else {
                             debugLog("startAdvertising: FAILURE ");
@@ -189,9 +188,9 @@ public class NetworkManager implements
                             int statusCode = result.getStatus().getStatusCode();
                             if (statusCode == ConnectionsStatusCodes.STATUS_ALREADY_ADVERTISING) {
                                 debugLog("STATUS_ALREADY_ADVERTISING");
-                                mContext.updateState(STATE_ADVERTISING);
+                                mContext.updateView(STATE_ADVERTISING);
                             } else {
-                                mContext.updateState(STATE_READY);
+                                mContext.updateView(STATE_READY);
                             }
                         }
                     }
@@ -211,7 +210,6 @@ public class NetworkManager implements
         }
         mIsHost = false;
 
-        // Discover nearby apps that are advertising with the required service ID.
         String serviceId = ((Context) mContext).getString(R.string.service_id);
         Nearby.Connections.startDiscovery(mGoogleApiClient, serviceId, TIMEOUT_DISCOVER, this)
                 .setResultCallback(new ResultCallback<Status>() {
@@ -220,7 +218,7 @@ public class NetworkManager implements
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             debugLog("startDiscovery: SUCCESS");
-                            mContext.updateState(STATE_DISCOVERING);
+                            mContext.updateView(STATE_DISCOVERING);
 
                         } else {
                             debugLog("startDiscovery: FAILURE");
@@ -231,7 +229,7 @@ public class NetworkManager implements
                             if (statusCode == ConnectionsStatusCodes.STATUS_ALREADY_DISCOVERING) {
                                 debugLog("STATUS_ALREADY_DISCOVERING");
                             } else {
-                                mContext.updateState(STATE_READY);
+                                mContext.updateView(STATE_READY);
                             }
                         }
                     }
@@ -243,7 +241,7 @@ public class NetworkManager implements
     @Override
     public void onConnected(Bundle bundle) {
         debugLog("onConnected");
-        mContext.updateState(STATE_READY);
+        mContext.updateView(STATE_READY);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -251,7 +249,7 @@ public class NetworkManager implements
     @Override
     public void onConnectionSuspended(int i) {
         debugLog("onConnectionSuspended: " + i);
-        mContext.updateState(STATE_IDLE);
+        mContext.updateView(STATE_IDLE);
 
         // Try to re-connect
         mGoogleApiClient.reconnect();
@@ -267,7 +265,7 @@ public class NetworkManager implements
      * @param endpointId   Client ID
      * @param deviceId     Client Device
      * @param endpointName Client Name
-     * @param payload
+     * @param payload      Message
      */
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
@@ -283,7 +281,7 @@ public class NetworkManager implements
                                 debugLog("acceptConnectionRequest: SUCCESS");
 
                                 mOtherEndpointId = endpointId;
-                                mContext.updateState(STATE_CONNECTED);
+                                mContext.updateView(STATE_CONNECTED);
                             } else {
                                 debugLog("acceptConnectionRequest: FAILURE");
                             }
@@ -306,7 +304,7 @@ public class NetworkManager implements
      * @param endpointId   Host ID
      * @param deviceId     Host Device
      * @param serviceId    Service ID
-     * @param endpointName
+     * @param endpointName Host Name
      */
     @Override
     public void onEndpointFound(final String endpointId, String deviceId, String serviceId, final String endpointName) {
@@ -365,7 +363,7 @@ public class NetworkManager implements
                 if (status.isSuccess()) {
                     debugLog("onConnectionResponse: " + endpointName + " SUCCESS");
                     mOtherEndpointId = endpointId;
-                    mContext.updateState(STATE_CONNECTED);
+                    mContext.updateView(STATE_CONNECTED);
                 } else {
                     debugLog("onConnectionResponse: " + endpointName + " FAILURE");
                 }
@@ -381,7 +379,7 @@ public class NetworkManager implements
      * The onDisconnected callback is also available for client devices and can be used for reconnecting to advertising hosts
      * in the event of an unexpected disconnect.
      *
-     * @param endpointId
+     * @param endpointId Host that is no longer available
      */
     @Override
     public void onEndpointLost(String endpointId) {
@@ -400,13 +398,14 @@ public class NetworkManager implements
     /**
      * Send a reliable message to the connected peer. Takes the contents of the EditText and
      * sends the message as a byte[].
-     * <p/>
+     * --------------------------------------------------------------------------------------------
      * Sends a reliable message, which is guaranteed to be delivered eventually and to respect
      * message ordering from sender to receiver. Nearby.Connections.sendUnreliableMessage
      * should be used for high-frequency messages where guaranteed delivery is not required, such
      * as showing one player's cursor location to another. Unreliable messages are often
      * delivered faster than reliable messages.
      */
+    @Override
     public void sendMessage(UpdateState s) {
         Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
     }
@@ -416,9 +415,9 @@ public class NetworkManager implements
     /**
      * A message has been received from a remote endpoint.
      *
-     * @param endpointId
-     * @param payload
-     * @param isReliable
+     * @param endpointId Sender
+     * @param payload    Message
+     * @param isReliable is Reliable true/false
      */
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
@@ -433,12 +432,13 @@ public class NetworkManager implements
      * The onDisconnected callback is also available for client devices and can be used for reconnecting to advertising hosts
      * in the event of an unexpected disconnect.
      *
-     * @param endpointId
+     * @param endpointId Disconnected Device
      */
     @Override
     public void onDisconnected(String endpointId) {
         debugLog("onDisconnected:" + endpointId);
-        mContext.updateState(STATE_READY);
+        mContext.updateView(STATE_READY);
+
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -446,7 +446,7 @@ public class NetworkManager implements
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         debugLog("onConnectionFailed: " + connectionResult);
-        mContext.updateState(STATE_IDLE);
+        mContext.updateView(STATE_IDLE);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -461,11 +461,23 @@ public class NetworkManager implements
         //mDebugInfo.append("\n" + msg);
     }
 
-    public void addMessageReceiverListener(ICommunication listener) {
+    /**
+     * add Observer
+     *
+     * @param listener new Listener(Observer)
+     */
+    @Override
+    public void addMessageReceiverListener(IRecieveMessage listener) {
         MessageReceiverListeners.add(listener);
     }
 
-    public void removeMessageReceiverListener(ICommunication listener) {
+    /**
+     * remove Observer
+     *
+     * @param listener listener to remove
+     */
+    @Override
+    public void removeMessageReceiverListener(IRecieveMessage listener) {
         MessageReceiverListeners.remove(listener);
     }
 
@@ -477,7 +489,7 @@ public class NetworkManager implements
      */
     protected void messageReciever(UpdateState s) {
         for (Object l : MessageReceiverListeners) {
-            ((ICommunication) l).receiveMessage(s);
+            ((IRecieveMessage) l).receiveMessage(s);
         }
     }
 }
