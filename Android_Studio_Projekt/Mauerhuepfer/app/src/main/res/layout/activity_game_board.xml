@@ -7,13 +7,7 @@
     android:background="#bdad71"
     tools:context="com.project_b.se2.mauerhuepfer.GameBoardActivity">
 
-    <!-- The primary full-screen view.
-    <ImageView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:src="@drawable/gameBoard_full_transparent_portrait" />-->
+
 
     <LinearLayout
         android:id="@+id/fullscreen_content_controls"

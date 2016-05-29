@@ -3,10 +3,10 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 /**
@@ -17,23 +17,28 @@ public class Game {
     // Block types
     static final int S = 0;
     static final int H = 1;
-    static final int E = 2;
-    static final int V = 3;
-    static final int F = 4;
-    static final int W = 5;
-    static final int N = 6;
-    static final int BR = 7;
-    static final int BG = 8;
-    static final int BY = 9;
-    static final int BB = 10;
-    static final int GR = 11;
-    static final int GG = 12;
-    static final int GY = 13;
-    static final int GB = 14;
+    static final int EU = 2;
+    static final int ER = 3;
+    static final int ED = 4;
+    static final int EL = 5;
+    static final int V = 6;
+    static final int F = 7;
+    static final int W = 8;
+    static final int N = 9;
+    static final int BR = 10;
+    static final int BG = 11;
+    static final int BY = 12;
+    static final int BB = 13;
+    static final int GR = 14;
+    static final int GG = 15;
+    static final int GY = 16;
+    static final int GB = 17;
 
     // Other variables
     private Context context;
     private Resources resources;
+    private int gameboardWidth;
+    private int gameBoardHeight;
     private int unit;
 
     private int dice1;
@@ -43,20 +48,20 @@ public class Game {
 
 
     // 2D array containing all the blocks that make up the game field.     // TODO initiate all blocks of the game field and add their respective type.
-    private Block[][] gameField = {
+    private Block[][] gameBoard = {
             {new Block(GB),new Block(GB),new Block(GB),new Block(GB),new Block(N),new Block(GG),new Block(GG),new Block(GG),new Block(GG)},
             {new Block(GY),new Block(GY),new Block(GY),new Block(GY),new Block(N),new Block(GR),new Block(GR),new Block(GR),new Block(GR)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(F)},
+            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(F)},
             {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(F)},
+            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(ED)},
             {new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(V)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(E)},
+            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(EL)},
             {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(E)},
+            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(ED)},
             {new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(V)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(E)},
+            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(EL)},
             {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(E),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(S)},
+            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(S)},
             {new Block(BB),new Block(BB),new Block(BY),new Block(BY),new Block(N),new Block(BG),new Block(BG),new Block(BR),new Block(BR)},
             {new Block(BB),new Block(BB),new Block(BY),new Block(BY),new Block(N),new Block(BG),new Block(BG),new Block(BR),new Block(BR)},
     };
@@ -64,18 +69,19 @@ public class Game {
     public Game(Context context) {
         this.context = context;
         this.resources = this.context.getResources();
-        this.unit = 40; // TODO compute unit size dynamically.
+        int heightPixels = this.resources.getDisplayMetrics().heightPixels;
+        this.unit = (int) ((heightPixels / gameBoard.length) * 0.8);
+        // TODO: Find a way to get view size instead of screen size, so the scaling with " * 0.8" isn't necessary.
 
-        if(initializeGameField()){
-            drawGameField();
-        }
+        initializeGameBoard();
+        initializeGameBoardView();
 
     }
 
-    public boolean initializeGameField(){
-        for (int col = 0; col < gameField.length; col++) {
-            for (int row = 0; row < gameField[col].length; row++) {
-                setBlockParametersByType(gameField[col][row], gameField[col][row].getType(), col, row);
+    public boolean initializeGameBoard(){
+        for (int col = 0; col < gameBoard.length; col++) {
+            for (int row = 0; row < gameBoard[col].length; row++) {
+                setBlockParametersByType(gameBoard[col][row], gameBoard[col][row].getType(), col, row);
             }
         }
         return true;
@@ -87,10 +93,13 @@ public class Game {
         switch (type) {
             case S: drawable = resources.getDrawable(R.drawable.circle_white_l_arrow); break;
             case H: drawable = resources.getDrawable(R.drawable.circle_white_rl); break;
- //           case E: drawable = resources.getDrawable(R.drawable.circle_white_rl); break;
+            case EU: drawable = resources.getDrawable(R.drawable.circle_white_ur); break;
+            case ER: drawable = resources.getDrawable(R.drawable.circle_white_rd); break;
+            case ED: drawable = resources.getDrawable(R.drawable.circle_white_dl); break;
+            case EL: drawable = resources.getDrawable(R.drawable.circle_white_ul); break;
             case V: drawable = resources.getDrawable(R.drawable.circle_white_ud); break;
             case F: drawable = resources.getDrawable(R.drawable.circle_blue_l); break;
-            case W: drawable = resources.getDrawable(R.drawable.wall_1); break; // TODO handle different wall numbers
+            case W: drawable = resources.getDrawable(R.drawable.wall_6); break; // TODO handle different wall numbers
             case N: drawable = resources.getDrawable(R.drawable.empty); break;
             case BR: drawable = resources.getDrawable(R.drawable.circle_red); break;
             case BG: drawable = resources.getDrawable(R.drawable.circle_green); break;
@@ -101,7 +110,6 @@ public class Game {
             case GY: drawable = resources.getDrawable(R.drawable.circle_yellow); break;
             case GB: drawable = resources.getDrawable(R.drawable.circle_black); break;
             default: drawable = resources.getDrawable(R.drawable.empty);
-            // TODO handle the other block types.
         }
         int lengthPos = col * unit;
         int heightPos = row * unit;
@@ -109,14 +117,15 @@ public class Game {
         block.setImage(drawable);
     }
 
-    public void drawGameField(){
+    public void initializeGameBoardView(){
         LinearLayout rootLayout = (LinearLayout)((Activity) context).findViewById(R.id.root_layout);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 1f    // weight = 1
         );
-        CustomGameBoardView mView = new CustomGameBoardView(context, gameField);
+        params.gravity = (Gravity.CENTER);
+        CustomGameBoardView mView = new CustomGameBoardView(context, gameBoard);
         mView.setLayoutParams(params);
         rootLayout.addView(mView, 0); // index = 0
     }
