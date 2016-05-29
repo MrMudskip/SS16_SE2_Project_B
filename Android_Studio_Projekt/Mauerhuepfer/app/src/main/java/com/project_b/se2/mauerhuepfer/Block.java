@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 public class Block {
 
     private int type;
+    private Figure occupiedBy;
     private Drawable image;
 
 
@@ -28,6 +29,14 @@ public class Block {
         this.type = type;
     }
 
+    public Figure getOccupiedBy() {
+        return occupiedBy;
+    }
+
+    public void setOccupiedBy(Figure occupiedBy) {
+        this.occupiedBy = occupiedBy;
+    }
+
     public Drawable getImage() {
         return image;
     }
@@ -35,4 +44,5 @@ public class Block {
     public void setImage(Drawable image) {
         this.image = image;
     }
+
 }

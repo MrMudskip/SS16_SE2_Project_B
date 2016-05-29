@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -37,6 +36,7 @@ public class Game {
     // Other variables
     private Context context;
     private Resources resources;
+    private CustomGameBoardView gameBoardView;
     private int gameboardWidth;
     private int gameBoardHeight;
     private int unit;
@@ -125,12 +125,23 @@ public class Game {
                 1f    // weight = 1
         );
         params.gravity = (Gravity.CENTER);
-        CustomGameBoardView mView = new CustomGameBoardView(context, gameBoard);
-        mView.setLayoutParams(params);
-        rootLayout.addView(mView, 0); // index = 0
+        gameBoardView = new CustomGameBoardView(context, gameBoard);
+        gameBoardView.setLayoutParams(params);
+        rootLayout.addView(gameBoardView, 0); // index = 0
     }
 
+    public void rollDice(){ //TODO Think of a better name for this method.
+        // TODO Do something meaningful here.
+/*        Drawable drawable = resources.getDrawable(R.drawable.player_black);
+        int lengthPos = 0 * unit;
+        int heightPos = 2 * unit;
+        drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
+        gameBoard[2][0].setImage(drawable);
 
+        //gameBoardView.setGameBoard(gameBoard);
+        gameBoardView.invalidate();
+*/
+    }
 
 
 /*  //TODO resolve errors in this method.

@@ -22,6 +22,8 @@ import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
  */
 public class GameBoardActivity extends AppCompatActivity {
 
+    private  Game game;
+
 
     // Dice attributes
     private int randomDice1;
@@ -103,7 +105,7 @@ public class GameBoardActivity extends AppCompatActivity {
 
 
         // start a new game
-        Game game = new Game(this);
+        this.game = new Game(this);
     }
 
     private void clickOnDice1() {
@@ -153,6 +155,8 @@ public class GameBoardActivity extends AppCompatActivity {
             infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
             drag1 = false;
             drag2 = false;
+
+            game.rollDice(); //TODO check if this is the right place to call this.
 
         } else {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
