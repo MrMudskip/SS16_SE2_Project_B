@@ -22,7 +22,9 @@ import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,14 +35,15 @@ public class NetworkManager implements
         GoogleApiClient.OnConnectionFailedListener,
         Connections.ConnectionRequestListener,
         Connections.MessageListener,
-        Connections.EndpointDiscoveryListener, INetworkManager {
+        Connections.EndpointDiscoveryListener,
+        INetworkManager {
 
     private static String TAG;
     private ArrayList MessageReceiverListeners = new ArrayList();
 
     // Timeouts...
     private static final long TIMEOUT_ADVERTISE = 1000L * 30L;
-    private static final long TIMEOUT_DISCOVER = 1000L * 30L;
+    private static final long TIMEOUT_DISCOVER = 1000L * 10L;
     /* ------------------------------------------------------------------------------------------ */
 
     /**
@@ -61,6 +64,8 @@ public class NetworkManager implements
     public static final int STATE_ADVERTISING = 1025;
     public static final int STATE_DISCOVERING = 1026;
     public static final int STATE_CONNECTED = 1027;
+    public static final int USAGE_PLAYERID = 1028;
+
     /* ------------------------------------------------------------------------------------------ */
 
     /**
@@ -80,26 +85,45 @@ public class NetworkManager implements
     /**
      * The endpoint ID of the connected peer, used for messaging
      **/
-    private String mOtherEndpointId;
+    private String mOtherEndpointId; // HOST
+    private ArrayList<String> mOtherEndpointIds = new ArrayList<>();
 
     private IUpdateView mContext;
 
     private boolean mIsHost;
+    private int playerCounter = 1;
+    private final int maxPlayer = 4;
+    private int playerID;
+    private ArrayList<Integer> playerOrder;
 
     public boolean getHostinfo() {
         return mIsHost;
     }
 
-    /**
-     * Network Types...
-     */
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    private void playerOrder() {
+        playerOrder = new ArrayList<>();
+        switch (playerCounter) {
+            case 4:
+                playerOrder.add(4);
+            case 3:
+                playerOrder.add(3);
+            case 2:
+            case 1:
+                playerOrder.add(2);
+                playerOrder.add(1);
+                break;
+        }
+        Collections.shuffle(playerOrder, new SecureRandom());
+    }
+
     private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
 
     /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * Constructor...
-     */
     public NetworkManager(Context c) {
         mGoogleApiClient = new GoogleApiClient.Builder(c)
                 .addConnectionCallbacks(this)
@@ -114,9 +138,6 @@ public class NetworkManager implements
 
     /* ------------------------------------------------------------------------------------------ */
 
-    /**
-     * onStart, onStop...
-     */
     public void connect() {
         mGoogleApiClient.connect();
     }
@@ -182,9 +203,6 @@ public class NetworkManager implements
                             mIsHost = true;
                         } else {
                             debugLog("startAdvertising: FAILURE ");
-
-                            // If the user hits 'Advertise' multiple times in the timeout window,
-                            // the error will be STATUS_ALREADY_ADVERTISING
                             int statusCode = result.getStatus().getStatusCode();
                             if (statusCode == ConnectionsStatusCodes.STATUS_ALREADY_ADVERTISING) {
                                 debugLog("STATUS_ALREADY_ADVERTISING");
@@ -195,6 +213,20 @@ public class NetworkManager implements
                         }
                     }
                 });
+    }
+
+    public void stopAdvertising() {
+        Nearby.Connections.stopAdvertising(mGoogleApiClient);
+        UpdateState s = new UpdateState();
+        s.setUsage(USAGE_PLAYERID);
+        playerOrder();
+
+        for (String id : mOtherEndpointIds) {
+            s.setPlayerID(playerOrder.remove(0));
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(s));
+        }
+
+        playerID = playerOrder.remove(0);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -222,9 +254,6 @@ public class NetworkManager implements
 
                         } else {
                             debugLog("startDiscovery: FAILURE");
-
-                            // If the user hits 'Discover' multiple times in the timeout window,
-                            // the error will be STATUS_ALREADY_DISCOVERING
                             int statusCode = status.getStatusCode();
                             if (statusCode == ConnectionsStatusCodes.STATUS_ALREADY_DISCOVERING) {
                                 debugLog("STATUS_ALREADY_DISCOVERING");
@@ -234,6 +263,11 @@ public class NetworkManager implements
                         }
                     }
                 });
+    }
+
+    public void stopDiscovery() {
+        String serviceId = ((Context) mContext).getString(R.string.service_id);
+        Nearby.Connections.stopDiscovery(mGoogleApiClient, serviceId);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -270,25 +304,28 @@ public class NetworkManager implements
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
         debugLog("onConnectionRequest:" + endpointId + ":" + endpointName);
+        if (playerCounter < maxPlayer) {
+            if (mIsHost) {
+                Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId, payload, this)
+                        .setResultCallback(new ResultCallback<Status>() {
 
-        if (mIsHost) {
-            Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId, payload, this)
-                    .setResultCallback(new ResultCallback<Status>() {
-
-                        @Override
-                        public void onResult(Status status) {
-                            if (status.isSuccess()) {
-                                debugLog("acceptConnectionRequest: SUCCESS");
-
-                                mOtherEndpointId = endpointId;
-                                mContext.updateView(STATE_CONNECTED);
-                            } else {
-                                debugLog("acceptConnectionRequest: FAILURE");
+                            @Override
+                            public void onResult(Status status) {
+                                if (status.isSuccess()) {
+                                    debugLog("acceptConnectionRequest: SUCCESS");
+                                    mOtherEndpointIds.add(endpointId);
+                                    playerCounter++;
+                                    mContext.updateView(STATE_CONNECTED);
+                                } else {
+                                    debugLog("acceptConnectionRequest: FAILURE");
+                                }
                             }
-                        }
-                    });
+                        });
+            } else {
+                Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, endpointId);
+            }
         } else {
-            Nearby.Connections.rejectConnectionRequest(mGoogleApiClient, endpointId);
+            stopAdvertising();
         }
     }
 
@@ -310,10 +347,7 @@ public class NetworkManager implements
     public void onEndpointFound(final String endpointId, String deviceId, String serviceId, final String endpointName) {
         Log.d(TAG, "onEndpointFound:" + endpointId + ":" + endpointName);
 
-        // This device is discovering endpoints and has located an advertiser. Display a dialog to
-        // the user asking if they want to connect, and send a connection request if they do.
         if (mMyListDialog == null) {
-            // Configure the AlertDialog that the MyListDialog wraps
             AlertDialog.Builder builder = new AlertDialog.Builder((Context) mContext)
                     .setTitle("Endpoint(s) Found")
                     .setCancelable(true)
@@ -324,7 +358,6 @@ public class NetworkManager implements
                         }
                     });
 
-            // Create the MyListDialog with a listener
             mMyListDialog = new MyListDialog((Context) mContext, builder, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -407,7 +440,13 @@ public class NetworkManager implements
      */
     @Override
     public void sendMessage(UpdateState s) {
-        Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
+        if (mIsHost) {
+            for (String id : mOtherEndpointIds) {
+                Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(s));
+            }
+        } else {
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
+        }
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -423,7 +462,19 @@ public class NetworkManager implements
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
         UpdateState updateS = (UpdateState) ObjectSerializer.DeSerialize(payload);
         debugLog("onMessageReceived:" + endpointId + ":" + updateS.toString());
-        messageReciever(updateS);
+        if (updateS.getUsage() != USAGE_PLAYERID) {
+            messageReciever(updateS);
+        } else {
+            playerID = updateS.getPlayerID();
+        }
+
+        if (mIsHost) {
+            for (String id : mOtherEndpointIds) {
+                if (!id.equals(endpointId)) {
+                    Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, payload);
+                }
+            }
+        }
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -437,8 +488,15 @@ public class NetworkManager implements
     @Override
     public void onDisconnected(String endpointId) {
         debugLog("onDisconnected:" + endpointId);
-        mContext.updateView(STATE_READY);
-
+        if (mIsHost) {
+            mOtherEndpointIds.remove(mOtherEndpointIds.indexOf(endpointId));
+            playerCounter--;
+            if (mOtherEndpointIds.size() < 1) {
+                mContext.updateView(STATE_READY);
+            }
+        } else {
+            mContext.updateView(STATE_READY);
+        }
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -467,7 +525,7 @@ public class NetworkManager implements
      * @param listener new Listener(Observer)
      */
     @Override
-    public void addMessageReceiverListener(IRecieveMessage listener) {
+    public void addMessageReceiverListener(IReceiveMessage listener) {
         MessageReceiverListeners.add(listener);
     }
 
@@ -477,7 +535,7 @@ public class NetworkManager implements
      * @param listener listener to remove
      */
     @Override
-    public void removeMessageReceiverListener(IRecieveMessage listener) {
+    public void removeMessageReceiverListener(IReceiveMessage listener) {
         MessageReceiverListeners.remove(listener);
     }
 
@@ -489,7 +547,7 @@ public class NetworkManager implements
      */
     protected void messageReciever(UpdateState s) {
         for (Object l : MessageReceiverListeners) {
-            ((IRecieveMessage) l).receiveMessage(s);
+            ((IReceiveMessage) l).receiveMessage(s);
         }
     }
 }

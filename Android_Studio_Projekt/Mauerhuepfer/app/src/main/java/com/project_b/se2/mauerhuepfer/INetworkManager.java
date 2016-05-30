@@ -5,9 +5,24 @@ package com.project_b.se2.mauerhuepfer;
  */
 public interface INetworkManager {
 
+    /**
+     * Send a Message to all Connected Devices
+     *
+     * @param status Update
+     */
     void sendMessage(UpdateState status);
 
-    public void addMessageReceiverListener(IRecieveMessage listener);
+    /**
+     * add a Class (listener). Necessary to receive Messages.
+     *
+     * @param listener Class that implements IReceiveMessage
+     */
+    void addMessageReceiverListener(IReceiveMessage listener);
 
-    public void removeMessageReceiverListener(IRecieveMessage listener);
+    /**
+     * remove a Class (listener).
+     *
+     * @param listener Class that implements IReceiveMessage
+     */
+    void removeMessageReceiverListener(IReceiveMessage listener);
 }

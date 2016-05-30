@@ -6,7 +6,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -16,11 +18,14 @@ import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class GameBoardActivity extends AppCompatActivity implements IRecieveMessage {
+public class GameBoardActivity extends AppCompatActivity implements IReceiveMessage {
 
     // Dice attributes
     private int randomDice1;
@@ -40,6 +45,11 @@ public class GameBoardActivity extends AppCompatActivity implements IRecieveMess
 
     Drawable tempImage;
     MediaPlayer but_sound;
+
+    private int playerID;
+    public static final int USAGE_DICE = 1029;
+    public static final int USAGE_MOVE1 = 1030;
+    public static final int USAGE_MOVE2 = 1031;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -102,7 +112,16 @@ public class GameBoardActivity extends AppCompatActivity implements IRecieveMess
         });
 
         mNetworkManager = NetworkActivity.getmNetworkManager();
-        mNetworkManager.addMessageReceiverListener(this);
+
+        if (mNetworkManager != null) {
+            mNetworkManager.addMessageReceiverListener(this);
+
+            Bundle b = getIntent().getExtras();
+            if (b != null) {
+                playerID = b.getInt("playerID");
+                Log.i("TEEEEEEEMP", playerID + "");
+            }
+        }
     }
 
     private void clickOnDice1() {
@@ -155,6 +174,7 @@ public class GameBoardActivity extends AppCompatActivity implements IRecieveMess
             UpdateState updateDice = new UpdateState();
             updateDice.setW1(randomDice1);
             updateDice.setW2(randomDice2);
+            updateDice.setUsage(USAGE_DICE);
             mNetworkManager.sendMessage(updateDice);
 
         } else {
@@ -204,13 +224,15 @@ public class GameBoardActivity extends AppCompatActivity implements IRecieveMess
     public void receiveMessage(UpdateState status) {
         //TODO: UPDATE GAMESTATE
 
-        ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
-        rollDice(status.getW1());
-        image1.setImageDrawable(tempImage);
+        if (status.getUsage() == USAGE_DICE) {
+            ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
+            rollDice(status.getW1());
+            image1.setImageDrawable(tempImage);
 
-        ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
-        rollDice(status.getW2());
-        image2.setImageDrawable(tempImage);
-        infoText.setText("Kollega würfelt : " + status.getW1() + " und: " + status.getW2());
+            ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
+            rollDice(status.getW2());
+            image2.setImageDrawable(tempImage);
+            infoText.setText("Kollega würfelt : " + status.getW1() + " und: " + status.getW2());
+        }
     }
 }

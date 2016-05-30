@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -11,19 +12,25 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Created by rohrbe on 22.04.16.
  */
 public class NetworkActivity extends AppCompatActivity implements
         View.OnClickListener,
         IUpdateView,
-        IRecieveMessage {
+        IReceiveMessage {
 
     /* ------------------------------------------------------------------------------------------ */
 
     private static final String TAG = "NetworkActivity"; //MainActivity.class.getSimpleName();
     public static NetworkManager mNetworkManager;
-    private static String playerName;
+    private String playerName;
     private TextView mDebugInfo;
     private EditText mMessageText;
     private int currentState = NetworkManager.STATE_IDLE;
@@ -86,7 +93,11 @@ public class NetworkActivity extends AppCompatActivity implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_startGame:
+                mNetworkManager.stopAdvertising();
                 Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+                Bundle b = new Bundle();
+                b.putInt("playerID", mNetworkManager.getPlayerID());
+                mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                 startActivity(intent);
                 UpdateState starterState = new UpdateState();
                 starterState.setStartGame(true);
@@ -99,13 +110,15 @@ public class NetworkActivity extends AppCompatActivity implements
                 mNetworkManager.startDiscovery();
                 break;
             case R.id.button_send:
-                String msg = mMessageText.getText().toString();
-                UpdateState s = new UpdateState();
-                s.setMsg(msg);
-                s.setPlayer(playerName);
-                mNetworkManager.sendMessage(s);
-                mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg()); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
-                mMessageText.setText(null);
+                if (mMessageText.getText() != null && !mMessageText.getText().toString().equals("")) {
+                    String msg = mMessageText.getText().toString();
+                    UpdateState s = new UpdateState();
+                    s.setMsg(msg);
+                    s.setPlayer(playerName);
+                    mNetworkManager.sendMessage(s);
+                    mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg()); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
+                    mMessageText.setText(null);
+                }
                 break;
         }
     }
@@ -139,8 +152,6 @@ public class NetworkActivity extends AppCompatActivity implements
                 break;
             case NetworkManager.STATE_CONNECTED:
                 mDebugInfo.append("\n State: CONNECTED");
-                // We are connected to another device via the Connections API, so we can
-                // show the message UI.
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.VISIBLE);
                 if (mNetworkManager.getHostinfo()) {
@@ -152,12 +163,15 @@ public class NetworkActivity extends AppCompatActivity implements
 
     @Override
     public void receiveMessage(UpdateState status) {
-        if (status.getMsg() != null) {
+        if (status.getMsg() != null && !status.getMsg().equals("")) {
             mDebugInfo.append("\n" + status.getPlayer() + ": " + status.getMsg());
         }
 
-        if (status.getStartGame()) {
+        if (status.isStartGame()) {
             Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+            Bundle b = new Bundle();
+            b.putInt("playerID", mNetworkManager.getPlayerID());
+            mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
             startActivity(intent);
         }
     }

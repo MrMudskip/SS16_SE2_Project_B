@@ -5,14 +5,16 @@ import android.util.Log;
 import java.io.Serializable;
 
 /**
- * Includes all values needed to detect any status change of the game
+ * Includes all values needed to detect any status change of the game.
  */
 public class UpdateState implements Serializable {
+    private int usage = -1;
     private String msg;
     private String player;
-    private int position;
-    private int w1;
-    private int w2;
+    private int playerID = -1;
+    private int position = -1;
+    private int w1 = -1;
+    private int w2 = -1;
     private boolean startGame = false;
 
     @Override
@@ -68,11 +70,27 @@ public class UpdateState implements Serializable {
         }
     }
 
-    public boolean getStartGame() {
+    public boolean isStartGame() {
         return startGame;
     }
 
     public void setStartGame(boolean start) {
         startGame = start;
+    }
+
+    public int getUsage() {
+        return usage;
+    }
+
+    public void setUsage(int usage) {
+        this.usage = usage;
+    }
+
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    public void setPlayerID(int playerID) {
+        this.playerID = playerID;
     }
 }
