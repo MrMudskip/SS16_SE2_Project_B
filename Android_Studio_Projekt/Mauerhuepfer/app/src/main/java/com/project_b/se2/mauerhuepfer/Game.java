@@ -13,6 +13,12 @@ import android.widget.LinearLayout;
  */
 public class Game {
 
+    //Player colours
+    static final int RED = 0;
+    static final int GREEN = 1;
+    static final int YELLOW = 2;
+    static final int BLACK = 3;
+
     // Block types
     static final int S = 0;
     static final int H = 1;
@@ -37,17 +43,15 @@ public class Game {
     private Context context;
     private Resources resources;
     private CustomGameBoardView gameBoardView;
-    private int gameboardWidth;
-    private int gameBoardHeight;
     private int unit;
+    private int numberOfPlayers;
 
     private int dice1;
     private int dice2;
     private Player player;
     private int position;
 
-
-    // 2D array containing all the blocks that make up the game field.     // TODO initiate all blocks of the game field and add their respective type.
+    // 2D array containing all the blocks that make up the game field.     // TODO find a solution for different wall numbers.
     private Block[][] gameBoard = {
             {new Block(GB),new Block(GB),new Block(GB),new Block(GB),new Block(N),new Block(GG),new Block(GG),new Block(GG),new Block(GG)},
             {new Block(GY),new Block(GY),new Block(GY),new Block(GY),new Block(N),new Block(GR),new Block(GR),new Block(GR),new Block(GR)},
@@ -66,12 +70,14 @@ public class Game {
             {new Block(BB),new Block(BB),new Block(BY),new Block(BY),new Block(N),new Block(BG),new Block(BG),new Block(BR),new Block(BR)},
     };
 
-    public Game(Context context) {
+
+    public Game(Context context, int numberOfPlayers) {
         this.context = context;
         this.resources = this.context.getResources();
         int heightPixels = this.resources.getDisplayMetrics().heightPixels;
         this.unit = (int) ((heightPixels / gameBoard.length) * 0.8);
-        // TODO: Find a way to get view size instead of screen size, so the scaling with " * 0.8" isn't necessary.
+        // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
+        this.numberOfPlayers = numberOfPlayers;
 
         initializeGameBoard();
         initializeGameBoardView();
@@ -89,6 +95,7 @@ public class Game {
 
 
     public void setBlockParametersByType(Block block, int type, int col, int row) {
+        //Set images
         Drawable drawable;
         switch (type) {
             case S: drawable = resources.getDrawable(R.drawable.circle_white_l_arrow); break;
@@ -115,6 +122,21 @@ public class Game {
         int heightPos = row * unit;
         drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
         block.setImage(drawable);
+
+
+        //Set starting figures //TODO This should use the players figures, not create new ones.
+        Drawable figureImg;
+        switch (type){
+            case BR: {figureImg = resources.getDrawable(R.drawable.player_red);} break;
+            case BG: {figureImg = resources.getDrawable(R.drawable.player_green);} break;
+            case BY: {figureImg = resources.getDrawable(R.drawable.player_yellow);} break;
+            case BB: {figureImg = resources.getDrawable(R.drawable.player_black);} break;
+            default: figureImg = resources.getDrawable(R.drawable.empty);
+        }
+        figureImg.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
+        Figure figure = new Figure();
+        figure.setImage(figureImg);
+        block.setOccupyingFigure(figure);
     }
 
     public void initializeGameBoardView(){
@@ -143,45 +165,4 @@ public class Game {
 */
     }
 
-
-/*  //TODO resolve errors in this method.
-    public void moveFigure(){
-        player.figureOnField();
-        for (int i=0; i<block.length; i++){
-            int dice = dice1+dice2;
-            position=position+dice;
-            if (){                                  //position free? is the figure one of mine?
-                player.                             //figure is not mine
-            } else {
-                if (player.getFigureID()<4) {                            //do i have another figure on position -1?
-                    player.figureOnField();
-                    player.moveFigure(position);
-                } else {
-                    player.moveFigure(position);
-                }
-            }
-
-        }
-    }
-*/
-
-    public void finish(){
-
-    }
-
-    public int getDice1() {
-        return dice1;
-    }
-
-    public int getDice2() {
-        return dice2;
-    }
-
-    /*public int getOwnerID() {
-        return ownerID;
-    }
-
-    public int getCurrentPlayer() {
-        return currentPlayer;
-    }*/
 }

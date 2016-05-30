@@ -105,7 +105,8 @@ public class GameBoardActivity extends AppCompatActivity {
 
 
         // start a new game
-        this.game = new Game(this);
+        int numberOfPlayers = 4; // TODO decide this dynamically.
+        this.game = new Game(this, numberOfPlayers);
     }
 
     private void clickOnDice1() {

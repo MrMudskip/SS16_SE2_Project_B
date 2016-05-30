@@ -1,49 +1,50 @@
 package com.project_b.se2.mauerhuepfer;
 
-import java.util.Vector;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 
 /**
  * Created by Anita on 02.05.2016.
  */
 public class Player {
-    private String name=null;                            //Name des Spielers
-    private int onwnerID;                                //Nummer des Spielers
-    private Figure figure = new Figure(name,onwnerID);
 
-    public Player(String name, int ownerID) {
-        this.name=name;
-        this.onwnerID=ownerID;
+    //Player colours: //TODO: Not ideal that this appears here AND in the game class.
+    static final int RED = 0;
+    static final int GREEN = 1;
+    static final int YELLOW = 2;
+    static final int BLACK = 3;
+
+   //Other variables
+    Context context;
+    private int colour;
+    private Figure[] figures = {new Figure(), new Figure(), new Figure(), new Figure()};
+
+
+    public Player(Context context, int colour) {
+        this.context = context;
+        this.colour = colour;
+        initializeFigures();
     }
 
-    public void startPosition(int position){
-        figure.setStart(position);
-    }
-
-    public void moveFigure(int position){
-        figure.move(position);
-    }
-
-    public int getFigureID(){
-        return figure.getFigureID();
-    }
-
-    public void returnToBase(){
-        figure.returnToBase();
-    }
-
-    public void figureOnField(){
-        int figureID=figure.getFigureID();
-        while (figureID < 4){
-            figureID++;
-            startPosition(0);
+    public void initializeFigures(){ // TODO Decide if image position should also be managed here.
+        Drawable image;
+        switch (colour) {
+            case RED: image = context.getResources().getDrawable(R.drawable.player_red); break;
+            case GREEN: image = context.getResources().getDrawable(R.drawable.player_green); break;
+            case YELLOW: image = context.getResources().getDrawable(R.drawable.player_yellow); break;
+            case BLACK: image = context.getResources().getDrawable(R.drawable.player_black); break;
+            default:  image = context.getResources().getDrawable(R.drawable.empty);
+        }
+        for (int i = 0; i < figures.length; i++) {
+            figures[i].setImage(image);
         }
     }
 
-    public String getName() {
-        return name;
+    public int getColour() {
+        return colour;
     }
 
-    public int getOnwnerID() {
-        return onwnerID;
+    public Figure[] getFigures() {
+        return figures;
     }
 }

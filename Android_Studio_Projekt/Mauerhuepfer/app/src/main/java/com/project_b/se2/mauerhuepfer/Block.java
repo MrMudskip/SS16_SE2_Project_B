@@ -8,13 +8,17 @@ import android.graphics.drawable.Drawable;
 public class Block {
 
     private int type;
-    private Figure occupiedBy;
+    private Block previousBlock;
+    private Block nextBlock;
+    private boolean occupied;
+    private Figure occupyingFigure;
     private Drawable image;
 
 
 
     public Block(int type) {
         this.type = type;
+        this.occupied = false;
     }
 
 
@@ -29,12 +33,13 @@ public class Block {
         this.type = type;
     }
 
-    public Figure getOccupiedBy() {
-        return occupiedBy;
+    public Figure getOccupyingFigure() {
+        return occupyingFigure;
     }
 
-    public void setOccupiedBy(Figure occupiedBy) {
-        this.occupiedBy = occupiedBy;
+    public void setOccupyingFigure(Figure occupyingFigure) {
+        this.occupyingFigure = occupyingFigure;
+        this.occupied = true;
     }
 
     public Drawable getImage() {
@@ -45,4 +50,27 @@ public class Block {
         this.image = image;
     }
 
+    public Block getNextBlock() {
+        return nextBlock;
+    }
+
+    public void setNextBlock(Block nextBlock) {
+        this.nextBlock = nextBlock;
+    }
+
+    public Block getPreviousBlock() {
+        return previousBlock;
+    }
+
+    public void setPreviousBlock(Block previousBlock) {
+        this.previousBlock = previousBlock;
+    }
+
+    public boolean isOccupied() {
+        return occupied;
+    }
+
+    public void setOccupied(boolean occupied) {
+        this.occupied = occupied;
+    }
 }

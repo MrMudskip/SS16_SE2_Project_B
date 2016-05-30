@@ -19,30 +19,19 @@ public class CustomGameBoardView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        //Draw gameBoard
+
+        //Draw gameBoard //TODO It should be enough to draw this once, not every time.
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
-                gameBoard[col][row].getImage().draw(canvas);
-            }
-        }
+                Block currentBlock = gameBoard[col][row];
+                // Draw block
+                currentBlock.getImage().draw(canvas);
 
-        //Draw players
-        for (int col = 0; col < gameBoard.length; col++) {
-            for (int row = 0; row < gameBoard[col].length; row++) {
-                //TODO This should use an ID system or something similar.
-                //TODO Delete experimental code.
-                // ***** Experimental code below, delete later. *****
-                if (gameBoard[col][row].getType() == 13) {  //BB = 13
-
-                    Drawable drawable = getContext().getResources().getDrawable(R.drawable.player_black);
-                    int heightPixels = getResources().getDisplayMetrics().heightPixels;
-                    int unit = (int) ((heightPixels / gameBoard.length) * 0.8);
-                    int lengthPos = col * unit;
-                    int heightPos = row * unit;
-                    drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
-                    drawable.draw(canvas);
+                //Draw Players
+                if (currentBlock.getOccupyingFigure() != null){
+                    currentBlock.getOccupyingFigure().getImage().draw(canvas);
                 }
-                // ***** Experimental Code END *****
+
             }
         }
     }
