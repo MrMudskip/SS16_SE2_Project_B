@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.nearby.Nearby;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.SecureRandom;
@@ -94,13 +96,19 @@ public class NetworkActivity extends AppCompatActivity implements
         switch (v.getId()) {
             case R.id.button_startGame:
                 mNetworkManager.stopAdvertising();
+
+                UpdateState state = new UpdateState();
+                state.setUsage(USAGE_PLAYERID);
+                mNetworkManager.sendPlayerIDs(state);
+
                 Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("playerID", mNetworkManager.getPlayerID());
                 mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                 startActivity(intent);
+
                 UpdateState starterState = new UpdateState();
-                starterState.setStartGame(true);
+                starterState.setUsage(USAGE_STARTGAME);
                 mNetworkManager.sendMessage(starterState);
                 break;
             case R.id.button_advertise:
@@ -167,12 +175,16 @@ public class NetworkActivity extends AppCompatActivity implements
             mDebugInfo.append("\n" + status.getPlayer() + ": " + status.getMsg());
         }
 
-        if (status.isStartGame()) {
+        if (status.getUsage() == USAGE_STARTGAME) {
             Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
             Bundle b = new Bundle();
             b.putInt("playerID", mNetworkManager.getPlayerID());
             mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
             startActivity(intent);
+        }
+
+        if (status.getUsage() == USAGE_PLAYERID) {
+            mNetworkManager.setPlayerID(status.getPlayerID());
         }
     }
 }

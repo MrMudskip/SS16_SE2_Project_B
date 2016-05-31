@@ -47,9 +47,6 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     MediaPlayer but_sound;
 
     private int playerID;
-    public static final int USAGE_DICE = 1029;
-    public static final int USAGE_MOVE1 = 1030;
-    public static final int USAGE_MOVE2 = 1031;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.

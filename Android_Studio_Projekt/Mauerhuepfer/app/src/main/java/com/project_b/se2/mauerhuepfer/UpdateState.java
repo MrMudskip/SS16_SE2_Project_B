@@ -15,7 +15,6 @@ public class UpdateState implements Serializable {
     private int position = -1;
     private int w1 = -1;
     private int w2 = -1;
-    private boolean startGame = false;
 
     @Override
     public String toString() {
@@ -36,6 +35,14 @@ public class UpdateState implements Serializable {
 
     public void setPlayer(String player) {
         this.player = player;
+    }
+
+    public int getPlayerID() {
+        return playerID;
+    }
+
+    public void setPlayerID(int playerID) {
+        this.playerID = playerID;
     }
 
     public int getPosition() {
@@ -70,27 +77,11 @@ public class UpdateState implements Serializable {
         }
     }
 
-    public boolean isStartGame() {
-        return startGame;
-    }
-
-    public void setStartGame(boolean start) {
-        startGame = start;
-    }
-
     public int getUsage() {
         return usage;
     }
 
-    public void setUsage(int usage) {
+    public void setUsage(@IReceiveMessage.UpdateUsageCode int usage) {
         this.usage = usage;
-    }
-
-    public int getPlayerID() {
-        return playerID;
-    }
-
-    public void setPlayerID(int playerID) {
-        this.playerID = playerID;
     }
 }

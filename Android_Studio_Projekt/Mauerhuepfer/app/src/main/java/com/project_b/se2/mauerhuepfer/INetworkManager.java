@@ -1,9 +1,39 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Created by rohrbe on 29.05.16.
  */
 public interface INetworkManager {
+
+    /**
+     * Advertise and Discover Timeouts
+     */
+    long TIMEOUT_ADVERTISE = 1000L * 30L;
+    long TIMEOUT_DISCOVER = 1000L * 10L;
+
+    /**
+     * Possible states for this application:
+     * IDLE - GoogleApiClient not yet connected, can't do anything.
+     * READY - GoogleApiClient connected, ready to use Nearby Connections API.
+     * ADVERTISING - advertising for peers to connect.
+     * DISCOVERING - looking for a peer that is advertising.
+     * CONNECTED - found a peer.
+     */
+    @Retention(RetentionPolicy.CLASS)
+    @IntDef({STATE_IDLE, STATE_READY, STATE_ADVERTISING, STATE_DISCOVERING, STATE_CONNECTED})
+    @interface NearbyConnectionState {
+    }
+
+    int STATE_IDLE = 1023;
+    int STATE_READY = 1024;
+    int STATE_ADVERTISING = 1025;
+    int STATE_DISCOVERING = 1026;
+    int STATE_CONNECTED = 1027;
 
     /**
      * Send a Message to all Connected Devices

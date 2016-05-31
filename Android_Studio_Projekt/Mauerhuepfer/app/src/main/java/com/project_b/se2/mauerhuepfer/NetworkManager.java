@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -20,8 +19,6 @@ import com.google.android.gms.nearby.connection.AppMetadata;
 import com.google.android.gms.nearby.connection.Connections;
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,52 +38,15 @@ public class NetworkManager implements
     private static String TAG;
     private ArrayList MessageReceiverListeners = new ArrayList();
 
-    // Timeouts...
-    private static final long TIMEOUT_ADVERTISE = 1000L * 30L;
-    private static final long TIMEOUT_DISCOVER = 1000L * 10L;
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * Possible states for this application:
-     * IDLE - GoogleApiClient not yet connected, can't do anything.
-     * READY - GoogleApiClient connected, ready to use Nearby Connections API.
-     * ADVERTISING - advertising for peers to connect.
-     * DISCOVERING - looking for a peer that is advertising.
-     * CONNECTED - found a peer.
-     */
-    @Retention(RetentionPolicy.CLASS)
-    @IntDef({STATE_IDLE, STATE_READY, STATE_ADVERTISING, STATE_DISCOVERING, STATE_CONNECTED})
-    public @interface NearbyConnectionState {
-    }
-
-    public static final int STATE_IDLE = 1023;
-    public static final int STATE_READY = 1024;
-    public static final int STATE_ADVERTISING = 1025;
-    public static final int STATE_DISCOVERING = 1026;
-    public static final int STATE_CONNECTED = 1027;
-    public static final int USAGE_PLAYERID = 1028;
-
-    /* ------------------------------------------------------------------------------------------ */
-
     /**
      * GoogleApiClient for connecting to the Nearby Connections API
      **/
     private GoogleApiClient mGoogleApiClient;
 
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * Views and Dialogs
-     **/
     private MyListDialog mMyListDialog;
 
-    /* ------------------------------------------------------------------------------------------ */
-
-    /**
-     * The endpoint ID of the connected peer, used for messaging
-     **/
-    private String mOtherEndpointId; // HOST
-    private ArrayList<String> mOtherEndpointIds = new ArrayList<>();
+    private String mHostId;
+    private ArrayList<String> mClientIds = new ArrayList<>();
 
     private IUpdateView mContext;
 
@@ -94,7 +54,10 @@ public class NetworkManager implements
     private int playerCounter = 1;
     private final int maxPlayer = 4;
     private int playerID;
-    private ArrayList<Integer> playerOrder;
+
+    private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
+
+    /* ------------------------------------------------------------------------------------------ */
 
     public boolean getHostinfo() {
         return mIsHost;
@@ -104,8 +67,14 @@ public class NetworkManager implements
         return playerID;
     }
 
-    private void playerOrder() {
-        playerOrder = new ArrayList<>();
+    public void setPlayerID(int player) {
+        if (0 < player && player <= maxPlayer) {
+            playerID = player;
+        }
+    }
+
+    public void sendPlayerIDs(UpdateState state) {
+        ArrayList<Integer> playerOrder = new ArrayList<>();
         switch (playerCounter) {
             case 4:
                 playerOrder.add(4);
@@ -117,10 +86,16 @@ public class NetworkManager implements
                 playerOrder.add(1);
                 break;
         }
-        Collections.shuffle(playerOrder, new SecureRandom());
-    }
 
-    private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
+        Collections.shuffle(playerOrder, new SecureRandom());
+
+        for (String id : mClientIds) {
+            state.setPlayerID(playerOrder.remove(0));
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(state));
+        }
+
+        playerID = playerOrder.remove(0);
+    }
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -217,16 +192,6 @@ public class NetworkManager implements
 
     public void stopAdvertising() {
         Nearby.Connections.stopAdvertising(mGoogleApiClient);
-        UpdateState s = new UpdateState();
-        s.setUsage(USAGE_PLAYERID);
-        playerOrder();
-
-        for (String id : mOtherEndpointIds) {
-            s.setPlayerID(playerOrder.remove(0));
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(s));
-        }
-
-        playerID = playerOrder.remove(0);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -313,7 +278,7 @@ public class NetworkManager implements
                             public void onResult(Status status) {
                                 if (status.isSuccess()) {
                                     debugLog("acceptConnectionRequest: SUCCESS");
-                                    mOtherEndpointIds.add(endpointId);
+                                    mClientIds.add(endpointId);
                                     playerCounter++;
                                     mContext.updateView(STATE_CONNECTED);
                                 } else {
@@ -395,7 +360,7 @@ public class NetworkManager implements
                 Log.d(TAG, "onConnectionResponse:" + endpointId + ":" + status);
                 if (status.isSuccess()) {
                     debugLog("onConnectionResponse: " + endpointName + " SUCCESS");
-                    mOtherEndpointId = endpointId;
+                    mHostId = endpointId;
                     mContext.updateView(STATE_CONNECTED);
                 } else {
                     debugLog("onConnectionResponse: " + endpointName + " FAILURE");
@@ -441,11 +406,11 @@ public class NetworkManager implements
     @Override
     public void sendMessage(UpdateState s) {
         if (mIsHost) {
-            for (String id : mOtherEndpointIds) {
+            for (String id : mClientIds) {
                 Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(s));
             }
         } else {
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mOtherEndpointId, ObjectSerializer.Serialize(s));
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mHostId, ObjectSerializer.Serialize(s));
         }
     }
 
@@ -462,14 +427,10 @@ public class NetworkManager implements
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
         UpdateState updateS = (UpdateState) ObjectSerializer.DeSerialize(payload);
         debugLog("onMessageReceived:" + endpointId + ":" + updateS.toString());
-        if (updateS.getUsage() != USAGE_PLAYERID) {
-            messageReciever(updateS);
-        } else {
-            playerID = updateS.getPlayerID();
-        }
+        messageReciever(updateS);
 
         if (mIsHost) {
-            for (String id : mOtherEndpointIds) {
+            for (String id : mClientIds) {
                 if (!id.equals(endpointId)) {
                     Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, payload);
                 }
@@ -489,9 +450,9 @@ public class NetworkManager implements
     public void onDisconnected(String endpointId) {
         debugLog("onDisconnected:" + endpointId);
         if (mIsHost) {
-            mOtherEndpointIds.remove(mOtherEndpointIds.indexOf(endpointId));
+            mClientIds.remove(mClientIds.indexOf(endpointId));
             playerCounter--;
-            if (mOtherEndpointIds.size() < 1) {
+            if (mClientIds.size() < 1) {
                 mContext.updateView(STATE_READY);
             }
         } else {
