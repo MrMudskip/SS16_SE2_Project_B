@@ -12,7 +12,6 @@
     <string name="send">Send</string>
     <string name="startGame">Start Game</string>
     <string name="message">Message</string>
-    <string name="debug_label">Info:</string>
 
     <string name="optionLbl">Options</string>
     <string name="playerLbl">Player Name:</string>

@@ -57,9 +57,10 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-        getSupportActionBar().hide();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         setContentView(R.layout.activity_game_board);
 
