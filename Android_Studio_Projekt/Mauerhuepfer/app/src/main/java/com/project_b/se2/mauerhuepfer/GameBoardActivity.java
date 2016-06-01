@@ -47,6 +47,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     MediaPlayer but_sound;
 
     private int playerID;
+    private String playerName;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -116,7 +117,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             Bundle b = getIntent().getExtras();
             if (b != null) {
                 playerID = b.getInt("playerID");
-                Log.i("TEEEEEEEMP", playerID + "");
+                playerName = b.getString("playerName");
             }
         }
     }
@@ -171,6 +172,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             UpdateState updateDice = new UpdateState();
             updateDice.setW1(randomDice1);
             updateDice.setW2(randomDice2);
+            updateDice.setPlayer(playerName);
             updateDice.setUsage(USAGE_DICE);
             mNetworkManager.sendMessage(updateDice);
 
@@ -229,7 +231,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
             rollDice(status.getW2());
             image2.setImageDrawable(tempImage);
-            infoText.setText("Kollega würfelt : " + status.getW1() + " und: " + status.getW2());
+            infoText.setText(status.getPlayer() + " würfelt : " + status.getW1() + " und: " + status.getW2());
         }
     }
 }

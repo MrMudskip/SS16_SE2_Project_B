@@ -13,7 +13,7 @@ public interface INetworkManager {
     /**
      * Advertise and Discover Timeouts
      */
-    long TIMEOUT_ADVERTISE = 1000L * 30L;
+    long TIMEOUT_ADVERTISE = 1000L * 60L;
     long TIMEOUT_DISCOVER = 1000L * 10L;
 
     /**

@@ -10,6 +10,14 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface IReceiveMessage {
 
+    /**
+     * Possible Usage Codes:
+     * PLAYERID - get Player ID.
+     * DICE - any Player diced and share it with the others.
+     * MOVE1 - any Player used his first dice.
+     * MOVE2 - any Player used his second dice.
+     * STARTGAME - Host start the Game.
+     */
     @Retention(RetentionPolicy.CLASS)
     @IntDef({USAGE_PLAYERID, USAGE_DICE, USAGE_MOVE1, USAGE_MOVE2, USAGE_NEXTPLAYER, USAGE_STARTGAME})
     @interface UpdateUsageCode {

@@ -480,6 +480,8 @@ public class NetworkManager implements
         //mDebugInfo.append("\n" + msg);
     }
 
+    /* ------------------------------------------------------------------------------------------ */
+
     /**
      * add Observer
      *

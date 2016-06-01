@@ -30,7 +30,7 @@ public class NetworkActivity extends AppCompatActivity implements
 
     /* ------------------------------------------------------------------------------------------ */
 
-    private static final String TAG = "NetworkActivity"; //MainActivity.class.getSimpleName();
+    private static final String TAG = "NetworkActivity";
     public static NetworkManager mNetworkManager;
     private String playerName;
     private TextView mDebugInfo;
@@ -104,6 +104,7 @@ public class NetworkActivity extends AppCompatActivity implements
                 Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("playerID", mNetworkManager.getPlayerID());
+                b.putString("playerName", playerName);
                 mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                 startActivity(intent);
 
@@ -124,7 +125,7 @@ public class NetworkActivity extends AppCompatActivity implements
                     s.setMsg(msg);
                     s.setPlayer(playerName);
                     mNetworkManager.sendMessage(s);
-                    mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg()); // Damit auch der Sender die nachricht sieht... evtl zu entfernen
+                    mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg());
                     mMessageText.setText(null);
                 }
                 break;
@@ -179,6 +180,7 @@ public class NetworkActivity extends AppCompatActivity implements
             Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
             Bundle b = new Bundle();
             b.putInt("playerID", mNetworkManager.getPlayerID());
+            b.putString("playerName", playerName);
             mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
             startActivity(intent);
         }
