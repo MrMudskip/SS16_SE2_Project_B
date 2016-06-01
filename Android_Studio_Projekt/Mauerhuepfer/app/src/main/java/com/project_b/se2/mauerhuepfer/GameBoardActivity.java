@@ -7,7 +7,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,9 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -49,6 +45,9 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
     private int playerID;
     private String playerName;
+
+    boolean diceOne = true;
+    boolean moved = false;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -134,6 +133,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
         }
         if (!drag1) {
             infoText.setText("Zu ziehen : " + randomDice2);
+            moved = true;
             drag1 = true;
         }
         if (drag1 && drag2)
@@ -151,13 +151,18 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
         if (!drag2) {
             infoText.setText("Zu ziehen : " + randomDice1);
             drag2 = true;
+            moved = true;
         }
         if (drag1 && drag2)
             infoText.setText("Bitte würfeln");
     }
 
     private void diceButton() {
-        if (drag1 && drag2) {
+        if (!moved) {
+            if (!drag1 && !drag2) {
+                Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt du Schummler!! ", Toast.LENGTH_SHORT).show();
+            }
+
             ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
             randomDice1 = (int) (Math.random() * (6)) + 1;
             rollDice(randomDice1);
@@ -166,20 +171,21 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
             randomDice2 = (int) (Math.random() * (6)) + 1;
             rollDice(randomDice2);
+
             image2.setImageDrawable(tempImage);
             infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
             drag1 = false;
             drag2 = false;
 
-            UpdateState updateDice = new UpdateState();
-            updateDice.setW1(randomDice1);
-            updateDice.setW2(randomDice2);
-            updateDice.setPlayer(playerName);
-            updateDice.setUsage(USAGE_DICE);
-            mNetworkManager.sendMessage(updateDice);
-
-        } else {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
+            if (diceOne) {
+                diceOne = false;
+                UpdateState updateDice = new UpdateState();
+                updateDice.setW1(randomDice1);
+                updateDice.setW2(randomDice2);
+                updateDice.setPlayer(playerName);
+                updateDice.setUsage(USAGE_DICE);
+                mNetworkManager.sendMessage(updateDice);
+            }
         }
     }
 
@@ -225,21 +231,29 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     public void receiveMessage(UpdateState status) {
         //TODO: UPDATE GAMESTATES
 
-        if (status.getUsage() == USAGE_DICE) {
-            ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
-            rollDice(status.getW1());
-            image1.setImageDrawable(tempImage);
+        if (status != null) {
 
-            ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
-            rollDice(status.getW2());
-            image2.setImageDrawable(tempImage);
-            infoText.setText(status.getPlayer() + " würfelt : " + status.getW1() + " und: " + status.getW2());
-        }
+            if (status.getUsage() == USAGE_DICE) {
+                ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
+                rollDice(status.getW1());
+                image1.setImageDrawable(tempImage);
 
-        if (status.getUsage() == USAGE_RESTART) {
-            Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
+                ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
+                rollDice(status.getW2());
+                image2.setImageDrawable(tempImage);
+                infoText.setText(status.getPlayer() + " würfelt : " + status.getW1() + " und: " + status.getW2());
+            }
+
+            if (status.getUsage() == USAGE_RESTART) {
+                Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+            }
+
+            if (status.getUsage() == USAGE_NEXTPLAYER) {
+                diceOne = true;
+                moved = false;
+            }
         }
     }
 

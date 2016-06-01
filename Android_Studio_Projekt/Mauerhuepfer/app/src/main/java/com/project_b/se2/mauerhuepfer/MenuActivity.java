@@ -7,7 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-public class MenuActivity extends AppCompatActivity implements View.OnClickListener{
+public class MenuActivity extends AppCompatActivity implements View.OnClickListener {
 
     Button newGameButton;
     private Button mLaunchButton;
@@ -23,7 +23,7 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), GameBoardActivity.class);
                 startActivity(intent);
-               // setContentView(R.layout.activity_game_board);
+                // setContentView(R.layout.activity_game_board);
             }
         });
         setContentView(R.layout.activity_main);
@@ -31,7 +31,6 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
         mOptionButton = (Button) findViewById(R.id.buttonOption);
         findViewById(R.id.buttonLaunch).setOnClickListener(this);
         findViewById(R.id.buttonOption).setOnClickListener(this);
-
     }
 
     @Override

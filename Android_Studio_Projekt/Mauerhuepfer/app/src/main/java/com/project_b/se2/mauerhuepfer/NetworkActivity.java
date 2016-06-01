@@ -177,31 +177,32 @@ public class NetworkActivity extends AppCompatActivity implements
 
     @Override
     public void receiveMessage(UpdateState status) {
-        if(status == null){
+        if (status != null) {
+
+            if (status.getUsage() == USAGE_MSG) {
+                mDebugInfo.append("\n " + status.getPlayer() + ": " + status.getMsg());
+            }
+
+            if (status.getUsage() == USAGE_STARTGAME) {
+                Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+                Bundle b = new Bundle();
+                b.putInt("playerID", mNetworkManager.getPlayerID());
+                b.putString("playerName", mNetworkManager.getPlayerName());
+                intent.putExtras(b);
+                mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
+                startActivity(intent);
+            }
+
+            if (status.getUsage() == USAGE_PLAYERID) {
+                mNetworkManager.setPlayerID(status.getPlayerID());
+            }
+
+            if (status.getUsage() == USAGE_JOIN) {
+                mDebugInfo.append("\n " + status.getMsg());
+            }
+
+        } else {
             mDebugInfo.append("\n CONNECTION ERROR");
-            return;
-        }
-
-        if (status.getUsage() == USAGE_MSG) {
-            mDebugInfo.append("\n " + status.getPlayer() + ": " + status.getMsg());
-        }
-
-        if (status.getUsage() == USAGE_STARTGAME) {
-            Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
-            Bundle b = new Bundle();
-            b.putInt("playerID", mNetworkManager.getPlayerID());
-            b.putString("playerName", mNetworkManager.getPlayerName());
-            intent.putExtras(b);
-            mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
-            startActivity(intent);
-        }
-
-        if (status.getUsage() == USAGE_PLAYERID) {
-            mNetworkManager.setPlayerID(status.getPlayerID());
-        }
-
-        if (status.getUsage() == USAGE_JOIN) {
-            mDebugInfo.append("\n " + status.getMsg());
         }
     }
 }

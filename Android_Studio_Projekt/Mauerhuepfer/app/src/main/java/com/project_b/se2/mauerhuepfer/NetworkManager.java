@@ -42,20 +42,16 @@ public class NetworkManager implements
      * GoogleApiClient for connecting to the Nearby Connections API
      **/
     private GoogleApiClient mGoogleApiClient;
-
     private MyListDialog mMyListDialog;
 
     private String mHostId;
     private ArrayList<String> mClientIds = new ArrayList<>();
-
     private IUpdateView mContext;
 
     private boolean mIsHost;
-    //private int playerCounter = 1;
-    private final int maxPlayer = 3;
+    private final int maxClients = 3;
     private int playerID;
     private String playerName;
-
     private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
 
     /* ------------------------------------------------------------------------------------------ */
@@ -69,7 +65,7 @@ public class NetworkManager implements
     }
 
     public void setPlayerID(int player) {
-        if (0 < player && player <= maxPlayer) {
+        if (0 < player && player <= maxClients) {
             playerID = player;
         }
     }
@@ -112,7 +108,6 @@ public class NetworkManager implements
                 .build();
 
         TAG = NetworkManager.class.getSimpleName();
-
         mContext = (IUpdateView) c;
 
         SharedPreferences settings = ((Context) mContext).getSharedPreferences(((Context) mContext).getString(R.string.memory), 0);
@@ -155,7 +150,6 @@ public class NetworkManager implements
                 return true;
             }
         }
-
         return false;
     }
 
@@ -283,7 +277,7 @@ public class NetworkManager implements
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
         debugLog("onConnectionRequest:" + endpointId + ":" + endpointName);
-        if (mClientIds.size() < maxPlayer) {
+        if (mClientIds.size() < maxClients) {
             if (mIsHost) {
                 Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId, payload, this)
                         .setResultCallback(new ResultCallback<Status>() {
@@ -480,7 +474,7 @@ public class NetworkManager implements
         }
     }
 
-    private void restartApp(){
+    private void restartApp() {
         UpdateState restart = new UpdateState();
         restart.setUsage(IReceiveMessage.USAGE_RESTART);
         messageReciever(restart);
