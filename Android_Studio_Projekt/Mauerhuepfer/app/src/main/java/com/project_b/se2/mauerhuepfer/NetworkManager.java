@@ -293,7 +293,6 @@ public class NetworkManager implements
                                 if (status.isSuccess()) {
                                     debugLog("acceptConnectionRequest: SUCCESS");
                                     mClientIds.add(endpointId);
-                                    //playerCounter++;
                                     mContext.updateView(STATE_CONNECTED);
                                 } else {
                                     debugLog("acceptConnectionRequest: FAILURE");

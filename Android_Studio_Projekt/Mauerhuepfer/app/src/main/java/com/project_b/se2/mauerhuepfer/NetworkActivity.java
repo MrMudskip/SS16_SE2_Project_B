@@ -177,6 +177,11 @@ public class NetworkActivity extends AppCompatActivity implements
 
     @Override
     public void receiveMessage(UpdateState status) {
+        if(status == null){
+            mDebugInfo.append("\n CONNECTION ERROR");
+            return;
+        }
+
         if (status.getUsage() == USAGE_MSG) {
             mDebugInfo.append("\n " + status.getPlayer() + ": " + status.getMsg());
         }
