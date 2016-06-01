@@ -8,17 +8,9 @@ import android.graphics.drawable.Drawable;
  */
 public class Player {
 
-    //Player colours: //TODO: Not ideal that this appears here AND in the game class.
-    static final int RED = 0;
-    static final int GREEN = 1;
-    static final int YELLOW = 2;
-    static final int BLACK = 3;
-
-   //Other variables
     Context context;
     private int colour;
     private Figure[] figures = {new Figure(), new Figure(), new Figure(), new Figure()};
-
 
     public Player(Context context, int colour) {
         this.context = context;
@@ -29,10 +21,10 @@ public class Player {
     public void initializeFigures(){ // TODO Decide if image position should also be managed here.
         Drawable image;
         switch (colour) {
-            case RED: image = context.getResources().getDrawable(R.drawable.player_red); break;
-            case GREEN: image = context.getResources().getDrawable(R.drawable.player_green); break;
-            case YELLOW: image = context.getResources().getDrawable(R.drawable.player_yellow); break;
-            case BLACK: image = context.getResources().getDrawable(R.drawable.player_black); break;
+            case Game.RED: image = context.getResources().getDrawable(R.drawable.player_red); break;
+            case Game.GREEN: image = context.getResources().getDrawable(R.drawable.player_green); break;
+            case Game.YELLOW: image = context.getResources().getDrawable(R.drawable.player_yellow); break;
+            case Game.BLACK: image = context.getResources().getDrawable(R.drawable.player_black); break;
             default:  image = context.getResources().getDrawable(R.drawable.empty);
         }
         for (int i = 0; i < figures.length; i++) {
@@ -47,4 +39,6 @@ public class Player {
     public Figure[] getFigures() {
         return figures;
     }
+
+
 }

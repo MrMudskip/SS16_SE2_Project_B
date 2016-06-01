@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 /**
@@ -45,10 +46,10 @@ public class Game {
     private CustomGameBoardView gameBoardView;
     private int unit;
     private int numberOfPlayers;
+    private Player[] players;
 
     private int dice1;
     private int dice2;
-    private Player player;
     private int position;
 
     // 2D array containing all the blocks that make up the game field.     // TODO find a solution for different wall numbers.
@@ -80,7 +81,10 @@ public class Game {
         this.numberOfPlayers = numberOfPlayers;
 
         initializeGameBoard();
-        initializeGameBoardView();
+        initializePlayers();
+        gameBoardView = (CustomGameBoardView)((Activity) context).findViewById(R.id.CustomGameBoardView);
+        gameBoardView.setGameBoard(gameBoard);
+    //    initializeGameBoardView();
 
     }
 
@@ -123,7 +127,6 @@ public class Game {
         drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
         block.setImage(drawable);
 
-
         //Set starting figures //TODO This should use the players figures, not create new ones.
         Drawable figureImg;
         switch (type){
@@ -139,8 +142,16 @@ public class Game {
         block.setOccupyingFigure(figure);
     }
 
+    public void initializePlayers(){
+        players = new Player[numberOfPlayers];
+        // TODO Maybe let the player choose their own colour?
+        for (int colour = 0; colour < numberOfPlayers; colour++) {
+            players[colour] = new Player(context, colour);
+        }
+    }
+
     public void initializeGameBoardView(){
-        LinearLayout rootLayout = (LinearLayout)((Activity) context).findViewById(R.id.root_layout);
+/*        LinearLayout rootLayout = (LinearLayout)((Activity) context).findViewById(R.id.root_layout);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -150,6 +161,24 @@ public class Game {
         gameBoardView = new CustomGameBoardView(context, gameBoard);
         gameBoardView.setLayoutParams(params);
         rootLayout.addView(gameBoardView, 0); // index = 0
+*/
+       /*
+        <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <com.proj.MyView
+        android:id="@+id/board1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+
+        <com.proj.MyView
+        android:id="@+id/board2"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+        </FrameLayout>
+        */
     }
 
     public void rollDice(){ //TODO Think of a better name for this method.

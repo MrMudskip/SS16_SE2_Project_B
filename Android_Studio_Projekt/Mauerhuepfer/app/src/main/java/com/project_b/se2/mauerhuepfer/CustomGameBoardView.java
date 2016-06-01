@@ -3,6 +3,7 @@ package com.project_b.se2.mauerhuepfer;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
 import android.view.View;
 
 /**
@@ -13,10 +14,18 @@ public class CustomGameBoardView extends View {
     private Block[][] gameBoard;
 
 
+    public CustomGameBoardView(Context context, AttributeSet attrs) {
+        super(context,attrs);
+    }
+
+
+  /*  //TODO Delete this if everything is working.
     public CustomGameBoardView(Context context, Block[][] gameBoard) {
         super(context);
         this.gameBoard = gameBoard;
     }
+
+   */
 
     protected void onDraw(Canvas canvas) {
 
@@ -40,8 +49,8 @@ public class CustomGameBoardView extends View {
         return gameBoard;
     }
 
-    public void setGameBoard(Block[][] gameField) {
-        this.gameBoard = gameField;
+    public void setGameBoard(Block[][] gameBoard) {
+        this.gameBoard = gameBoard;
     }
 
 
