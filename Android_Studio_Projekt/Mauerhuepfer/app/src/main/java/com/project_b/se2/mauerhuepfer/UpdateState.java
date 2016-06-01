@@ -16,11 +16,6 @@ public class UpdateState implements Serializable {
     private int w1 = -1;
     private int w2 = -1;
 
-    @Override
-    public String toString() {
-        return msg + ";" + player + ";" + position + ";" + w1 + ";" + w2;
-    }
-
     public String getMsg() {
         return msg;
     }

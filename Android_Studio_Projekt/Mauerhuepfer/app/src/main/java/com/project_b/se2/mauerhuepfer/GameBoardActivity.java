@@ -1,6 +1,7 @@
 package com.project_b.se2.mauerhuepfer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -118,6 +119,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             if (b != null) {
                 playerID = b.getInt("playerID");
                 playerName = b.getString("playerName");
+                infoText.setText(playerName + " du bist Spieler " + playerID);
             }
         }
     }
@@ -221,7 +223,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
     @Override
     public void receiveMessage(UpdateState status) {
-        //TODO: UPDATE GAMESTATE
+        //TODO: UPDATE GAMESTATES
 
         if (status.getUsage() == USAGE_DICE) {
             ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
@@ -233,5 +235,26 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             image2.setImageDrawable(tempImage);
             infoText.setText(status.getPlayer() + " würfelt : " + status.getW1() + " und: " + status.getW2());
         }
+
+        if (status.getUsage() == USAGE_RESTART) {
+            Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+        }
+    }
+
+    /**
+     * Disable Back bitton
+     */
+    @Override
+    public void onBackPressed() {
+        Log.d("GAME", "onBackPressed");
+        // Do nothing
+    }
+
+    @Override
+    public void onDestroy() {
+        mNetworkManager.disconnect();
+        super.onDestroy();
     }
 }

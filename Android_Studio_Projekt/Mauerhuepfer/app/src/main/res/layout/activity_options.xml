@@ -16,7 +16,9 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:text="@string/optionLbl"
-        android:textSize="30dp" />
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
     <TextView
         android:id="@+id/lable_player"
@@ -27,7 +29,8 @@
         android:layout_below="@+id/lable_option"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:textColor="#000000" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -50,7 +53,8 @@
         android:layout_below="@+id/lable_player"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:textColor="#000000" />
 
     <EditText
         android:id="@+id/text_host"

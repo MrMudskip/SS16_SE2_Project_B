@@ -19,7 +19,7 @@ public interface IReceiveMessage {
      * STARTGAME - Host start the Game.
      */
     @Retention(RetentionPolicy.CLASS)
-    @IntDef({USAGE_PLAYERID, USAGE_DICE, USAGE_MOVE1, USAGE_MOVE2, USAGE_NEXTPLAYER, USAGE_STARTGAME})
+    @IntDef({USAGE_PLAYERID, USAGE_DICE, USAGE_MOVE1, USAGE_MOVE2, USAGE_NEXTPLAYER, USAGE_STARTGAME, USAGE_MSG, USAGE_JOIN, USAGE_RESTART})
     @interface UpdateUsageCode {
     }
 
@@ -29,6 +29,9 @@ public interface IReceiveMessage {
     int USAGE_MOVE2 = 1031;
     int USAGE_NEXTPLAYER = 1031;
     int USAGE_STARTGAME = 1032;
+    int USAGE_MSG = 1033;
+    int USAGE_JOIN = 1034;
+    int USAGE_RESTART = 1035;
 
 
     /**

@@ -25,15 +25,17 @@ public interface INetworkManager {
      * CONNECTED - found a peer.
      */
     @Retention(RetentionPolicy.CLASS)
-    @IntDef({STATE_IDLE, STATE_READY, STATE_ADVERTISING, STATE_DISCOVERING, STATE_CONNECTED})
+    @IntDef({STATE_NONETWORK, STATE_IDLE, STATE_READY, STATE_ADVERTISING, STATE_DISCOVERING, STATE_CONNECTED})
     @interface NearbyConnectionState {
     }
 
+    int STATE_NONETWORK = 1022;
     int STATE_IDLE = 1023;
     int STATE_READY = 1024;
     int STATE_ADVERTISING = 1025;
     int STATE_DISCOVERING = 1026;
     int STATE_CONNECTED = 1027;
+
 
     /**
      * Send a Message to all Connected Devices
@@ -55,4 +57,6 @@ public interface INetworkManager {
      * @param listener Class that implements IReceiveMessage
      */
     void removeMessageReceiverListener(IReceiveMessage listener);
+
+    void disconnect();
 }

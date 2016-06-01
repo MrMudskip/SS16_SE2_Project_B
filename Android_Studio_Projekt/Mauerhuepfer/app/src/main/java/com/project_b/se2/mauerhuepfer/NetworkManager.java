@@ -51,9 +51,10 @@ public class NetworkManager implements
     private IUpdateView mContext;
 
     private boolean mIsHost;
-    private int playerCounter = 1;
-    private final int maxPlayer = 4;
+    //private int playerCounter = 1;
+    private final int maxPlayer = 3;
     private int playerID;
+    private String playerName;
 
     private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
 
@@ -75,13 +76,13 @@ public class NetworkManager implements
 
     public void sendPlayerIDs(UpdateState state) {
         ArrayList<Integer> playerOrder = new ArrayList<>();
-        switch (playerCounter) {
-            case 4:
-                playerOrder.add(4);
+        switch (mClientIds.size()) {
             case 3:
-                playerOrder.add(3);
+                playerOrder.add(4);
             case 2:
+                playerOrder.add(3);
             case 1:
+            case 0:
                 playerOrder.add(2);
                 playerOrder.add(1);
                 break;
@@ -97,6 +98,10 @@ public class NetworkManager implements
         playerID = playerOrder.remove(0);
     }
 
+    public String getPlayerName() {
+        return playerName;
+    }
+
     /* ------------------------------------------------------------------------------------------ */
 
     public NetworkManager(Context c) {
@@ -109,6 +114,13 @@ public class NetworkManager implements
         TAG = NetworkManager.class.getSimpleName();
 
         mContext = (IUpdateView) c;
+
+        SharedPreferences settings = ((Context) mContext).getSharedPreferences(((Context) mContext).getString(R.string.memory), 0);
+        playerName = settings.getString("playerName", null);
+
+        if (playerName == null || playerName.equals("")) {
+            playerName = "" + ((int) (Math.random() * 1000000));
+        }
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -117,6 +129,7 @@ public class NetworkManager implements
         mGoogleApiClient.connect();
     }
 
+    @Override
     public void disconnect() {
         // Disconnect the Google API client and stop any ongoing discovery or advertising. When the
         // GoogleAPIClient is disconnected, any connected peers will get an onDisconnected callback.
@@ -155,7 +168,7 @@ public class NetworkManager implements
         debugLog("startAdvertising");
         if (!isConnectedToNetwork()) {
             debugLog("startAdvertising: not connected to network.");
-            mContext.updateView(STATE_READY);
+            mContext.updateView(STATE_NONETWORK);
             return;
         }
 
@@ -203,6 +216,7 @@ public class NetworkManager implements
         debugLog("startDiscovery");
         if (!isConnectedToNetwork()) {
             debugLog("startDiscovery: not connected to network.");
+            mContext.updateView(STATE_NONETWORK);
             return;
         }
         mIsHost = false;
@@ -269,7 +283,7 @@ public class NetworkManager implements
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
         debugLog("onConnectionRequest:" + endpointId + ":" + endpointName);
-        if (playerCounter < maxPlayer) {
+        if (mClientIds.size() < maxPlayer) {
             if (mIsHost) {
                 Nearby.Connections.acceptConnectionRequest(mGoogleApiClient, endpointId, payload, this)
                         .setResultCallback(new ResultCallback<Status>() {
@@ -279,7 +293,7 @@ public class NetworkManager implements
                                 if (status.isSuccess()) {
                                     debugLog("acceptConnectionRequest: SUCCESS");
                                     mClientIds.add(endpointId);
-                                    playerCounter++;
+                                    //playerCounter++;
                                     mContext.updateView(STATE_CONNECTED);
                                 } else {
                                     debugLog("acceptConnectionRequest: FAILURE");
@@ -362,6 +376,10 @@ public class NetworkManager implements
                     debugLog("onConnectionResponse: " + endpointName + " SUCCESS");
                     mHostId = endpointId;
                     mContext.updateView(STATE_CONNECTED);
+                    UpdateState msg = new UpdateState();
+                    msg.setMsg(playerName + " joined Game");
+                    msg.setUsage(IReceiveMessage.USAGE_JOIN);
+                    sendMessage(msg);
                 } else {
                     debugLog("onConnectionResponse: " + endpointName + " FAILURE");
                 }
@@ -426,7 +444,7 @@ public class NetworkManager implements
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
         UpdateState updateS = (UpdateState) ObjectSerializer.DeSerialize(payload);
-        debugLog("onMessageReceived:" + endpointId + ":" + updateS.toString());
+        debugLog("onMessageReceived:" + endpointId);
         messageReciever(updateS);
 
         if (mIsHost) {
@@ -451,13 +469,22 @@ public class NetworkManager implements
         debugLog("onDisconnected:" + endpointId);
         if (mIsHost) {
             mClientIds.remove(mClientIds.indexOf(endpointId));
-            playerCounter--;
+            //playerCounter--;
             if (mClientIds.size() < 1) {
-                mContext.updateView(STATE_READY);
+                mGoogleApiClient.reconnect();
+                restartApp();
             }
         } else {
             mContext.updateView(STATE_READY);
+            mGoogleApiClient.reconnect();
+            restartApp();
         }
+    }
+
+    private void restartApp(){
+        UpdateState restart = new UpdateState();
+        restart.setUsage(IReceiveMessage.USAGE_RESTART);
+        messageReciever(restart);
     }
 
     /* ------------------------------------------------------------------------------------------ */

@@ -32,7 +32,6 @@ public class NetworkActivity extends AppCompatActivity implements
 
     private static final String TAG = "NetworkActivity";
     public static NetworkManager mNetworkManager;
-    private String playerName;
     private TextView mDebugInfo;
     private EditText mMessageText;
     private int currentState = NetworkManager.STATE_IDLE;
@@ -49,13 +48,6 @@ public class NetworkActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_network);
-
-        SharedPreferences settings = getSharedPreferences(getString(R.string.memory), 0);
-        playerName = settings.getString("playerName", null);
-
-        if (playerName.equals("")) {
-            playerName = "" + ((int) (Math.random() * 1000000));
-        }
 
         // Button listeners
         findViewById(R.id.button_advertise).setOnClickListener(this);
@@ -76,17 +68,18 @@ public class NetworkActivity extends AppCompatActivity implements
 
     /* ------------------------------------------------------------------------------------------ */
 
+    @Override
     public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart");
         mNetworkManager.connect();
     }
 
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop");
-
-        //mNetworkManager.disconnect();
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d(TAG, "onBackPressed");
+        mNetworkManager.disconnect();
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -104,7 +97,8 @@ public class NetworkActivity extends AppCompatActivity implements
                 Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("playerID", mNetworkManager.getPlayerID());
-                b.putString("playerName", playerName);
+                b.putString("playerName", mNetworkManager.getPlayerName());
+                intent.putExtras(b);
                 mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                 startActivity(intent);
 
@@ -123,9 +117,10 @@ public class NetworkActivity extends AppCompatActivity implements
                     String msg = mMessageText.getText().toString();
                     UpdateState s = new UpdateState();
                     s.setMsg(msg);
-                    s.setPlayer(playerName);
+                    s.setUsage(USAGE_MSG);
+                    s.setPlayer(mNetworkManager.getPlayerName());
                     mNetworkManager.sendMessage(s);
-                    mDebugInfo.append("\n" + s.getPlayer() + ": " + s.getMsg());
+                    mDebugInfo.append("\n " + s.getPlayer() + ": " + s.getMsg());
                     mMessageText.setText(null);
                 }
                 break;
@@ -144,23 +139,33 @@ public class NetworkActivity extends AppCompatActivity implements
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.GONE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
                 findViewById(R.id.button_startGame).setVisibility(View.GONE);
-                mDebugInfo.append("\n State: IDLE");
+                //mDebugInfo.append("\n State: IDLE");
                 break;
             case NetworkManager.STATE_READY:
                 // The GoogleAPIClient is connected, we can begin advertising or discovery.
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
                 findViewById(R.id.button_startGame).setVisibility(View.GONE);
-                mDebugInfo.append("\n State: READY");
+                mDebugInfo.append("\n >>>>> MAUERHÜPFER <<<<<");
                 break;
             case NetworkManager.STATE_ADVERTISING:
-                mDebugInfo.append("\n State: ADVERTISING");
+                //mDebugInfo.append("\n State: ADVERTISING");
+                mDebugInfo.append("\n Hosting...");
                 break;
             case NetworkManager.STATE_DISCOVERING:
-                mDebugInfo.append("\n State: DISCOVERING");
+                //mDebugInfo.append("\n State: DISCOVERING");
+                mDebugInfo.append("\n looking for Host....");
+                break;
+            case NetworkManager.STATE_NONETWORK:
+                findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
+                findViewById(R.id.layout_message).setVisibility(View.GONE);
+                findViewById(R.id.button_startGame).setVisibility(View.GONE);
+                mDebugInfo.append("\n no Network available!");
                 break;
             case NetworkManager.STATE_CONNECTED:
-                mDebugInfo.append("\n State: CONNECTED");
+                if (!mNetworkManager.getHostinfo()) {
+                    mDebugInfo.append("\n CONNECTED");
+                }
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.VISIBLE);
                 if (mNetworkManager.getHostinfo()) {
@@ -172,21 +177,26 @@ public class NetworkActivity extends AppCompatActivity implements
 
     @Override
     public void receiveMessage(UpdateState status) {
-        if (status.getMsg() != null && !status.getMsg().equals("")) {
-            mDebugInfo.append("\n" + status.getPlayer() + ": " + status.getMsg());
+        if (status.getUsage() == USAGE_MSG) {
+            mDebugInfo.append("\n " + status.getPlayer() + ": " + status.getMsg());
         }
 
         if (status.getUsage() == USAGE_STARTGAME) {
             Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
             Bundle b = new Bundle();
             b.putInt("playerID", mNetworkManager.getPlayerID());
-            b.putString("playerName", playerName);
+            b.putString("playerName", mNetworkManager.getPlayerName());
+            intent.putExtras(b);
             mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
             startActivity(intent);
         }
 
         if (status.getUsage() == USAGE_PLAYERID) {
             mNetworkManager.setPlayerID(status.getPlayerID());
+        }
+
+        if (status.getUsage() == USAGE_JOIN) {
+            mDebugInfo.append("\n " + status.getMsg());
         }
     }
 }
