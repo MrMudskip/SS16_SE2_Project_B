@@ -4,10 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -22,23 +18,24 @@ public class Game {
 
     // Block types
     static final int S = 0;
-    static final int H = 1;
-    static final int EU = 2;
-    static final int ER = 3;
-    static final int ED = 4;
-    static final int EL = 5;
-    static final int V = 6;
-    static final int F = 7;
-    static final int W = 8;
-    static final int N = 9;
-    static final int BR = 10;
-    static final int BG = 11;
-    static final int BY = 12;
-    static final int BB = 13;
-    static final int GR = 14;
-    static final int GG = 15;
-    static final int GY = 16;
-    static final int GB = 17;
+    static final int HR = 1;
+    static final int HL = 2;
+    static final int EU = 3;
+    static final int ER = 4;
+    static final int ED = 5;
+    static final int EL = 6;
+    static final int V = 7;
+    static final int F = 8;
+    static final int W = 9;
+    static final int N = 10;
+    static final int BR = 11;
+    static final int BG = 12;
+    static final int BY = 13;
+    static final int BB = 14;
+    static final int GR = 15;
+    static final int GG = 16;
+    static final int GY = 17;
+    static final int GB = 18;
 
     // Other variables
     private Context context;
@@ -50,25 +47,24 @@ public class Game {
 
     private int dice1;
     private int dice2;
-    private int position;
 
     // 2D array containing all the blocks that make up the game field.     // TODO find a solution for different wall numbers.
     private Block[][] gameBoard = {
-            {new Block(GB),new Block(GB),new Block(GB),new Block(GB),new Block(N),new Block(GG),new Block(GG),new Block(GG),new Block(GG)},
-            {new Block(GY),new Block(GY),new Block(GY),new Block(GY),new Block(N),new Block(GR),new Block(GR),new Block(GR),new Block(GR)},
-            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(F)},
-            {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(ED)},
-            {new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(V)},
-            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(EL)},
-            {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(ED)},
-            {new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(V)},
-            {new Block(ER),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(EL)},
-            {new Block(V),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W),new Block(W)},
-            {new Block(EU),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(H),new Block(S)},
-            {new Block(BB),new Block(BB),new Block(BY),new Block(BY),new Block(N),new Block(BG),new Block(BG),new Block(BR),new Block(BR)},
-            {new Block(BB),new Block(BB),new Block(BY),new Block(BY),new Block(N),new Block(BG),new Block(BG),new Block(BR),new Block(BR)},
+            {new Block(GB), new Block(GB), new Block(GB), new Block(GB), new Block(N), new Block(GG), new Block(GG), new Block(GG), new Block(GG)},
+            {new Block(GY), new Block(GY), new Block(GY), new Block(GY), new Block(N), new Block(GR), new Block(GR), new Block(GR), new Block(GR)},
+            {new Block(ER), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(F)},
+            {new Block(V), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W)},
+            {new Block(EU), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(ED)},
+            {new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(V)},
+            {new Block(ER), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(EL)},
+            {new Block(V), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W)},
+            {new Block(EU), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(ED)},
+            {new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(V)},
+            {new Block(ER), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(HR), new Block(EL)},
+            {new Block(V), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W), new Block(W)},
+            {new Block(EU), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(HL), new Block(S)},
+            {new Block(BB), new Block(BB), new Block(BY), new Block(BY), new Block(N), new Block(BG), new Block(BG), new Block(BR), new Block(BR)},
+            {new Block(BB), new Block(BB), new Block(BY), new Block(BY), new Block(N), new Block(BG), new Block(BG), new Block(BR), new Block(BR)},
     };
 
 
@@ -82,13 +78,11 @@ public class Game {
 
         initializeGameBoard();
         initializePlayers();
-        gameBoardView = (CustomGameBoardView)((Activity) context).findViewById(R.id.CustomGameBoardView);
+        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView);
         gameBoardView.setGameBoard(gameBoard);
-    //    initializeGameBoardView();
-
     }
 
-    public boolean initializeGameBoard(){
+    public boolean initializeGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
                 setBlockParametersByType(gameBoard[col][row], gameBoard[col][row].getType(), col, row);
@@ -102,25 +96,65 @@ public class Game {
         //Set images
         Drawable drawable;
         switch (type) {
-            case S: drawable = resources.getDrawable(R.drawable.circle_white_l_arrow); break;
-            case H: drawable = resources.getDrawable(R.drawable.circle_white_rl); break;
-            case EU: drawable = resources.getDrawable(R.drawable.circle_white_ur); break;
-            case ER: drawable = resources.getDrawable(R.drawable.circle_white_rd); break;
-            case ED: drawable = resources.getDrawable(R.drawable.circle_white_dl); break;
-            case EL: drawable = resources.getDrawable(R.drawable.circle_white_ul); break;
-            case V: drawable = resources.getDrawable(R.drawable.circle_white_ud); break;
-            case F: drawable = resources.getDrawable(R.drawable.circle_blue_l); break;
-            case W: drawable = resources.getDrawable(R.drawable.wall_6); break; // TODO handle different wall numbers
-            case N: drawable = resources.getDrawable(R.drawable.empty); break;
-            case BR: drawable = resources.getDrawable(R.drawable.circle_red); break;
-            case BG: drawable = resources.getDrawable(R.drawable.circle_green); break;
-            case BY: drawable = resources.getDrawable(R.drawable.circle_yellow); break;
-            case BB: drawable = resources.getDrawable(R.drawable.circle_black); break;
-            case GR: drawable = resources.getDrawable(R.drawable.circle_red); break;
-            case GG: drawable = resources.getDrawable(R.drawable.circle_green); break;
-            case GY: drawable = resources.getDrawable(R.drawable.circle_yellow); break;
-            case GB: drawable = resources.getDrawable(R.drawable.circle_black); break;
-            default: drawable = resources.getDrawable(R.drawable.empty);
+            case S:
+                drawable = resources.getDrawable(R.drawable.circle_white_l_arrow);
+                break;
+            case HR:
+                drawable = resources.getDrawable(R.drawable.circle_white_rl);
+                break;
+            case HL:
+                drawable = resources.getDrawable(R.drawable.circle_white_rl);
+                break;
+            case EU:
+                drawable = resources.getDrawable(R.drawable.circle_white_ur);
+                break;
+            case ER:
+                drawable = resources.getDrawable(R.drawable.circle_white_rd);
+                break;
+            case ED:
+                drawable = resources.getDrawable(R.drawable.circle_white_dl);
+                break;
+            case EL:
+                drawable = resources.getDrawable(R.drawable.circle_white_ul);
+                break;
+            case V:
+                drawable = resources.getDrawable(R.drawable.circle_white_ud);
+                break;
+            case F:
+                drawable = resources.getDrawable(R.drawable.circle_blue_l);
+                break;
+            case W:
+                drawable = resources.getDrawable(R.drawable.wall_6);
+                break; // TODO handle different wall numbers
+            case N:
+                drawable = resources.getDrawable(R.drawable.empty);
+                break;
+            case BR:
+                drawable = resources.getDrawable(R.drawable.circle_red);
+                break;
+            case BG:
+                drawable = resources.getDrawable(R.drawable.circle_green);
+                break;
+            case BY:
+                drawable = resources.getDrawable(R.drawable.circle_yellow);
+                break;
+            case BB:
+                drawable = resources.getDrawable(R.drawable.circle_black);
+                break;
+            case GR:
+                drawable = resources.getDrawable(R.drawable.circle_red);
+                break;
+            case GG:
+                drawable = resources.getDrawable(R.drawable.circle_green);
+                break;
+            case GY:
+                drawable = resources.getDrawable(R.drawable.circle_yellow);
+                break;
+            case GB:
+                drawable = resources.getDrawable(R.drawable.circle_black);
+                break;
+            default:
+                drawable = resources.getDrawable(R.drawable.empty);
         }
         int lengthPos = col * unit;
         int heightPos = row * unit;
@@ -128,7 +162,7 @@ public class Game {
         block.setImage(drawable);
 
         //Set starting figures //TODO This should use the players figures, not create new ones.
-        Drawable figureImg;
+/*        Drawable figureImg;
         switch (type){
             case BR: {figureImg = resources.getDrawable(R.drawable.player_red);} break;
             case BG: {figureImg = resources.getDrawable(R.drawable.player_green);} break;
@@ -140,9 +174,11 @@ public class Game {
         Figure figure = new Figure();
         figure.setImage(figureImg);
         block.setOccupyingFigure(figure);
+        */
+
     }
 
-    public void initializePlayers(){
+    public void initializePlayers() {
         players = new Player[numberOfPlayers];
         // TODO Maybe let the player choose their own colour?
         for (int colour = 0; colour < numberOfPlayers; colour++) {
@@ -150,48 +186,19 @@ public class Game {
         }
     }
 
-    public void initializeGameBoardView(){
-/*        LinearLayout rootLayout = (LinearLayout)((Activity) context).findViewById(R.id.root_layout);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f    // weight = 1
-        );
-        params.gravity = (Gravity.CENTER);
-        gameBoardView = new CustomGameBoardView(context, gameBoard);
-        gameBoardView.setLayoutParams(params);
-        rootLayout.addView(gameBoardView, 0); // index = 0
-*/
-       /*
-        <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+    public void rollDice() { //TODO Think of a better name for this method.
+        // TODO Do something meaningful here. (currently used for testing ideas).
+        Figure figure = players[RED].getFigures()[0];
+        int col = 4;
+        int row = figure.getRowPos() + 1;
 
-        <com.proj.MyView
-        android:id="@+id/board1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
-
-        <com.proj.MyView
-        android:id="@+id/board2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-
-        </FrameLayout>
-        */
-    }
-
-    public void rollDice(){ //TODO Think of a better name for this method.
-        // TODO Do something meaningful here.
-/*        Drawable drawable = resources.getDrawable(R.drawable.player_black);
-        int lengthPos = 0 * unit;
-        int heightPos = 2 * unit;
-        drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
-        gameBoard[2][0].setImage(drawable);
+        //TODO Handle occupation better (let blocks now they are not occupied anymore)
+        figure.setPos(col, row, unit);
+        gameBoard[col][row].setOccupyingFigure(figure);
 
         //gameBoardView.setGameBoard(gameBoard);
         gameBoardView.invalidate();
-*/
+
     }
 
 }

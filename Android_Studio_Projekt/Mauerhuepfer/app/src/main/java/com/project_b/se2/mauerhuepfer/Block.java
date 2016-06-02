@@ -14,16 +14,10 @@ public class Block {
     private Figure occupyingFigure;
     private Drawable image;
 
-
-
     public Block(int type) {
         this.type = type;
         this.occupied = false;
     }
-
-
-
-    // Getters and setters below this line ---------------------------
 
     public int getType() {
         return type;

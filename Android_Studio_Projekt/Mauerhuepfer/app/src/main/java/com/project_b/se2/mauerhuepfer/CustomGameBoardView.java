@@ -36,11 +36,10 @@ public class CustomGameBoardView extends View {
                 // Draw block
                 currentBlock.getImage().draw(canvas);
 
-                //Draw Players
+                //Draw Figures
                 if (currentBlock.getOccupyingFigure() != null){
                     currentBlock.getOccupyingFigure().getImage().draw(canvas);
                 }
-
             }
         }
     }
