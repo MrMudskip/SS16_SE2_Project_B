@@ -18,6 +18,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
 
+        <com.project_b.se2.mauerhuepfer.CustomPlayerView
+            android:id="@+id/CustomPlayerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
     </FrameLayout>
 
     <LinearLayout

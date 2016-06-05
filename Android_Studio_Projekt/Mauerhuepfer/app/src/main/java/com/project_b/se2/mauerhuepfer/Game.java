@@ -16,7 +16,16 @@ public class Game {
     static final int YELLOW = 2;
     static final int BLACK = 3;
 
-    // Block types
+    //Directions
+    static final int UP = 0;
+    static final int RIGHT = 1;
+    static final int DOWN = 2;
+    static final int LEFT = 3;
+    static final int BASE = 4;
+    static final int GOAL = 5;
+    static final int START = 6;
+
+    //Block types
     static final int S = 0;
     static final int HR = 1;
     static final int HL = 2;
@@ -37,16 +46,20 @@ public class Game {
     static final int GY = 17;
     static final int GB = 18;
 
+    //Measurement variables
+    static int unit;
+
     // Other variables
     private Context context;
     private Resources resources;
     private CustomGameBoardView gameBoardView;
-    private int unit;
+    private CustomPlayerView playerView;
     private int numberOfPlayers;
     private Player[] players;
-
-    private int dice1;
-    private int dice2;
+    private Figure selectedFigure;
+    private int selectedDiceNumber;
+    private int startColPos;
+    private int startRowPos;
 
     // 2D array containing all the blocks that make up the game field.     // TODO find a solution for different wall numbers.
     private Block[][] gameBoard = {
@@ -69,77 +82,114 @@ public class Game {
 
 
     public Game(Context context, int numberOfPlayers) {
+        //Initialise variables
         this.context = context;
         this.resources = this.context.getResources();
-        int heightPixels = this.resources.getDisplayMetrics().heightPixels;
-        this.unit = (int) ((heightPixels / gameBoard.length) * 0.8);
-        // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
         this.numberOfPlayers = numberOfPlayers;
+        this.selectedFigure = null;
+        this.selectedDiceNumber = -1;
+        this.startColPos = -1;
+        this.startRowPos = -1;
 
+        //Calculate measurement unit
+        unit = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8); // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
+
+        //Set up game logic
         initializeGameBoard();
         initializePlayers();
+
+        //Set up game views
         gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView);
         gameBoardView.setGameBoard(gameBoard);
+        playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
+        playerView.setPlayers(players);
     }
 
     public boolean initializeGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
-                setBlockParametersByType(gameBoard[col][row], gameBoard[col][row].getType(), col, row);
+                setBlockParametersByType(gameBoard, col, row);
             }
         }
         return true;
     }
 
 
-    public void setBlockParametersByType(Block block, int type, int col, int row) {
+    public void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
+        //Create variables
+        Block currentBlock = gameBoard[col][row];
+
         //Set images
         Drawable drawable;
-        switch (type) {
+        switch (currentBlock.getType()) {
             case S:
                 drawable = resources.getDrawable(R.drawable.circle_white_l_arrow);
+                currentBlock.setNextBlock(LEFT);
+                currentBlock.setPreviousBlock(BASE);
+                startColPos = col;
+                startRowPos = row;
                 break;
             case HR:
                 drawable = resources.getDrawable(R.drawable.circle_white_rl);
+                currentBlock.setNextBlock(RIGHT);
+                currentBlock.setPreviousBlock(LEFT);
                 break;
             case HL:
                 drawable = resources.getDrawable(R.drawable.circle_white_rl);
+                currentBlock.setNextBlock(LEFT);
+                currentBlock.setPreviousBlock(RIGHT);
                 break;
             case EU:
                 drawable = resources.getDrawable(R.drawable.circle_white_ur);
+                currentBlock.setNextBlock(UP);
+                currentBlock.setPreviousBlock(RIGHT);
                 break;
             case ER:
                 drawable = resources.getDrawable(R.drawable.circle_white_rd);
+                currentBlock.setNextBlock(RIGHT);
+                currentBlock.setPreviousBlock(DOWN);
                 break;
             case ED:
                 drawable = resources.getDrawable(R.drawable.circle_white_dl);
+                currentBlock.setNextBlock(LEFT);
+                currentBlock.setPreviousBlock(DOWN);
                 break;
             case EL:
                 drawable = resources.getDrawable(R.drawable.circle_white_ul);
+                currentBlock.setNextBlock(UP);
+                currentBlock.setPreviousBlock(LEFT);
                 break;
             case V:
                 drawable = resources.getDrawable(R.drawable.circle_white_ud);
+                currentBlock.setNextBlock(UP);
+                currentBlock.setPreviousBlock(DOWN);
                 break;
             case F:
                 drawable = resources.getDrawable(R.drawable.circle_blue_l);
+                currentBlock.setNextBlock(GOAL);
+                currentBlock.setPreviousBlock(LEFT);
                 break;
             case W:
                 drawable = resources.getDrawable(R.drawable.wall_6);
-                break; // TODO handle different wall numbers
+                break; //TODO handle different wall numbers
             case N:
                 drawable = resources.getDrawable(R.drawable.empty);
                 break;
             case BR:
                 drawable = resources.getDrawable(R.drawable.circle_red);
+                currentBlock.setNextBlock(START);
                 break;
             case BG:
                 drawable = resources.getDrawable(R.drawable.circle_green);
+                currentBlock.setNextBlock(START);
                 break;
             case BY:
                 drawable = resources.getDrawable(R.drawable.circle_yellow);
+                currentBlock.setNextBlock(START);
                 break;
             case BB:
                 drawable = resources.getDrawable(R.drawable.circle_black);
+                currentBlock.setNextBlock(START);
                 break;
             case GR:
                 drawable = resources.getDrawable(R.drawable.circle_red);
@@ -159,23 +209,7 @@ public class Game {
         int lengthPos = col * unit;
         int heightPos = row * unit;
         drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
-        block.setImage(drawable);
-
-        //Set starting figures //TODO This should use the players figures, not create new ones.
-/*        Drawable figureImg;
-        switch (type){
-            case BR: {figureImg = resources.getDrawable(R.drawable.player_red);} break;
-            case BG: {figureImg = resources.getDrawable(R.drawable.player_green);} break;
-            case BY: {figureImg = resources.getDrawable(R.drawable.player_yellow);} break;
-            case BB: {figureImg = resources.getDrawable(R.drawable.player_black);} break;
-            default: figureImg = resources.getDrawable(R.drawable.empty);
-        }
-        figureImg.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
-        Figure figure = new Figure();
-        figure.setImage(figureImg);
-        block.setOccupyingFigure(figure);
-        */
-
+        currentBlock.setImage(drawable);
     }
 
     public void initializePlayers() {
@@ -184,21 +218,37 @@ public class Game {
         for (int colour = 0; colour < numberOfPlayers; colour++) {
             players[colour] = new Player(context, colour);
         }
+
+        //TODO Set all the figures to their bases properly
+        //TODO Figure out why this is not working.
+        players[RED].getFigures()[0].setPos(13, 7);
+        players[RED].getFigures()[1].setPos(13, 8);
+        players[RED].getFigures()[2].setPos(14, 7);
+        players[RED].getFigures()[3].setPos(14, 8);
     }
 
     public void rollDice() { //TODO Think of a better name for this method.
         // TODO Do something meaningful here. (currently used for testing ideas).
-        Figure figure = players[RED].getFigures()[0];
-        int col = 4;
-        int row = figure.getRowPos() + 1;
-
-        //TODO Handle occupation better (let blocks now they are not occupied anymore)
-        figure.setPos(col, row, unit);
-        gameBoard[col][row].setOccupyingFigure(figure);
-
-        //gameBoardView.setGameBoard(gameBoard);
-        gameBoardView.invalidate();
-
     }
 
+    public void moveFigureForward(Figure figure){
+        int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
+        switch (direction){
+            case UP: figure.walkUp(); break;
+            case RIGHT: figure.walkRight(); break;
+            case DOWN: figure.walkDown(); break;
+            case LEFT: figure.walkLeft(); break;
+            case BASE: break; //TODO handle this case.
+            case GOAL: break; //TODO handle this case.
+            case START: figure.setPos(startColPos, startRowPos); break;
+        }
+        playerView.invalidate(); //TODO Decide where this should be called.
+    }
+
+    public void setSelectedDiceNumber(int selectedDiceNumber) {
+        this.selectedDiceNumber = selectedDiceNumber;
+        for (int i = 0; i < selectedDiceNumber; i++) {
+            moveFigureForward(players[RED].getFigures()[0]);
+        }
+    }
 }

@@ -114,6 +114,7 @@ public class GameBoardActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
         } else if (!drag1) {
             Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice1, Toast.LENGTH_SHORT).show();
+            game.setSelectedDiceNumber(randomDice1); // TODO check if this is the right playce to call this.
         } else if (drag1 && drag2) {
             Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
         }
@@ -130,6 +131,7 @@ public class GameBoardActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
         } else if (!drag2) {
             Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice2, Toast.LENGTH_SHORT).show();
+            game.setSelectedDiceNumber(randomDice2); // TODO check if this is the right playce to call this.
         } else if (drag1 && drag2) {
             Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
         }
@@ -161,6 +163,8 @@ public class GameBoardActivity extends AppCompatActivity {
 
         } else {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
+
+            game.rollDice(); //TODO This is just here for making debugging easier and should be removed after.
         }
     }
 

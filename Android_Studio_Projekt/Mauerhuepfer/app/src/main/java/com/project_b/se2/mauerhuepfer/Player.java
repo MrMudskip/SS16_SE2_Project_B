@@ -19,7 +19,7 @@ public class Player {
         initializeFigures();
     }
 
-    public void initializeFigures(){ // TODO Decide if image position should also be managed here.
+    public void initializeFigures(){
         Drawable image;
         switch (colour) {
             case Game.RED: image = context.getResources().getDrawable(R.drawable.player_red); break;

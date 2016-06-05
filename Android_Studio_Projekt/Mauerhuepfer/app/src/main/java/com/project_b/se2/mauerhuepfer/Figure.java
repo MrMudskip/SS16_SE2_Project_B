@@ -11,11 +11,13 @@ public class Figure {
     private final int ownerID;
     private int colPos;
     private int rowPos;
+    private int unit;
 
     public Figure(int ownerID) {
         this.ownerID = ownerID;
         this.colPos = 0;
         this.rowPos = 0;
+        this.unit = Game.unit;
     }
 
     public Drawable getImage() {
@@ -38,7 +40,8 @@ public class Figure {
         return rowPos;
     }
 
-    public boolean setPos(int col, int row, int unit) {
+    public boolean setPos(int col, int row) {
+       // Set new position logically.
         colPos = col;
         rowPos = row;
 
@@ -51,6 +54,19 @@ public class Figure {
         } else {
             return  false;
         }
+    }
+
+    public void walkUp () {
+        setPos(colPos-1,rowPos);
+    }
+    public void walkRight () {
+        setPos(colPos,rowPos+1);
+    }
+    public void walkDown () {
+        setPos(colPos+1,rowPos);
+    }
+    public void walkLeft () {
+        setPos(colPos,rowPos-1);
     }
 }
 
