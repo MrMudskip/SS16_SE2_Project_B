@@ -21,17 +21,13 @@ public class OptionsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
-
         setContentView(R.layout.activity_options);
-
         PREFS_NAME = getString(R.string.memory);
 
         // Restore preferences
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-
         String playerName = settings.getString("playerName", null);
         String hostName = settings.getString("hostName", null);
-
         ((EditText) findViewById(R.id.text_player)).setText(playerName);
         ((EditText) findViewById(R.id.text_host)).setText(hostName);
     }

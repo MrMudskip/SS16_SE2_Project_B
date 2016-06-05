@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
+import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 
 /**
@@ -231,7 +233,6 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     @Override
     public void receiveMessage(UpdateState status) {
         //TODO: UPDATE GAMESTATES
-
         if (status != null) {
 
             if (status.getUsage() == USAGE_DICE) {

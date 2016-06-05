@@ -18,6 +18,9 @@ import com.google.android.gms.nearby.connection.AppIdentifier;
 import com.google.android.gms.nearby.connection.AppMetadata;
 import com.google.android.gms.nearby.connection.Connections;
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes;
+import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
+import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
+import com.project_b.se2.mauerhuepfer.interfaces.IUpdateView;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -67,6 +70,8 @@ public class NetworkManager implements
     public void setPlayerID(int player) {
         if (0 < player && player <= maxClients) {
             playerID = player;
+        } else {
+            playerID = -1;
         }
     }
 

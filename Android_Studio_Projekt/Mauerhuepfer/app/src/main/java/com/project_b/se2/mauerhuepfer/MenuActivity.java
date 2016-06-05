@@ -10,10 +10,6 @@ import android.widget.Button;
 
 public class MenuActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Button newGameButton;
-    private Button mLaunchButton;
-    private Button mOptionButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,21 +17,7 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
-
-        setContentView(R.layout.activity_menu);
-
-        newGameButton = (Button) findViewById(R.id.neuesSpiel);
-        newGameButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), GameBoardActivity.class);
-                startActivity(intent);
-                // setContentView(R.layout.activity_game_board);
-            }
-        });
         setContentView(R.layout.activity_main);
-        mLaunchButton = (Button) findViewById(R.id.buttonLaunch);
-        mOptionButton = (Button) findViewById(R.id.buttonOption);
         findViewById(R.id.buttonLaunch).setOnClickListener(this);
         findViewById(R.id.buttonOption).setOnClickListener(this);
     }
@@ -46,12 +28,10 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.buttonLaunch:
                 myIntent = new Intent(MenuActivity.this, NetworkActivity.class);
-                //myIntent.putExtra("key", value); //Optional parameters
                 MenuActivity.this.startActivity(myIntent);
                 break;
             case R.id.buttonOption:
                 myIntent = new Intent(MenuActivity.this, OptionsActivity.class);
-                //myIntent.putExtra("key", value); //Optional parameters
                 MenuActivity.this.startActivity(myIntent);
                 break;
         }

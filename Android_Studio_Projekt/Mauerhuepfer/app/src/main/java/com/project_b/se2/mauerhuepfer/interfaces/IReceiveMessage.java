@@ -1,6 +1,8 @@
-package com.project_b.se2.mauerhuepfer;
+package com.project_b.se2.mauerhuepfer.interfaces;
 
 import android.support.annotation.IntDef;
+
+import com.project_b.se2.mauerhuepfer.UpdateState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

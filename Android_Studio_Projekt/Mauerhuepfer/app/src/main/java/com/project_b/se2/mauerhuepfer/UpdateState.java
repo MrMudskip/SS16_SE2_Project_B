@@ -2,6 +2,8 @@ package com.project_b.se2.mauerhuepfer;
 
 import android.util.Log;
 
+import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
+
 import java.io.Serializable;
 
 /**

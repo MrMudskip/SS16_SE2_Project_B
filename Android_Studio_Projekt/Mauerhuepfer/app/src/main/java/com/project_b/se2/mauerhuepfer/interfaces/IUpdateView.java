@@ -1,4 +1,4 @@
-package com.project_b.se2.mauerhuepfer;
+package com.project_b.se2.mauerhuepfer.interfaces;
 
 /**
  * Created by rohrbe on 29.05.16.
