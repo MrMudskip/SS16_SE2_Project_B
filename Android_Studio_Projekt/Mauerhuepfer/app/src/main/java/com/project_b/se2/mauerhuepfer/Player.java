@@ -28,8 +28,10 @@ public class Player {
             case Game.BLACK: image = context.getResources().getDrawable(R.drawable.player_black); break;
             default:  image = context.getResources().getDrawable(R.drawable.empty);
         }
+
         for (int i = 0; i < figures.length; i++) {
-            figures[i].setImage(image);
+            Drawable clone = image.getConstantState().newDrawable().mutate(); //Deep copy to avoid figures sharing the same image.
+            figures[i].setImage(clone);
         }
     }
 

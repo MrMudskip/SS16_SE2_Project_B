@@ -3,7 +3,10 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
+import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -61,7 +64,21 @@ public class Game {
     private int startColPos;
     private int startRowPos;
 
-    // 2D array containing all the blocks that make up the game field.     // TODO find a solution for different wall numbers.
+    /**
+     * Color matrix that flips the components (<code>-1.0f * c + 255 = 255 - c</code>)
+     * and keeps the alpha intact.
+     */
+    private static final float[] NEGATIVE_FILTER = {
+            -1.0f,     0,     0,    0, 255, // red
+                0, -1.0f,     0,    0, 255, // green
+                0,     0, -1.0f,    0, 255, // blue
+                0,     0,     0, 1.0f,   0  // alpha
+    };
+
+
+    /**
+     * 2D array containing all the blocks that form the game board.   // TODO find a solution for different wall numbers.
+     */
     private Block[][] gameBoard = {
             {new Block(GB), new Block(GB), new Block(GB), new Block(GB), new Block(N), new Block(GG), new Block(GG), new Block(GG), new Block(GG)},
             {new Block(GY), new Block(GY), new Block(GY), new Block(GY), new Block(N), new Block(GR), new Block(GR), new Block(GR), new Block(GR)},
@@ -103,6 +120,29 @@ public class Game {
         gameBoardView.setGameBoard(gameBoard);
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
+
+        playerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    for (Player player : players) {
+                        Figure[] figures = player.getFigures();
+                        for (Figure fig : figures) {
+                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
+                                if (selectedFigure != null) {
+                                    selectedFigure.getImage().setColorFilter(null); //Revert old selected figure
+                                }
+                                selectedFigure = fig;
+                                selectedFigure.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //Change new selected figure
+                                playerView.invalidate();
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+        });
+
     }
 
     public boolean initializeGameBoard() {
@@ -219,12 +259,24 @@ public class Game {
             players[colour] = new Player(context, colour);
         }
 
-        //TODO Set all the figures to their bases properly
         //TODO Figure out why this is not working.
+
         players[RED].getFigures()[0].setPos(13, 7);
         players[RED].getFigures()[1].setPos(13, 8);
         players[RED].getFigures()[2].setPos(14, 7);
         players[RED].getFigures()[3].setPos(14, 8);
+        players[GREEN].getFigures()[0].setPos(13, 5);
+        players[GREEN].getFigures()[1].setPos(13, 6);
+        players[GREEN].getFigures()[2].setPos(14, 5);
+        players[GREEN].getFigures()[3].setPos(14, 6);
+        players[YELLOW].getFigures()[0].setPos(13, 2);
+        players[YELLOW].getFigures()[1].setPos(13, 3);
+        players[YELLOW].getFigures()[2].setPos(14, 2);
+        players[YELLOW].getFigures()[3].setPos(14, 3);
+        players[BLACK].getFigures()[0].setPos(13, 0);
+        players[BLACK].getFigures()[1].setPos(13, 1);
+        players[BLACK].getFigures()[2].setPos(14, 0);
+        players[BLACK].getFigures()[3].setPos(14, 1);
     }
 
     public void rollDice() { //TODO Think of a better name for this method.
@@ -246,9 +298,13 @@ public class Game {
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
+        //this.selectedFigure = players[RED].getFigures()[0]; // TODO find out which figure was clicked.
         this.selectedDiceNumber = selectedDiceNumber;
+
         for (int i = 0; i < selectedDiceNumber; i++) {
-            moveFigureForward(players[RED].getFigures()[0]);
+            moveFigureForward(selectedFigure);
         }
     }
+
+
 }

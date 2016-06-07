@@ -7,6 +7,7 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -108,6 +109,7 @@ public class GameBoardActivity extends AppCompatActivity {
         int numberOfPlayers = 4; // TODO decide this dynamically.
         this.game = new Game(this, numberOfPlayers);
     }
+
 
     private void clickOnDice1() {
         if (drag1 && !drag2) {

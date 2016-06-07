@@ -46,14 +46,14 @@ public class Figure {
         rowPos = row;
 
         //Adjust image position accordingly.
-        if (image != null) {
+        //if (image != null) {
             int lengthPos = col * unit;
             int heightPos = row * unit;
             image.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
             return true;
-        } else {
-            return  false;
-        }
+        //} else {
+        //    return  false;
+        //}
     }
 
     public void walkUp () {
