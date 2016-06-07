@@ -3,10 +3,15 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.ColorFilter;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -69,10 +74,10 @@ public class Game {
      * and keeps the alpha intact.
      */
     private static final float[] NEGATIVE_FILTER = {
-            -1.0f,     0,     0,    0, 255, // red
-                0, -1.0f,     0,    0, 255, // green
-                0,     0, -1.0f,    0, 255, // blue
-                0,     0,     0, 1.0f,   0  // alpha
+            -1.0f, 0, 0, 0, 255, // red
+            0, -1.0f, 0, 0, 255, // green
+            0, 0, -1.0f, 0, 255, // blue
+            0, 0, 0, 1.0f, 0  // alpha
     };
 
 
@@ -246,10 +251,12 @@ public class Game {
             default:
                 drawable = resources.getDrawable(R.drawable.empty);
         }
+
+        Drawable clone = drawable.getConstantState().newDrawable().mutate(); //Deep copy to avoid blocks sharing the same image.
         int lengthPos = col * unit;
         int heightPos = row * unit;
-        drawable.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
-        currentBlock.setImage(drawable);
+        clone.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
+        currentBlock.setImage(clone);
     }
 
     public void initializePlayers() {
@@ -283,9 +290,9 @@ public class Game {
         // TODO Do something meaningful here. (currently used for testing ideas).
     }
 
-    public void moveFigureForward(Figure figure){
+    public void moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
-        switch (direction){
+        switch (direction) {
             case UP: figure.walkUp(); break;
             case RIGHT: figure.walkRight(); break;
             case DOWN: figure.walkDown(); break;
@@ -301,10 +308,30 @@ public class Game {
         //this.selectedFigure = players[RED].getFigures()[0]; // TODO find out which figure was clicked.
         this.selectedDiceNumber = selectedDiceNumber;
 
+        //TODO this should not be called here.
         for (int i = 0; i < selectedDiceNumber; i++) {
-            moveFigureForward(selectedFigure);
+            if (selectedFigure != null){
+                moveFigureForward(selectedFigure);
+            }
         }
+        calculatePossibleMoves();
     }
 
+    public void calculatePossibleMoves() {
+        // TODO Complete this "WORK IN PROGRESS" method.
+        int currentColPos;
+        int currentRowPos;
+        List<Block> possibleDestinationBlocks = new ArrayList<Block>();
+
+        possibleDestinationBlocks.add(gameBoard[12][2]);
+        possibleDestinationBlocks.add(gameBoard[10][4]);
+        possibleDestinationBlocks.add(gameBoard[12][6]);
+
+        //Highlight possible destination blocks
+        for (Block block : possibleDestinationBlocks) {
+            block.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER));
+        }
+        gameBoardView.invalidate();
+    }
 
 }

@@ -41,32 +41,35 @@ public class Figure {
     }
 
     public boolean setPos(int col, int row) {
-       // Set new position logically.
+        // Set new position logically.
         colPos = col;
         rowPos = row;
 
         //Adjust image position accordingly.
-        //if (image != null) {
+        if (image != null) {
             int lengthPos = col * unit;
             int heightPos = row * unit;
             image.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
             return true;
-        //} else {
-        //    return  false;
-        //}
+        } else {
+            return false;
+        }
     }
 
-    public void walkUp () {
-        setPos(colPos-1,rowPos);
+    public void walkUp() {
+        setPos(colPos - 1, rowPos);
     }
-    public void walkRight () {
-        setPos(colPos,rowPos+1);
+
+    public void walkRight() {
+        setPos(colPos, rowPos + 1);
     }
-    public void walkDown () {
-        setPos(colPos+1,rowPos);
+
+    public void walkDown() {
+        setPos(colPos + 1, rowPos);
     }
-    public void walkLeft () {
-        setPos(colPos,rowPos-1);
+
+    public void walkLeft() {
+        setPos(colPos, rowPos - 1);
     }
 }
 

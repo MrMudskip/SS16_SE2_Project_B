@@ -23,7 +23,7 @@ import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
  */
 public class GameBoardActivity extends AppCompatActivity {
 
-    private  Game game;
+    private Game game;
 
 
     // Dice attributes
@@ -43,11 +43,12 @@ public class GameBoardActivity extends AppCompatActivity {
 
     Drawable tempImage;
     MediaPlayer but_sound;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class GameBoardActivity extends AppCompatActivity {
                     but_sound = MediaPlayer.create(GameBoardActivity.this, R.raw.klack);
                     but_sound.setVolume(1.0f, 1.0f);
                     but_sound.start();
-                }else {
+                } else {
                     Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -160,13 +161,8 @@ public class GameBoardActivity extends AppCompatActivity {
             infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
             drag1 = false;
             drag2 = false;
-
-            game.rollDice(); //TODO check if this is the right place to call this.
-
         } else {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
-
-            game.rollDice(); //TODO This is just here for making debugging easier and should be removed after.
         }
     }
 

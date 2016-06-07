@@ -15,21 +15,12 @@ public class CustomGameBoardView extends View {
 
 
     public CustomGameBoardView(Context context, AttributeSet attrs) {
-        super(context,attrs);
+        super(context, attrs);
     }
-
-
-  /*  //TODO Delete this if everything is working.
-    public CustomGameBoardView(Context context, Block[][] gameBoard) {
-        super(context);
-        this.gameBoard = gameBoard;
-    }
-
-   */
 
     protected void onDraw(Canvas canvas) {
 
-        //Draw gameBoard //TODO It should be enough to draw this once, not every time.
+        //Draw gameBoard
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
                 Block currentBlock = gameBoard[col][row];
