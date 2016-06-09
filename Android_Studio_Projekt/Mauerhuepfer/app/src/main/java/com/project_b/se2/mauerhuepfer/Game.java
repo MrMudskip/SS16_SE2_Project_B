@@ -15,6 +15,7 @@ import java.util.List;
  * Created by Anita on 03.05.2016.
  */
 public class Game {
+    //TODO check which methods should be private/public (at the end, maybe?).
 
     //Player colours
     static final int RED = 0;
@@ -155,7 +156,7 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    System.out.println("Clicked game board view at " + event.getX() + "|" + event.getY());
+                    //System.out.println("Clicked game board view at " + event.getX() + "|" + event.getY()); //TODO delete this debug info before launch.
                     if (!possibleDestinationBlocks.isEmpty()){
                         for (Block block : possibleDestinationBlocks) {
                             if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())){
@@ -320,56 +321,84 @@ public class Game {
         //TODO Do something meaningful here. (currently used for testing ideas).
     }
 
-    public void moveFigureForward(Figure figure) {
+    public boolean moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
         switch (direction) {
             case UP: figure.walkUp(); break;
             case RIGHT: figure.walkRight(); break;
             case DOWN: figure.walkDown(); break;
             case LEFT: figure.walkLeft(); break;
-            case BASE: break; //TODO handle this case.
+            case BASE: return false;
             case GOAL: break; //TODO handle this case.
             case START: figure.setPos(startColPos, startRowPos); break;
         }
+        return true;
     }
 
-    public void moveFigureBackward(Figure figure) {
+    public boolean moveFigureBackward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
         switch (direction) {
             case UP: figure.walkUp(); break;
             case RIGHT: figure.walkRight(); break;
             case DOWN: figure.walkDown(); break;
             case LEFT: figure.walkLeft(); break;
-            case BASE: break; //TODO handle this case.
+            case BASE: return false;
             case GOAL: break; //TODO handle this case.
             case START: figure.setPos(startColPos, startRowPos); break;
         }
+        return true;
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
         //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move.
         this.selectedDiceNumber = selectedDiceNumber;
-
-        calculatePossibleMoves(); //TODO Try to find a better place to call this.
+        calculatePossibleMoves();
     }
 
 
-    public void calculatePossibleMoves() {  // TODO Complete this "WORK IN PROGRESS" method.
+    public void calculatePossibleMoves() {
         if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
-            Figure ghostFig = new Figure(-1);
-            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());
-            clearPossibleDestinationBlocks(); //Clear the list to remove any blocks from previous uses.
+            Figure ghostFig = new Figure(-1);                                           //Create new invisible ghost figure
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
+            clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
-            for (int i = 0; i < selectedDiceNumber; i++) {moveFigureForward(ghostFig);}             //Move ghost figure forward for the amount on selected dice.
-            possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block
-            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                //Reset ghost figures position
 
-            for (int i = 0; i < selectedDiceNumber; i++) {moveFigureBackward(ghostFig);}            //Move selected figure backward for the amount on selected dice.
-            possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block
-            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                //Reset ghost figures position
+            //Check way forward.  //TODO Handle behavior around GOAL area better.
+            int blocksMoved;                                                                                            //Number of actually traversed blocks.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {}    //Move ghost figure forward for the amount on selected dice.
+            if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
+                possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
+            }
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                                    //Reset ghost figures position.
 
-            //TODO check wall jumps as possible move
 
+            //Check way backward.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {}   //Move ghost figure forward for the amount on selected dice.
+            if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
+                possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
+            }
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                                    //Reset ghost figures position.
+
+
+            //Check way up.
+            if (ghostFig.getColPos() - 1 > 0) {                                                             //Check if there is a block above.
+                ghostFig.walkUp();                                                                          //Walk up to potentially find a wall block.
+                if (gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()].getWallNumber() == selectedDiceNumber) {
+                    ghostFig.walkUp();                                                                      //If the block is a wall block and the number fits the dice, then "jump" over the wall.
+                    possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block.
+                }
+                ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                    //Reset ghost figures position.
+            }
+
+            //Check way down.
+            if (ghostFig.getColPos() + 1 < gameBoard.length) {                                              //Check if there is a block below.
+                ghostFig.walkDown();                                                                        //Walk down to potentially find a wall block.
+                if (ghostFig.getColPos() < gameBoard.length && gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()].getWallNumber() == selectedDiceNumber) {
+                    ghostFig.walkDown();                                                                    //If the block is a wall block and the number fits the dice, then "jump" over the wall.
+                    possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block.
+                }
+                ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                    //Reset ghost figures position.
+            }
 
             //Highlight possible destination blocks
             for (Block block : possibleDestinationBlocks) {
@@ -381,13 +410,13 @@ public class Game {
 
     public void moveSelectedFigureAndTidyUp(int col, int row){
         selectedFigure.setPos(col, row);
-        System.out.println("selected figure: " + selectedFigure.getOwnerID() + " | " + selectedFigure.getColPos() + " | " + selectedFigure.getRowPos());
+        //System.out.println("selected figure: " + selectedFigure.getOwnerID() + " | " + selectedFigure.getColPos() + " | " + selectedFigure.getRowPos()); //TODO delete this debug info before launch.
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
 
         playerView.invalidate(); //TODO Decide where this should be called.
         gameBoardView.invalidate();
-
+        //TODO decide if players have to use both dice on the same figure (ask Anita?).
     }
 
     public void clearPossibleDestinationBlocks(){
@@ -402,7 +431,7 @@ public class Game {
      * @param max highest integer allowed.
      * @return random integer  in the interval [min,max].
      */
-    public int getRandomNumberBetweenMinMax (int min, int max) {
+    private int getRandomNumberBetweenMinMax (int min, int max) {
         return min + (int)(Math.random() * ((max - min) + 1));
     }
 }
