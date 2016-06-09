@@ -8,12 +8,18 @@ import android.graphics.drawable.Drawable;
 public class Block {
 
     private int type;
+    private int colPos;
+    private int rowPos;
+    private int wallNumber;
     private int previousBlock;
     private int nextBlock;
     private Drawable image;
 
     public Block(int type) {
         this.type = type;
+        this.colPos = -1;
+        this.rowPos = -1;
+        this.wallNumber = -1;
         this.nextBlock = -1;
         this.previousBlock = -1;
     }
@@ -26,12 +32,28 @@ public class Block {
         this.type = type;
     }
 
-    public Drawable getImage() {
-        return image;
+    public int getColPos() {
+        return colPos;
     }
 
-    public void setImage(Drawable image) {
-        this.image = image;
+    public void setColPos(int colPos) {
+        this.colPos = colPos;
+    }
+
+    public int getRowPos() {
+        return rowPos;
+    }
+
+    public void setRowPos(int rowPos) {
+        this.rowPos = rowPos;
+    }
+
+    public int getWallNumber() {
+        return wallNumber;
+    }
+
+    public void setWallNumber(int wallNumber) {
+        this.wallNumber = wallNumber;
     }
 
     public int getPreviousBlock() {
@@ -48,5 +70,13 @@ public class Block {
 
     public void setNextBlock(int nextBlock) {
         this.nextBlock = nextBlock;
+    }
+
+    public Drawable getImage() {
+        return image;
+    }
+
+    public void setImage(Drawable image) {
+        this.image = image;
     }
 }

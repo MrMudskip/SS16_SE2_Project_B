@@ -3,7 +3,6 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.ColorFilter;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
@@ -11,7 +10,6 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -66,6 +64,7 @@ public class Game {
     private Player[] players;
     private Figure selectedFigure;
     private int selectedDiceNumber;
+    List<Block> possibleDestinationBlocks;
     private int startColPos;
     private int startRowPos;
 
@@ -73,7 +72,7 @@ public class Game {
      * Color matrix that flips the components (<code>-1.0f * c + 255 = 255 - c</code>)
      * and keeps the alpha intact.
      */
-    private static final float[] NEGATIVE_FILTER = {
+    private static final float[] NEGATIVE_FILTER = { //TODO find a more suitable filter than just a negative.
             -1.0f, 0, 0, 0, 255, // red
             0, -1.0f, 0, 0, 255, // green
             0, 0, -1.0f, 0, 255, // blue
@@ -110,6 +109,7 @@ public class Game {
         this.numberOfPlayers = numberOfPlayers;
         this.selectedFigure = null;
         this.selectedDiceNumber = -1;
+        this.possibleDestinationBlocks = new ArrayList<Block>();
         this.startColPos = -1;
         this.startRowPos = -1;
 
@@ -130,7 +130,8 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    for (Player player : players) {
+                    //System.out.println("Clicked player view at " + event.getX() + "|" + event.getY()); //TODO delete this debug info before launch.
+                    for (Player player : players) { //TODO handle the difference between own figures and non-selectable figures of other players
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
@@ -140,11 +141,31 @@ public class Game {
                                 selectedFigure = fig;
                                 selectedFigure.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //Change new selected figure
                                 playerView.invalidate();
+                                calculatePossibleMoves();
+                                return true;
                             }
                         }
                     }
                 }
-                return true;
+                return false;
+            }
+        });
+
+        gameBoardView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    System.out.println("Clicked game board view at " + event.getX() + "|" + event.getY());
+                    if (!possibleDestinationBlocks.isEmpty()){
+                        for (Block block : possibleDestinationBlocks) {
+                            if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())){
+                                moveSelectedFigureAndTidyUp(block.getColPos(), block.getRowPos());
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
             }
         });
 
@@ -163,6 +184,8 @@ public class Game {
     public void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
         //Create variables
         Block currentBlock = gameBoard[col][row];
+        currentBlock.setColPos(col);
+        currentBlock.setRowPos(row);
 
         //Set images
         Drawable drawable;
@@ -215,8 +238,18 @@ public class Game {
                 currentBlock.setPreviousBlock(LEFT);
                 break;
             case W:
-                drawable = resources.getDrawable(R.drawable.wall_6);
-                break; //TODO handle different wall numbers
+                int wallNumber = getRandomNumberBetweenMinMax(1,6);
+                currentBlock.setWallNumber(wallNumber);
+                switch (wallNumber){
+                    case 1:  drawable = resources.getDrawable(R.drawable.wall_1); break;
+                    case 2:  drawable = resources.getDrawable(R.drawable.wall_2); break;
+                    case 3:  drawable = resources.getDrawable(R.drawable.wall_3); break;
+                    case 4:  drawable = resources.getDrawable(R.drawable.wall_4); break;
+                    case 5:  drawable = resources.getDrawable(R.drawable.wall_5); break;
+                    case 6:  drawable = resources.getDrawable(R.drawable.wall_6); break;
+                    default: drawable = resources.getDrawable(R.drawable.empty);
+                }
+                break;
             case N:
                 drawable = resources.getDrawable(R.drawable.empty);
                 break;
@@ -265,9 +298,6 @@ public class Game {
         for (int colour = 0; colour < numberOfPlayers; colour++) {
             players[colour] = new Player(context, colour);
         }
-
-        //TODO Figure out why this is not working.
-
         players[RED].getFigures()[0].setPos(13, 7);
         players[RED].getFigures()[1].setPos(13, 8);
         players[RED].getFigures()[2].setPos(14, 7);
@@ -287,7 +317,7 @@ public class Game {
     }
 
     public void rollDice() { //TODO Think of a better name for this method.
-        // TODO Do something meaningful here. (currently used for testing ideas).
+        //TODO Do something meaningful here. (currently used for testing ideas).
     }
 
     public void moveFigureForward(Figure figure) {
@@ -301,37 +331,78 @@ public class Game {
             case GOAL: break; //TODO handle this case.
             case START: figure.setPos(startColPos, startRowPos); break;
         }
-        playerView.invalidate(); //TODO Decide where this should be called.
+    }
+
+    public void moveFigureBackward(Figure figure) {
+        int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
+        switch (direction) {
+            case UP: figure.walkUp(); break;
+            case RIGHT: figure.walkRight(); break;
+            case DOWN: figure.walkDown(); break;
+            case LEFT: figure.walkLeft(); break;
+            case BASE: break; //TODO handle this case.
+            case GOAL: break; //TODO handle this case.
+            case START: figure.setPos(startColPos, startRowPos); break;
+        }
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
-        //this.selectedFigure = players[RED].getFigures()[0]; // TODO find out which figure was clicked.
+        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move.
         this.selectedDiceNumber = selectedDiceNumber;
 
-        //TODO this should not be called here.
-        for (int i = 0; i < selectedDiceNumber; i++) {
-            if (selectedFigure != null){
-                moveFigureForward(selectedFigure);
+        calculatePossibleMoves(); //TODO Try to find a better place to call this.
+    }
+
+
+    public void calculatePossibleMoves() {  // TODO Complete this "WORK IN PROGRESS" method.
+        if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
+            Figure ghostFig = new Figure(-1);
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());
+            clearPossibleDestinationBlocks(); //Clear the list to remove any blocks from previous uses.
+
+            for (int i = 0; i < selectedDiceNumber; i++) {moveFigureForward(ghostFig);}             //Move ghost figure forward for the amount on selected dice.
+            possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                //Reset ghost figures position
+
+            for (int i = 0; i < selectedDiceNumber; i++) {moveFigureBackward(ghostFig);}            //Move selected figure backward for the amount on selected dice.
+            possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);   //Add ghost figures position as new possible destination block
+            ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                //Reset ghost figures position
+
+            //TODO check wall jumps as possible move
+
+
+            //Highlight possible destination blocks
+            for (Block block : possibleDestinationBlocks) {
+                block.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //TODO maybe use a more suitable filter than negative?
             }
+            gameBoardView.invalidate();
         }
-        calculatePossibleMoves();
     }
 
-    public void calculatePossibleMoves() {
-        // TODO Complete this "WORK IN PROGRESS" method.
-        int currentColPos;
-        int currentRowPos;
-        List<Block> possibleDestinationBlocks = new ArrayList<Block>();
+    public void moveSelectedFigureAndTidyUp(int col, int row){
+        selectedFigure.setPos(col, row);
+        System.out.println("selected figure: " + selectedFigure.getOwnerID() + " | " + selectedFigure.getColPos() + " | " + selectedFigure.getRowPos());
+        clearPossibleDestinationBlocks();
+        selectedDiceNumber = -1;
 
-        possibleDestinationBlocks.add(gameBoard[12][2]);
-        possibleDestinationBlocks.add(gameBoard[10][4]);
-        possibleDestinationBlocks.add(gameBoard[12][6]);
-
-        //Highlight possible destination blocks
-        for (Block block : possibleDestinationBlocks) {
-            block.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER));
-        }
+        playerView.invalidate(); //TODO Decide where this should be called.
         gameBoardView.invalidate();
+
     }
 
+    public void clearPossibleDestinationBlocks(){
+        for (Block block : possibleDestinationBlocks) {
+            block.getImage().setColorFilter(null);
+        }
+        possibleDestinationBlocks.clear();
+    }
+
+    /**
+     * @param min lowest integer allowed.
+     * @param max highest integer allowed.
+     * @return random integer  in the interval [min,max].
+     */
+    public int getRandomNumberBetweenMinMax (int min, int max) {
+        return min + (int)(Math.random() * ((max - min) + 1));
+    }
 }
