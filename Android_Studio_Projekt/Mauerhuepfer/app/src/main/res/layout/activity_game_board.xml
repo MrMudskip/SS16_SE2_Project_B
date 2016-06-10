@@ -28,14 +28,14 @@
             android:id="@+id/wuerfel"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/w5n"
+            android:src="@drawable/w0n"
             android:layout_marginRight="10dp" />
 
         <ImageView
             android:id="@+id/wuerfel2"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/w6n" />
+            android:src="@drawable/w0n" />
 
         <TextView
             android:id="@+id/textView"
