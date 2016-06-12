@@ -1,7 +1,7 @@
 package com.project_b.se2.mauerhuepfer;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
@@ -23,22 +23,16 @@ import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 public class GameBoardActivity extends AppCompatActivity {
 
 
-    // Dice attributes
-    private int randomDice1;
-    private int randomDice2;
+
     private ImageView diceImage1;
     private ImageView diceImage2;
-    private boolean drag1 = true;
-    private boolean drag2 = true;
     private TextView infoText;
     private Button diceButton;
-    private SensorManager mgr;
-    private float max = 0;
+    private Dice dice;
 
     private SensorManager mSensorManager;
     private ShakeDetector mSensorListener;
 
-    Drawable tempImage;
     MediaPlayer but_sound;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -59,7 +53,7 @@ public class GameBoardActivity extends AppCompatActivity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         // findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-
+        dice = new Dice(this);
         diceImage1 = (ImageView) findViewById(R.id.wuerfel);
         diceImage2 = (ImageView) findViewById(R.id.wuerfel2);
         infoText = (TextView) findViewById(R.id.textView);
@@ -71,13 +65,13 @@ public class GameBoardActivity extends AppCompatActivity {
         mSensorListener.setOnShakeListener(new ShakeDetector.OnShakeListener() {
             @Override
             public void onShake() {
-                if (drag1 && drag2) {
+                if (dice.checkDicePermission()) {
                     diceButton();
                     but_sound = MediaPlayer.create(GameBoardActivity.this, R.raw.klack);
                     but_sound.setVolume(1.0f, 1.0f);
                     but_sound.start();
                 }else {
-                    Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -103,80 +97,77 @@ public class GameBoardActivity extends AppCompatActivity {
     }
 
     private void clickOnDice1() {
-        if (drag1 && !drag2) {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
-        } else if (!drag1) {
-            Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice1, Toast.LENGTH_SHORT).show();
-        } else if (drag1 && drag2) {
+
+        if (dice.checkDicePermission()) {
             Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-        }
-        if (!drag1) {
-            infoText.setText("Zu ziehen : " + randomDice2);
-            drag1 = true;
-        }
-        if (drag1 && drag2)
             infoText.setText("Bitte würfeln");
+        }
+        if (!dice.isDice2ValueMoved() && !dice.isDice1ValueMoved()) {
+            diceImage2.clearColorFilter();
+            dice.deselectDice2Value();
+        }
+        if (!dice.isDice1ValueSelected()&& !dice.isDice1ValueMoved()) {
+            int diceImage1Background = dice.getBackgroundColor();
+            diceImage1.setColorFilter(diceImage1Background, PorterDuff.Mode.MULTIPLY);
+            infoText.setText("Mögliche Züge mit " + dice.getDice1Value());
+            dice.selectDice1Value();
+        }
+        else if (dice.isDice1ValueSelected() && !dice.isDice1ValueMoved()){
+            moveDiceValue();
+        }
     }
 
     private void clickOnDice2() {
-        if (drag2 && !drag1) {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gezogen!! ", Toast.LENGTH_SHORT).show();
-        } else if (!drag2) {
-            Toast.makeText(getApplicationContext(), "Ich ziehe " + randomDice2, Toast.LENGTH_SHORT).show();
-        } else if (drag1 && drag2) {
+
+        if (dice.checkDicePermission()) {
             Toast.makeText(getApplicationContext(), "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-        }
-        if (!drag2) {
-            infoText.setText("Zu ziehen : " + randomDice1);
-            drag2 = true;
-        }
-        if (drag1 && drag2)
             infoText.setText("Bitte würfeln");
+        }
+        if (!dice.isDice1ValueMoved() && !dice.isDice2ValueMoved()) {
+            diceImage1.clearColorFilter();
+            dice.deselectDice1Value();
+        }
+        if (!dice.isDice2ValueSelected() && !dice.isDice2ValueMoved()) {
+            int diceImage2Background = dice.getBackgroundColor();
+            diceImage2.setColorFilter(diceImage2Background, PorterDuff.Mode.MULTIPLY);
+            infoText.setText("Mögliche Züge mit " + dice.getDice2Value());
+            dice.selectDice2Value();
+        }
+        else if(dice.isDice2ValueSelected() && !dice.isDice2ValueMoved()){
+            moveDiceValue();
+        }
+    }
+
+    private void moveDiceValue() {
+        int diceImageBackground = dice.getBackgroundColor();
+
+        if(dice.isDice1ValueSelected()){
+            diceImage1.setColorFilter(diceImageBackground);
+            dice.moveDice1Value();
+        }
+        if(dice.isDice2ValueSelected()){
+            diceImage2.setColorFilter(diceImageBackground);
+            dice.moveDive2Value();
+        }
+
+
     }
 
 
     private void diceButton() {
-        if (drag1 && drag2) {
+        if (dice.checkDicePermission()) {
+            dice.throwDice();
             ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
-            randomDice1 = (int) (Math.random() * (6)) + 1;
-            rollDice(randomDice1);
-            image1.setImageDrawable(tempImage);
+            image1.clearColorFilter();
+            image1.setImageDrawable(dice.getDiceImage(dice.getDice1Value()));
 
             ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
-            randomDice2 = (int) (Math.random() * (6)) + 1;
-            rollDice(randomDice2);
-            image2.setImageDrawable(tempImage);
-            infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
-            drag1 = false;
-            drag2 = false;
+            image2.clearColorFilter();
+            image2.setImageDrawable(dice.getDiceImage(dice.getDice2Value()));
 
+            infoText.setText(" ");
         } else {
-            Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    private void rollDice(int zu) {
-        switch (zu) {
-
-            case 1:
-                tempImage = getResources().getDrawable(R.drawable.w1n);
-                break;
-            case 2:
-                tempImage = getResources().getDrawable(R.drawable.w2n);
-                break;
-            case 3:
-                tempImage = getResources().getDrawable(R.drawable.w3n);
-                break;
-            case 4:
-                tempImage = getResources().getDrawable(R.drawable.w4n);
-                break;
-            case 5:
-                tempImage = getResources().getDrawable(R.drawable.w5n);
-                break;
-            case 6:
-                tempImage = getResources().getDrawable(R.drawable.w6n);
-                break;
+            Toast.makeText(getApplicationContext(), "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
         }
     }
 
