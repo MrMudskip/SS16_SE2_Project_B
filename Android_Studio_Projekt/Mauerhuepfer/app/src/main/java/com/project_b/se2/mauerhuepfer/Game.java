@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
@@ -12,13 +11,9 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-/**
- * Created by Anita on 03.05.2016.
- */
+
 public class Game {
-    //TODO check which methods should be private/public (at the end, maybe?).
 
     //Colours
     static final int RED = 0;
@@ -27,7 +22,6 @@ public class Game {
     static final int BLACK = 3;
     static final int FilterColor = Color.GRAY;
     static final PorterDuff.Mode FilterMode = PorterDuff.Mode.MULTIPLY;
-
 
     //Directions
     static final int UP = 0;
@@ -62,11 +56,7 @@ public class Game {
     //Measurement variables
     static int unit;
 
-    // Other variables
-    private Context context;
-    private Resources resources;
-    private CustomGameBoardView gameBoardView;
-    private CustomPlayerView playerView;
+    //Game variables
     private int numberOfPlayers;
     private Player[] players;
     private int currentPlayerIndex;
@@ -77,6 +67,13 @@ public class Game {
     private int startRowPos;
     private int endColPos;
     private int endRowPos;
+
+    //Other variables
+    private Context context;
+    private Resources resources;
+    private CustomGameBoardView gameBoardView;
+    private CustomPlayerView playerView;
+
 
     /**
      * 2D array containing all the blocks that form the game board.
@@ -121,7 +118,7 @@ public class Game {
 
         //Set up game logic
         initializePlayers();
-        initializeGameBoard();
+        initialiseGameBoard();
 
         //Set up game views
         gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
@@ -129,16 +126,17 @@ public class Game {
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
 
+
         playerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    //System.out.println("Clicked player view at " + event.getX() + "|" + event.getY()); //TODO delete this debug info before launch.
                     for (Player player : players) {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()){ // Only handles taps on current player's figures.
+                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()){
+                                // Only handles taps on current player's figures.
                                     if (selectedFigure != null) {
                                         // Deselect previous selected figure.
                                         selectedFigure.getImage().clearColorFilter();
@@ -171,7 +169,6 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    //System.out.println("Clicked game board view at " + event.getX() + "|" + event.getY()); //TODO delete this debug info before launch.
                     if (!possibleDestinationBlocks.isEmpty()){
                         for (Block block : possibleDestinationBlocks) {
                             if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())){
@@ -185,11 +182,12 @@ public class Game {
             }
         });
 
-        // TODO Maybe it's better to use netcode's player selection for this? (@Bernhard)
+        // TODO Use netcode's player selection for this. (@Bernhard)
+        // TODO Tell the current player it's his turn. [Maybe @Bernhard?)
         currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers-1);
     }
 
-    private boolean initializeGameBoard() {
+    private boolean initialiseGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
                 setBlockParametersByType(gameBoard, col, row);
@@ -197,7 +195,6 @@ public class Game {
         }
         return true;
     }
-
 
     private void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
         //Create variables
@@ -207,7 +204,7 @@ public class Game {
         currentBlock.setColPos(col);
         currentBlock.setRowPos(row);
 
-        //Set images
+        //Set type specific attributes
         Drawable drawable;
         switch (currentBlock.getType()) {
             case S:
@@ -326,7 +323,7 @@ public class Game {
         players = new Player[numberOfPlayers];
         // TODO Maybe let the player choose their own colour?
         for (int colour = RED; colour < numberOfPlayers; colour++) {
-            int PID = colour; //TODO This should use the real PID generated by the netcode.
+            int PID = colour; //TODO This should use the real PID generated by the netcode (@Bernhard).
             players[colour] = new Player(context, PID, colour);
         }
     }
@@ -380,7 +377,6 @@ public class Game {
         if (selectedFigure != null) {
             startNextTurn();
         }
-
     }
 
     private boolean moveFigureForward(Figure figure) {
@@ -414,7 +410,7 @@ public class Game {
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
-        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move (ask Markus).
+        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move (@Markus).
         this.selectedDiceNumber = selectedDiceNumber;
         calculatePossibleMoves();
     }
@@ -427,7 +423,7 @@ public class Game {
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
 
-            //Check way forward.  //TODO Handle behavior around GOAL area better.
+            //Check way forward.
             int blocksMoved;                                                                                            //Number of actually traversed blocks.
             for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {}    //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
@@ -480,7 +476,7 @@ public class Game {
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
         playerView.invalidate(); //TODO Decide where this should be called.
-        gameBoardView.invalidate();
+        gameBoardView.invalidate(); //TODO Decide where this should be called.
         //TODO Make sure both dice are used on the same figure.
     }
 
