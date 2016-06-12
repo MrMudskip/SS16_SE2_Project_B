@@ -109,9 +109,6 @@ public class GameBoardActivity extends AppCompatActivity {
         // start a new game
         int numberOfPlayers = 4; // TODO decide this dynamically (@Bernhard).
         this.game = new Game(this, numberOfPlayers);
-
-        //roll first dice to start immediately //TODO This ist just a workaround and should be handled properly(@Markus).
-        diceButton();
     }
 
 
@@ -164,6 +161,8 @@ public class GameBoardActivity extends AppCompatActivity {
             infoText.setText("Zu ziehen : " + randomDice1 + " und: " + randomDice2);
             drag1 = false;
             drag2 = false;
+
+            game.rollDice(); //TODO This is a workaround to simulate turns and should be deleted as soon as turn mechanics are introduced.
         } else {
             Toast.makeText(getApplicationContext(), "Achtung, bereits gewürfelt!! ", Toast.LENGTH_SHORT).show();
         }

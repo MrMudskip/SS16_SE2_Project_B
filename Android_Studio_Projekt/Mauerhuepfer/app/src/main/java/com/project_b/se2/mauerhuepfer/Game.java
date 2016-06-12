@@ -3,7 +3,9 @@ package com.project_b.se2.mauerhuepfer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,11 +20,14 @@ import java.util.Vector;
 public class Game {
     //TODO check which methods should be private/public (at the end, maybe?).
 
-    //Player colours
+    //Colours
     static final int RED = 0;
     static final int GREEN = 1;
     static final int YELLOW = 2;
     static final int BLACK = 3;
+    static final int FilterColor = Color.GRAY;
+    static final PorterDuff.Mode FilterMode = PorterDuff.Mode.MULTIPLY;
+
 
     //Directions
     static final int UP = 0;
@@ -72,18 +77,6 @@ public class Game {
     private int startRowPos;
     private int endColPos;
     private int endRowPos;
-
-    /**
-     * Color matrix that flips the components (<code>-1.0f * c + 255 = 255 - c</code>)
-     * and keeps the alpha intact.
-     */
-    private static final float[] NEGATIVE_FILTER = { //TODO find a more suitable filter than just a negative.
-            -1.0f, 0, 0, 0, 255, // red
-            0, -1.0f, 0, 0, 255, // green
-            0, 0, -1.0f, 0, 255, // blue
-            0, 0, 0, 1.0f, 0  // alpha
-    };
-
 
     /**
      * 2D array containing all the blocks that form the game board.
@@ -145,17 +138,25 @@ public class Game {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()){
+                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()){ // Only handles taps on current player's figures.
                                     if (selectedFigure != null) {
-                                        selectedFigure.getImage().setColorFilter(null); //Revert old selected figure
+                                        // Deselect previous selected figure.
+                                        selectedFigure.getImage().clearColorFilter();
                                     }
-                                    //TODO Do not allow selection of other players' figures.
-                                    //TODO Do not allow selection of another figure after at least one dice was used on a figure.
-                                    //TODO If selected figure is tapped again, un-select it.
-                                    selectedFigure = fig;
-                                    selectedFigure.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //Change new selected figure
-                                    playerView.invalidate();
-                                    calculatePossibleMoves();
+                                    if (fig == selectedFigure){
+                                        // Deselect selected figure.
+                                        selectedFigure.getImage().clearColorFilter();
+                                        clearPossibleDestinationBlocks();
+                                        selectedFigure = null;
+                                        playerView.invalidate();
+                                    } else {
+                                        //TODO Do not allow selection of another figure after at least one dice was used on a figure.
+                                        // Select unselected figure.
+                                        selectedFigure = fig;
+                                        selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
+                                        playerView.invalidate();
+                                        calculatePossibleMoves();
+                                    }
                                     return true;
                                 }
                             }
@@ -188,7 +189,7 @@ public class Game {
         currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers-1);
     }
 
-    public boolean initializeGameBoard() {
+    private boolean initializeGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
             for (int row = 0; row < gameBoard[col].length; row++) {
                 setBlockParametersByType(gameBoard, col, row);
@@ -198,7 +199,7 @@ public class Game {
     }
 
 
-    public void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
+    private void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
         //Create variables
         Block currentBlock = gameBoard[col][row];
 
@@ -321,7 +322,7 @@ public class Game {
         currentBlock.setImage(clone);
     }
 
-    public void initializePlayers() {
+    private void initializePlayers() {
         players = new Player[numberOfPlayers];
         // TODO Maybe let the player choose their own colour?
         for (int colour = RED; colour < numberOfPlayers; colour++) {
@@ -333,7 +334,7 @@ public class Game {
     /**
      * Find a figure of the right colour which has not yet set a base/goal position and assign it a block's position.
      */
-    public void assignBlockPositionToSuitableFigure(Block block){
+    private void assignBlockPositionToSuitableFigure(Block block){
         int colour = 0;
         boolean isBase = false;
         boolean isGoal = false;
@@ -375,10 +376,14 @@ public class Game {
     }
 
     public void rollDice() {
-        //TODO Do something meaningful here or delete this method. (currently only used for testing ideas).
+        //TODO Do something meaningful here or delete this method. (currently only used as workaround).
+        if (selectedFigure != null) {
+            startNextTurn();
+        }
+
     }
 
-    public boolean moveFigureForward(Figure figure) {
+    private boolean moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
         switch (direction) {
             case UP: figure.walkUp(); break;
@@ -393,7 +398,7 @@ public class Game {
         return true;
     }
 
-    public boolean moveFigureBackward(Figure figure) {
+    private boolean moveFigureBackward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
         switch (direction) {
             case UP: figure.walkUp(); break;
@@ -415,7 +420,7 @@ public class Game {
     }
 
 
-    public void calculatePossibleMoves() {
+    private void calculatePossibleMoves() {
         if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
             Figure ghostFig = new Figure(null);                                         //Create new invisible ghost figure
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
@@ -462,30 +467,24 @@ public class Game {
             // TODO Do not highlight blocks that are already occupied by another figure of SAME colour.
             //Highlight possible destination blocks
             for (Block block : possibleDestinationBlocks) {
-                block.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //TODO maybe use a more suitable filter than negative?
+                block.getImage().setColorFilter(FilterColor, FilterMode);
             }
             gameBoardView.invalidate();
         }
     }
 
-    public void moveSelectedFigureAndTidyUp(int col, int row){
+    private void moveSelectedFigureAndTidyUp(int col, int row){
         selectedFigure.setPos(col, row);
         checkAndHandleFigureCollision();
         tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
-
-        // TODO only call this when both dice are used an turn is actually over.
-        increaseCurrentPlayerIndex();
-        //TODO create methods for (de-)highlighting the selected figures.
-        //TODO de-Highlight figure when switching players.
-
         playerView.invalidate(); //TODO Decide where this should be called.
         gameBoardView.invalidate();
         //TODO Make sure both dice are used on the same figure.
     }
 
-    public void checkAndHandleFigureCollision () {
+    private void checkAndHandleFigureCollision () {
         int colPos = selectedFigure.getColPos();
         int rowPos = selectedFigure.getRowPos();
         int PID = selectedFigure.getOwner().getPID();
@@ -498,26 +497,32 @@ public class Game {
         }
     }
 
-    public void tryMovingSelectedFigureIntoRespectiveGoal () {
+    private void tryMovingSelectedFigureIntoRespectiveGoal () {
         if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos){ //TODO Also make sure that both dice are used.
             selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
         }
     }
 
-    public void clearPossibleDestinationBlocks(){
+    private void clearPossibleDestinationBlocks(){
         for (Block block : possibleDestinationBlocks) {
-            block.getImage().setColorFilter(null);
+            block.getImage().clearColorFilter();
         }
         possibleDestinationBlocks.clear();
     }
 
-    public void increaseCurrentPlayerIndex(){
+    private void increaseCurrentPlayerIndex(){
         if (currentPlayerIndex + 1 >= numberOfPlayers){
             currentPlayerIndex = 0;
         } else {
             currentPlayerIndex++;
         }
-        System.out.println("Current player:" + currentPlayerIndex); //TODO Delete this debug code.
+    }
+
+    public void startNextTurn () {
+        selectedFigure.getImage().clearColorFilter();
+        selectedFigure = null;
+        increaseCurrentPlayerIndex();
+        playerView.invalidate();
     }
 
     /**
@@ -528,6 +533,4 @@ public class Game {
     private int getRandomNumberBetweenMinMax (int min, int max) {
         return min + (int)(Math.random() * ((max - min) + 1));
     }
-
-
 }
