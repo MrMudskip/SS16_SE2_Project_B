@@ -9,11 +9,13 @@ import android.graphics.drawable.Drawable;
 public class Player {
 
     Context context;
+    private final int PID;
     private int colour;
     private Figure[] figures = {new Figure(this), new Figure(this), new Figure(this), new Figure(this)};
 
-    public Player(Context context, int colour) {
+    public Player(Context context, int PID, int colour) {
         this.context = context;
+        this.PID = PID;
         this.colour = colour;
         initializeFigures();
     }
@@ -32,6 +34,10 @@ public class Player {
             Drawable clone = image.getConstantState().newDrawable().mutate(); //Deep copy to avoid figures sharing the same image.
             figures[i].setImage(clone);
         }
+    }
+
+    public int getPID() {
+        return PID;
     }
 
     public int getColour() {
