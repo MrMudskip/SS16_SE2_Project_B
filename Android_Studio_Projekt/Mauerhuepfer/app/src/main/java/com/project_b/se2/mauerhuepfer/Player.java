@@ -10,8 +10,7 @@ public class Player {
 
     Context context;
     private int colour;
-    private final int PID = (int) (Math.random() * 100); //TODO Use the PID from the net code.
-    private Figure[] figures = {new Figure(PID), new Figure(PID), new Figure(PID), new Figure(PID)};
+    private Figure[] figures = {new Figure(this), new Figure(this), new Figure(this), new Figure(this)};
 
     public Player(Context context, int colour) {
         this.context = context;
@@ -41,9 +40,5 @@ public class Player {
 
     public Figure[] getFigures() {
         return figures;
-    }
-
-    public int getPID() {
-        return PID;
     }
 }

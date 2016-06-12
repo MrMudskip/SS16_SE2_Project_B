@@ -10,6 +10,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by Anita on 03.05.2016.
@@ -68,6 +69,8 @@ public class Game {
     List<Block> possibleDestinationBlocks;
     private int startColPos;
     private int startRowPos;
+    private int endColPos;
+    private int endRowPos;
 
     /**
      * Color matrix that flips the components (<code>-1.0f * c + 255 = 255 - c</code>)
@@ -113,16 +116,21 @@ public class Game {
         this.possibleDestinationBlocks = new ArrayList<Block>();
         this.startColPos = -1;
         this.startRowPos = -1;
+        this.endColPos = -1;
+        this.endRowPos = -1;
 
         //Calculate measurement unit
-        unit = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8); // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
+        int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
+        int horizontal = (int) ((this.resources.getDisplayMetrics().widthPixels / gameBoard[0].length) * 0.8);
+        unit = Math.min(vertical, horizontal); // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
 
         //Set up game logic
-        initializeGameBoard();
         initializePlayers();
+        initializeGameBoard();
+
 
         //Set up game views
-        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView);
+        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
         gameBoardView.setGameBoard(gameBoard);
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
@@ -139,6 +147,9 @@ public class Game {
                                 if (selectedFigure != null) {
                                     selectedFigure.getImage().setColorFilter(null); //Revert old selected figure
                                 }
+                                //TODO Do not allow selection of other players figures.
+                                //TODO Do not allow selection of another figure after at least one dice was used on a figure.
+                                //TODO If selected figure is tapped again, un-select it.
                                 selectedFigure = fig;
                                 selectedFigure.getImage().setColorFilter(new ColorMatrixColorFilter(NEGATIVE_FILTER)); //Change new selected figure
                                 playerView.invalidate();
@@ -185,6 +196,8 @@ public class Game {
     public void setBlockParametersByType(Block[][] gameBoard, int col, int row) {
         //Create variables
         Block currentBlock = gameBoard[col][row];
+
+        //Assign block position
         currentBlock.setColPos(col);
         currentBlock.setRowPos(row);
 
@@ -237,6 +250,8 @@ public class Game {
                 drawable = resources.getDrawable(R.drawable.circle_blue_l);
                 currentBlock.setNextBlock(GOAL);
                 currentBlock.setPreviousBlock(LEFT);
+                endColPos = col;
+                endRowPos = row;
                 break;
             case W:
                 int wallNumber = getRandomNumberBetweenMinMax(1,6);
@@ -257,30 +272,38 @@ public class Game {
             case BR:
                 drawable = resources.getDrawable(R.drawable.circle_red);
                 currentBlock.setNextBlock(START);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case BG:
                 drawable = resources.getDrawable(R.drawable.circle_green);
                 currentBlock.setNextBlock(START);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case BY:
                 drawable = resources.getDrawable(R.drawable.circle_yellow);
                 currentBlock.setNextBlock(START);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case BB:
                 drawable = resources.getDrawable(R.drawable.circle_black);
                 currentBlock.setNextBlock(START);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case GR:
                 drawable = resources.getDrawable(R.drawable.circle_red);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case GG:
                 drawable = resources.getDrawable(R.drawable.circle_green);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case GY:
                 drawable = resources.getDrawable(R.drawable.circle_yellow);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             case GB:
                 drawable = resources.getDrawable(R.drawable.circle_black);
+                assignBlockPositionToSuitableFigure(currentBlock);
                 break;
             default:
                 drawable = resources.getDrawable(R.drawable.empty);
@@ -296,29 +319,58 @@ public class Game {
     public void initializePlayers() {
         players = new Player[numberOfPlayers];
         // TODO Maybe let the player choose their own colour?
-        for (int colour = 0; colour < numberOfPlayers; colour++) {
+        for (int colour = RED; colour < numberOfPlayers; colour++) {
             players[colour] = new Player(context, colour);
         }
-        players[RED].getFigures()[0].setPos(13, 7);
-        players[RED].getFigures()[1].setPos(13, 8);
-        players[RED].getFigures()[2].setPos(14, 7);
-        players[RED].getFigures()[3].setPos(14, 8);
-        players[GREEN].getFigures()[0].setPos(13, 5);
-        players[GREEN].getFigures()[1].setPos(13, 6);
-        players[GREEN].getFigures()[2].setPos(14, 5);
-        players[GREEN].getFigures()[3].setPos(14, 6);
-        players[YELLOW].getFigures()[0].setPos(13, 2);
-        players[YELLOW].getFigures()[1].setPos(13, 3);
-        players[YELLOW].getFigures()[2].setPos(14, 2);
-        players[YELLOW].getFigures()[3].setPos(14, 3);
-        players[BLACK].getFigures()[0].setPos(13, 0);
-        players[BLACK].getFigures()[1].setPos(13, 1);
-        players[BLACK].getFigures()[2].setPos(14, 0);
-        players[BLACK].getFigures()[3].setPos(14, 1);
+
     }
 
-    public void rollDice() { //TODO Think of a better name for this method.
-        //TODO Do something meaningful here. (currently used for testing ideas).
+    /**
+     * Find a figure of the right colour which has not yet set a base/goal position and assign it a block's position.
+     */
+    public void assignBlockPositionToSuitableFigure(Block block){
+        int colour = 0;
+        boolean isBase = false;
+        boolean isGoal = false;
+        int col = block.getColPos();
+        int row = block.getRowPos();
+
+        //Determine suitable colour
+        switch(block.getType()){
+            case BR: colour = RED;      isBase = true; break;
+            case BG: colour = GREEN;    isBase = true; break;
+            case BY: colour = YELLOW;   isBase = true; break;
+            case BB: colour = BLACK;    isBase = true; break;
+            case GR: colour = RED;      isGoal = true; break;
+            case GG: colour = GREEN;    isGoal = true; break;
+            case GY: colour = YELLOW;   isGoal = true; break;
+            case GB: colour = BLACK;    isGoal = true; break;
+        }
+
+        if(players.length > colour) {
+            boolean valuesAssigned = false;     //Keeps the block from assigning its position to more than one figure.
+            for (int i = 0; i < players[colour].getFigures().length && !valuesAssigned; i++) {
+                Figure figure = players[colour].getFigures()[i];
+                if (isBase){
+                    if (figure.getBaseColPos() < 0){    //Keeps the block from overriding already assigned figures.
+                        figure.setBaseColPos(col);
+                        figure.setBaseRowPos(row);
+                        figure.setPos(col, row);
+                        valuesAssigned = true;
+                    }
+                } else if (isGoal){
+                    if (figure.getGoalColPos() < 0){    //Keeps the block from overriding already assigned figures.
+                        figure.setGoalColPos(col);
+                        figure.setGoalRowPos(row);
+                        valuesAssigned = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public void rollDice() {
+        //TODO Do something meaningful here or delete this method. (currently only used for testing ideas).
     }
 
     public boolean moveFigureForward(Figure figure) {
@@ -329,8 +381,9 @@ public class Game {
             case DOWN: figure.walkDown(); break;
             case LEFT: figure.walkLeft(); break;
             case BASE: return false;
-            case GOAL: break; //TODO handle this case.
+            case GOAL: return false;
             case START: figure.setPos(startColPos, startRowPos); break;
+            default: return false;
         }
         return true;
     }
@@ -343,14 +396,15 @@ public class Game {
             case DOWN: figure.walkDown(); break;
             case LEFT: figure.walkLeft(); break;
             case BASE: return false;
-            case GOAL: break; //TODO handle this case.
+            case GOAL: return false;
             case START: figure.setPos(startColPos, startRowPos); break;
+            default: return false;
         }
         return true;
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
-        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move.
+        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move (ask Markus).
         this.selectedDiceNumber = selectedDiceNumber;
         calculatePossibleMoves();
     }
@@ -358,7 +412,7 @@ public class Game {
 
     public void calculatePossibleMoves() {
         if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
-            Figure ghostFig = new Figure(-1);                                           //Create new invisible ghost figure
+            Figure ghostFig = new Figure(null);                                         //Create new invisible ghost figure
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
@@ -410,13 +464,19 @@ public class Game {
 
     public void moveSelectedFigureAndTidyUp(int col, int row){
         selectedFigure.setPos(col, row);
-        //System.out.println("selected figure: " + selectedFigure.getOwnerID() + " | " + selectedFigure.getColPos() + " | " + selectedFigure.getRowPos()); //TODO delete this debug info before launch.
+        tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
 
         playerView.invalidate(); //TODO Decide where this should be called.
         gameBoardView.invalidate();
-        //TODO decide if players have to use both dice on the same figure (ask Anita?).
+        //TODO Make sure both dice are used on the same figure.
+    }
+
+    public void tryMovingSelectedFigureIntoRespectiveGoal () {
+        if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos){ //TODO Also make sure that both dice are used.
+            selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
+        }
     }
 
     public void clearPossibleDestinationBlocks(){
@@ -426,6 +486,7 @@ public class Game {
         possibleDestinationBlocks.clear();
     }
 
+
     /**
      * @param min lowest integer allowed.
      * @param max highest integer allowed.
@@ -434,4 +495,6 @@ public class Game {
     private int getRandomNumberBetweenMinMax (int min, int max) {
         return min + (int)(Math.random() * ((max - min) + 1));
     }
+
+
 }
