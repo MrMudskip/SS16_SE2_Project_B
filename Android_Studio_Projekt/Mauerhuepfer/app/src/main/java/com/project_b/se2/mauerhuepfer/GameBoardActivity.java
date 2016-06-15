@@ -7,6 +7,7 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -22,6 +23,7 @@ import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
  */
 public class GameBoardActivity extends AppCompatActivity {
 
+    private Game game;
 
 
     private ImageView diceImage1;
@@ -34,11 +36,12 @@ public class GameBoardActivity extends AppCompatActivity {
     private ShakeDetector mSensorListener;
 
     MediaPlayer but_sound;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +97,13 @@ public class GameBoardActivity extends AppCompatActivity {
                 clickOnDice2();
             }
         });
+
+
+        // start a new game
+        int numberOfPlayers = 4; // TODO decide this dynamically (@Bernhard).
+        this.game = new Game(this, numberOfPlayers);
     }
+
 
     private void clickOnDice1() {
 

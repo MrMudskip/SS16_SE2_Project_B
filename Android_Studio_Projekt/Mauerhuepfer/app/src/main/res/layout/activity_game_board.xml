@@ -1,18 +1,30 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#bdad71"
     tools:context="com.project_b.se2.mauerhuepfer.GameBoardActivity">
 
-    <!-- The primary full-screen view. -->
-    <ImageView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:src="@drawable/gameboard_full_transparent_portrait" />
+        android:layout_weight="1" >
+
+        <com.project_b.se2.mauerhuepfer.CustomGameBoardView
+            android:id="@+id/CustomGameBoardView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <com.project_b.se2.mauerhuepfer.CustomPlayerView
+            android:id="@+id/CustomPlayerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/fullscreen_content_controls"
