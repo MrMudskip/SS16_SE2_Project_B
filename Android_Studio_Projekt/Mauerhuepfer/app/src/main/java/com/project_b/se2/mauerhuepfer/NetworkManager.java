@@ -266,8 +266,6 @@ public class NetworkManager implements
     public void onConnectionSuspended(int i) {
         debugLog("onConnectionSuspended: " + i);
         mContext.updateView(STATE_IDLE);
-
-        // Try to re-connect
         mGoogleApiClient.reconnect();
     }
 
@@ -506,7 +504,6 @@ public class NetworkManager implements
      */
     private void debugLog(String msg) {
         Log.d(TAG, msg);
-        //mDebugInfo.append("\n" + msg);
     }
 
     /* ------------------------------------------------------------------------------------------ */
