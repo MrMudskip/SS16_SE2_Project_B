@@ -79,13 +79,13 @@ public class NetworkManager implements
         ArrayList<Integer> playerOrder = new ArrayList<>();
         switch (mClientIds.size()) {
             case 3:
-                playerOrder.add(4);
-            case 2:
                 playerOrder.add(3);
+            case 2:
+                playerOrder.add(2);
             case 1:
             case 0:
-                playerOrder.add(2);
                 playerOrder.add(1);
+                playerOrder.add(0);
                 break;
         }
 

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 
 /**
@@ -110,6 +111,14 @@ public class Dice {
 
     public void setDice2removed(boolean dice2removed) {
         this.dice2removed = dice2removed;
+    }
+
+    public boolean isDice2removed() {
+        return dice2removed;
+    }
+
+    public boolean isDice1removed() {
+        return dice1removed;
     }
 
     public ShakeDetector getmSensorListener() {

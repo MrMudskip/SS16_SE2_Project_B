@@ -32,6 +32,8 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
     private int playerID;
     private String playerName;
+    private INetworkManager mNetworkManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,20 +44,20 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
         setContentView(R.layout.activity_game_board);
 
-        // start a new game
-        int numberOfPlayers = 4; // TODO decide this dynamically (@Bernhard).
-        this.game = new Game(this, numberOfPlayers);
-        dice = game.getDice();
         mNetworkManager = NetworkActivity.getmNetworkManager();
 
         if (mNetworkManager != null) {
             mNetworkManager.addMessageReceiverListener(this);
+            // start a new game
+            int numberOfPlayers = 2; // TODO decide this dynamically (@Bernhard).
+            this.game = new Game(this, numberOfPlayers, mNetworkManager,playerID);
+            dice = game.getDice();
 
             Bundle b = getIntent().getExtras();
             if (b != null) {
                 playerID = b.getInt("playerID");
                 playerName = b.getString("playerName");
-                infoText.setText(playerName + " du bist Spieler " + playerID);
+                //dice.infoText.setText(playerName + " du bist Spieler " + playerID);
             }
         }
     }
@@ -81,13 +83,13 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
             if (status.getUsage() == USAGE_DICE) {
                 ImageView image1 = (ImageView) findViewById(R.id.wuerfel);
-                rollDice(status.getW1());
-                image1.setImageDrawable(tempImage);
+                //rollDice(status.getW1());
+                //image1.setImageDrawable(tempImage);
 
                 ImageView image2 = (ImageView) findViewById(R.id.wuerfel2);
-                rollDice(status.getW2());
-                image2.setImageDrawable(tempImage);
-                infoText.setText(status.getPlayer() + " würfelt : " + status.getW1() + " und: " + status.getW2());
+                //rollDice(status.getW2());
+                //image2.setImageDrawable(tempImage);
+                //infoText.setText(status.getPlayerName() + " würfelt : " + status.getW1() + " und: " + status.getW2());
             }
 
             if (status.getUsage() == USAGE_RESTART) {
@@ -97,15 +99,11 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             }
 
             if (status.getUsage() == USAGE_NEXTPLAYER) {
-                diceOne = true;
-                moved = false;
+
             }
         }
     }
 
-    /**
-     * Disable Back bitton
-     */
     @Override
     public void onBackPressed() {
         Log.d("GAME", "onBackPressed");

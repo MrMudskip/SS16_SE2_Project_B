@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class UpdateState implements Serializable {
     private int usage = -1;
     private String msg;
-    private String player;
+    private String playerName;
     private int playerID = -1;
     private int position = -1;
     private int w1 = -1;
@@ -26,12 +26,12 @@ public class UpdateState implements Serializable {
         this.msg = msg;
     }
 
-    public String getPlayer() {
-        return player;
+    public String getPlayerName() {
+        return playerName;
     }
 
-    public void setPlayer(String player) {
-        this.player = player;
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 
     public int getPlayerID() {

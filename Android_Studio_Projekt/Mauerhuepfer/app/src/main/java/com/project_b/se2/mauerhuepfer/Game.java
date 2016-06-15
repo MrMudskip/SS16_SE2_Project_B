@@ -9,6 +9,9 @@ import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
+import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +62,7 @@ public class Game {
     //Game variables
     private int numberOfPlayers;
     private Player[] players;
+    private int myPID;
     private int currentPlayerIndex;
     private Figure selectedFigure;
     private int selectedDiceNumber;
@@ -74,6 +78,8 @@ public class Game {
     private CustomGameBoardView gameBoardView;
     private CustomPlayerView playerView;
     private Dice dice;
+    private INetworkManager networkManager;
+    private UpdateState update;
 
 
     /**
@@ -98,7 +104,7 @@ public class Game {
     };
 
 
-    public Game(Context context, int numberOfPlayers) {
+    public Game(Context context, int numberOfPlayers, INetworkManager manager, final int myPID) {
         //Initialise variables
         this.context = context;
         this.resources = this.context.getResources();
@@ -111,7 +117,10 @@ public class Game {
         this.startRowPos = -1;
         this.endColPos = -1;
         this.endRowPos = -1;
+        this.networkManager = manager;
         this.dice = new Dice(context, this);
+        this.update = new UpdateState();
+        this.myPID = myPID;
 
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
@@ -137,7 +146,7 @@ public class Game {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()) {
+                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID() && fig.getOwner().getPID() == myPID) {
                                     // Only handles taps on current player's figures.
                                     if (selectedFigure != null) {
                                         // Deselect previous selected figure.
@@ -191,6 +200,13 @@ public class Game {
 
     public Dice getDice() {
         return dice;
+    }
+
+    public void handleUpdate(UpdateState update) {
+        switch (update.getUsage()) {
+            case IReceiveMessage.USAGE_NEXTPLAYER:
+                increaseCurrentPlayerIndex();
+        }
     }
 
     private boolean initialiseGameBoard() {
@@ -417,9 +433,7 @@ public class Game {
 
     public void rollDice() {
         //TODO Do something meaningful here or delete this method. (currently only used as workaround).
-        if (selectedFigure != null) {
-            startNextTurn();
-        }
+
     }
 
     private boolean moveFigureForward(Figure figure) {
@@ -553,13 +567,14 @@ public class Game {
     }
 
     private void clearSelectedDiceImage() {
-        System.out.println("DICE1"+dice.isDice1Selected());
         if (dice.isDice1Selected()) {
             dice.dice1Used();
         }
-
         if (dice.isDice2Selected()) {
             dice.dice2Used();
+        }
+        if (dice.isDice1removed() && dice.isDice2removed()) {
+            startNextTurn();
         }
     }
 
@@ -601,6 +616,10 @@ public class Game {
         selectedFigure.getImage().clearColorFilter();
         selectedFigure = null;
         increaseCurrentPlayerIndex();
+
+        update.setUsage(IReceiveMessage.USAGE_NEXTPLAYER);
+        networkManager.sendMessage(update);
+
         playerView.invalidate();
         dice.setDice1removed(false);
         dice.setDice2removed(false);

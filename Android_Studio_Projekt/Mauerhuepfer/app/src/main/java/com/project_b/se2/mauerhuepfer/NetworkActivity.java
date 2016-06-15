@@ -112,9 +112,9 @@ public class NetworkActivity extends AppCompatActivity implements
                     UpdateState s = new UpdateState();
                     s.setMsg(msg);
                     s.setUsage(USAGE_MSG);
-                    s.setPlayer(mNetworkManager.getPlayerName());
+                    s.setPlayerName(mNetworkManager.getPlayerName());
                     mNetworkManager.sendMessage(s);
-                    mDebugInfo.append("\n " + s.getPlayer() + ": " + s.getMsg());
+                    mDebugInfo.append("\n " + s.getPlayerName() + ": " + s.getMsg());
                     mMessageText.setText(null);
                 }
                 break;
@@ -137,7 +137,7 @@ public class NetworkActivity extends AppCompatActivity implements
                 // The GoogleAPIClient is connected, we can begin advertising or discovery.
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
-                findViewById(R.id.button_startGame).setVisibility(View.GONE);
+                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE); //TODO: GONE
                 mDebugInfo.append("\n >>>>> MAUERHÜPFER <<<<<");
                 break;
             case NetworkManager.STATE_ADVERTISING:
@@ -168,7 +168,7 @@ public class NetworkActivity extends AppCompatActivity implements
     public void receiveMessage(UpdateState status) {
         if (status != null) {
             if (status.getUsage() == USAGE_MSG) {
-                mDebugInfo.append("\n " + status.getPlayer() + ": " + status.getMsg());
+                mDebugInfo.append("\n " + status.getPlayerName() + ": " + status.getMsg());
             }
 
             if (status.getUsage() == USAGE_STARTGAME) {
