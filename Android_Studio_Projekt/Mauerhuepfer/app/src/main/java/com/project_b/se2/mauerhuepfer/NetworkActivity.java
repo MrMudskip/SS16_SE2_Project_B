@@ -178,7 +178,7 @@ public class NetworkActivity extends AppCompatActivity implements
                     Bundle b = new Bundle();
                     b.putInt("playerID", mNetworkManager.getPlayerID());
                     b.putString("playerName", mNetworkManager.getPlayerName());
-                    b.putInt("numberOfPlayers", mNetworkManager.getNumberOfPlayers());
+                    b.putInt("numberOfPlayers", status.getIntValue());
                     intent.putExtras(b);
                     mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                     startActivity(intent);
