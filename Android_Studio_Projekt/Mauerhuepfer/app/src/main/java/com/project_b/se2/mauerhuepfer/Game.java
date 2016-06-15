@@ -73,6 +73,7 @@ public class Game {
     private Resources resources;
     private CustomGameBoardView gameBoardView;
     private CustomPlayerView playerView;
+    private Dice dice;
 
 
     /**
@@ -110,6 +111,7 @@ public class Game {
         this.startRowPos = -1;
         this.endColPos = -1;
         this.endRowPos = -1;
+        this.dice = new Dice(context, this);
 
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
@@ -135,13 +137,13 @@ public class Game {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()){
-                                // Only handles taps on current player's figures.
+                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID()) {
+                                    // Only handles taps on current player's figures.
                                     if (selectedFigure != null) {
                                         // Deselect previous selected figure.
                                         selectedFigure.getImage().clearColorFilter();
                                     }
-                                    if (fig == selectedFigure){
+                                    if (fig == selectedFigure) {
                                         // Deselect selected figure.
                                         selectedFigure.getImage().clearColorFilter();
                                         clearPossibleDestinationBlocks();
@@ -169,9 +171,9 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (!possibleDestinationBlocks.isEmpty()){
+                    if (!possibleDestinationBlocks.isEmpty()) {
                         for (Block block : possibleDestinationBlocks) {
-                            if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())){
+                            if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
                                 moveSelectedFigureAndTidyUp(block.getColPos(), block.getRowPos());
                                 return true;
                             }
@@ -184,7 +186,11 @@ public class Game {
 
         // TODO Use netcode's player selection for this. (@Bernhard)
         // TODO Tell the current player it's his turn. [Maybe @Bernhard?)
-        currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers-1);
+        currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
+    }
+
+    public Dice getDice() {
+        return dice;
     }
 
     private boolean initialiseGameBoard() {
@@ -257,16 +263,29 @@ public class Game {
                 endRowPos = row;
                 break;
             case W:
-                int wallNumber = getRandomNumberBetweenMinMax(1,6);
+                int wallNumber = getRandomNumberBetweenMinMax(1, 6);
                 currentBlock.setWallNumber(wallNumber);
-                switch (wallNumber){
-                    case 1:  drawable = resources.getDrawable(R.drawable.wall_1); break;
-                    case 2:  drawable = resources.getDrawable(R.drawable.wall_2); break;
-                    case 3:  drawable = resources.getDrawable(R.drawable.wall_3); break;
-                    case 4:  drawable = resources.getDrawable(R.drawable.wall_4); break;
-                    case 5:  drawable = resources.getDrawable(R.drawable.wall_5); break;
-                    case 6:  drawable = resources.getDrawable(R.drawable.wall_6); break;
-                    default: drawable = resources.getDrawable(R.drawable.empty);
+                switch (wallNumber) {
+                    case 1:
+                        drawable = resources.getDrawable(R.drawable.wall_1);
+                        break;
+                    case 2:
+                        drawable = resources.getDrawable(R.drawable.wall_2);
+                        break;
+                    case 3:
+                        drawable = resources.getDrawable(R.drawable.wall_3);
+                        break;
+                    case 4:
+                        drawable = resources.getDrawable(R.drawable.wall_4);
+                        break;
+                    case 5:
+                        drawable = resources.getDrawable(R.drawable.wall_5);
+                        break;
+                    case 6:
+                        drawable = resources.getDrawable(R.drawable.wall_6);
+                        break;
+                    default:
+                        drawable = resources.getDrawable(R.drawable.empty);
                 }
                 break;
             case N:
@@ -331,7 +350,7 @@ public class Game {
     /**
      * Find a figure of the right colour which has not yet set a base/goal position and assign it a block's position.
      */
-    private void assignBlockPositionToSuitableFigure(Block block){
+    private void assignBlockPositionToSuitableFigure(Block block) {
         int colour = 0;
         boolean isBase = false;
         boolean isGoal = false;
@@ -339,30 +358,54 @@ public class Game {
         int row = block.getRowPos();
 
         //Determine suitable colour
-        switch(block.getType()){
-            case BR: colour = RED;      isBase = true; break;
-            case BG: colour = GREEN;    isBase = true; break;
-            case BY: colour = YELLOW;   isBase = true; break;
-            case BB: colour = BLACK;    isBase = true; break;
-            case GR: colour = RED;      isGoal = true; break;
-            case GG: colour = GREEN;    isGoal = true; break;
-            case GY: colour = YELLOW;   isGoal = true; break;
-            case GB: colour = BLACK;    isGoal = true; break;
+        switch (block.getType()) {
+            case BR:
+                colour = RED;
+                isBase = true;
+                break;
+            case BG:
+                colour = GREEN;
+                isBase = true;
+                break;
+            case BY:
+                colour = YELLOW;
+                isBase = true;
+                break;
+            case BB:
+                colour = BLACK;
+                isBase = true;
+                break;
+            case GR:
+                colour = RED;
+                isGoal = true;
+                break;
+            case GG:
+                colour = GREEN;
+                isGoal = true;
+                break;
+            case GY:
+                colour = YELLOW;
+                isGoal = true;
+                break;
+            case GB:
+                colour = BLACK;
+                isGoal = true;
+                break;
         }
 
-        if(players.length > colour) {
+        if (players.length > colour) {
             boolean valuesAssigned = false;     //Keeps the block from assigning its position to more than one figure.
             for (int i = 0; i < players[colour].getFigures().length && !valuesAssigned; i++) {
                 Figure figure = players[colour].getFigures()[i];
-                if (isBase){
-                    if (figure.getBaseColPos() < 0){    //Keeps the block from overriding already assigned figures.
+                if (isBase) {
+                    if (figure.getBaseColPos() < 0) {    //Keeps the block from overriding already assigned figures.
                         figure.setBaseColPos(col);
                         figure.setBaseRowPos(row);
                         figure.setPos(col, row);
                         valuesAssigned = true;
                     }
-                } else if (isGoal){
-                    if (figure.getGoalColPos() < 0){    //Keeps the block from overriding already assigned figures.
+                } else if (isGoal) {
+                    if (figure.getGoalColPos() < 0) {    //Keeps the block from overriding already assigned figures.
                         figure.setGoalColPos(col);
                         figure.setGoalRowPos(row);
                         valuesAssigned = true;
@@ -382,14 +425,27 @@ public class Game {
     private boolean moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
         switch (direction) {
-            case UP: figure.walkUp(); break;
-            case RIGHT: figure.walkRight(); break;
-            case DOWN: figure.walkDown(); break;
-            case LEFT: figure.walkLeft(); break;
-            case BASE: return false;
-            case GOAL: return false;
-            case START: figure.setPos(startColPos, startRowPos); break;
-            default: return false;
+            case UP:
+                figure.walkUp();
+                break;
+            case RIGHT:
+                figure.walkRight();
+                break;
+            case DOWN:
+                figure.walkDown();
+                break;
+            case LEFT:
+                figure.walkLeft();
+                break;
+            case BASE:
+                return false;
+            case GOAL:
+                return false;
+            case START:
+                figure.setPos(startColPos, startRowPos);
+                break;
+            default:
+                return false;
         }
         return true;
     }
@@ -397,14 +453,27 @@ public class Game {
     private boolean moveFigureBackward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
         switch (direction) {
-            case UP: figure.walkUp(); break;
-            case RIGHT: figure.walkRight(); break;
-            case DOWN: figure.walkDown(); break;
-            case LEFT: figure.walkLeft(); break;
-            case BASE: return false;
-            case GOAL: return false;
-            case START: figure.setPos(startColPos, startRowPos); break;
-            default: return false;
+            case UP:
+                figure.walkUp();
+                break;
+            case RIGHT:
+                figure.walkRight();
+                break;
+            case DOWN:
+                figure.walkDown();
+                break;
+            case LEFT:
+                figure.walkLeft();
+                break;
+            case BASE:
+                return false;
+            case GOAL:
+                return false;
+            case START:
+                figure.setPos(startColPos, startRowPos);
+                break;
+            default:
+                return false;
         }
         return true;
     }
@@ -425,7 +494,8 @@ public class Game {
 
             //Check way forward.
             int blocksMoved;                                                                                            //Number of actually traversed blocks.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {}    //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {
+            }    //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
@@ -433,7 +503,8 @@ public class Game {
 
 
             //Check way backward.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {}   //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {
+            }   //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
@@ -469,56 +540,70 @@ public class Game {
         }
     }
 
-    private void moveSelectedFigureAndTidyUp(int col, int row){
+    private void moveSelectedFigureAndTidyUp(int col, int row) {
         selectedFigure.setPos(col, row);
         checkAndHandleFigureCollision();
         tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
+        clearSelectedDiceImage();
         playerView.invalidate(); //TODO Decide where this should be called.
         gameBoardView.invalidate(); //TODO Decide where this should be called.
         //TODO Make sure both dice are used on the same figure.
     }
 
-    private void checkAndHandleFigureCollision () {
+    private void clearSelectedDiceImage() {
+        System.out.println("DICE1"+dice.isDice1Selected());
+        if (dice.isDice1Selected()) {
+            dice.dice1Used();
+        }
+
+        if (dice.isDice2Selected()) {
+            dice.dice2Used();
+        }
+    }
+
+    private void checkAndHandleFigureCollision() {
         int colPos = selectedFigure.getColPos();
         int rowPos = selectedFigure.getRowPos();
         int PID = selectedFigure.getOwner().getPID();
         for (Player player : players) {
             for (Figure figure : player.getFigures()) {
-                if (colPos == figure.getColPos() && rowPos == figure.getRowPos() && PID != figure.getOwner().getPID()){
+                if (colPos == figure.getColPos() && rowPos == figure.getRowPos() && PID != figure.getOwner().getPID()) {
                     figure.setPos(figure.getBaseColPos(), figure.getBaseRowPos()); //Send figure back to base.
                 }
             }
         }
     }
 
-    private void tryMovingSelectedFigureIntoRespectiveGoal () {
-        if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos){ //TODO Also make sure that both dice are used.
+    private void tryMovingSelectedFigureIntoRespectiveGoal() {
+        if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos) { //TODO Also make sure that both dice are used.
             selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
         }
     }
 
-    private void clearPossibleDestinationBlocks(){
+    private void clearPossibleDestinationBlocks() {
         for (Block block : possibleDestinationBlocks) {
             block.getImage().clearColorFilter();
         }
         possibleDestinationBlocks.clear();
     }
 
-    private void increaseCurrentPlayerIndex(){
-        if (currentPlayerIndex + 1 >= numberOfPlayers){
+    private void increaseCurrentPlayerIndex() {
+        if (currentPlayerIndex + 1 >= numberOfPlayers) {
             currentPlayerIndex = 0;
         } else {
             currentPlayerIndex++;
         }
     }
 
-    public void startNextTurn () {
+    public void startNextTurn() {
         selectedFigure.getImage().clearColorFilter();
         selectedFigure = null;
         increaseCurrentPlayerIndex();
         playerView.invalidate();
+        dice.setDice1removed(false);
+        dice.setDice2removed(false);
     }
 
     /**
@@ -526,7 +611,7 @@ public class Game {
      * @param max highest integer allowed.
      * @return random integer  in the interval [min,max].
      */
-    private int getRandomNumberBetweenMinMax (int min, int max) {
-        return min + (int)(Math.random() * ((max - min) + 1));
+    private int getRandomNumberBetweenMinMax(int min, int max) {
+        return min + (int) (Math.random() * ((max - min) + 1));
     }
 }
