@@ -17,6 +17,7 @@ public class UpdateState implements Serializable {
     private int position = -1;
     private int w1 = -1;
     private int w2 = -1;
+    private int intValue;
 
     public String getMsg() {
         return msg;
@@ -40,6 +41,14 @@ public class UpdateState implements Serializable {
 
     public void setPlayerID(int playerID) {
         this.playerID = playerID;
+    }
+
+    public int getIntValue() {
+        return intValue;
+    }
+
+    public void setIntValue(int intValue) {
+        this.intValue = intValue;
     }
 
     public int getPosition() {

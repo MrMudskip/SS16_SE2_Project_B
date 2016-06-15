@@ -103,6 +103,10 @@ public class NetworkManager implements
         return playerName;
     }
 
+    public int getNumberOfPlayers() {
+        return mClientIds.size() + 1;
+    }
+
     /* ------------------------------------------------------------------------------------------ */
 
     public NetworkManager(Context c) {

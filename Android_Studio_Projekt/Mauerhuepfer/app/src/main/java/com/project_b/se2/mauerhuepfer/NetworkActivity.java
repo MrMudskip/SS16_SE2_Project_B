@@ -92,12 +92,14 @@ public class NetworkActivity extends AppCompatActivity implements
                 Bundle b = new Bundle();
                 b.putInt("playerID", mNetworkManager.getPlayerID());
                 b.putString("playerName", mNetworkManager.getPlayerName());
+                b.putInt("numberOfPlayers", mNetworkManager.getNumberOfPlayers());
                 intent.putExtras(b);
                 mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
                 startActivity(intent);
 
                 UpdateState starterState = new UpdateState();
                 starterState.setUsage(USAGE_STARTGAME);
+                starterState.setIntValue(mNetworkManager.getNumberOfPlayers());
                 mNetworkManager.sendMessage(starterState);
                 break;
             case R.id.button_advertise:
@@ -167,26 +169,26 @@ public class NetworkActivity extends AppCompatActivity implements
     @Override
     public void receiveMessage(UpdateState status) {
         if (status != null) {
-            if (status.getUsage() == USAGE_MSG) {
-                mDebugInfo.append("\n " + status.getPlayerName() + ": " + status.getMsg());
-            }
-
-            if (status.getUsage() == USAGE_STARTGAME) {
-                Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
-                Bundle b = new Bundle();
-                b.putInt("playerID", mNetworkManager.getPlayerID());
-                b.putString("playerName", mNetworkManager.getPlayerName());
-                intent.putExtras(b);
-                mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
-                startActivity(intent);
-            }
-
-            if (status.getUsage() == USAGE_PLAYERID) {
-                mNetworkManager.setPlayerID(status.getPlayerID());
-            }
-
-            if (status.getUsage() == USAGE_JOIN) {
-                mDebugInfo.append("\n " + status.getMsg());
+            switch (status.getUsage()) {
+                case USAGE_MSG:
+                    mDebugInfo.append("\n " + status.getPlayerName() + ": " + status.getMsg());
+                    break;
+                case USAGE_STARTGAME:
+                    Intent intent = new Intent(NetworkActivity.this, GameBoardActivity.class);
+                    Bundle b = new Bundle();
+                    b.putInt("playerID", mNetworkManager.getPlayerID());
+                    b.putString("playerName", mNetworkManager.getPlayerName());
+                    b.putInt("numberOfPlayers", mNetworkManager.getNumberOfPlayers());
+                    intent.putExtras(b);
+                    mDebugInfo.append("\n PlayerID: " + mNetworkManager.getPlayerID());
+                    startActivity(intent);
+                    break;
+                case USAGE_PLAYERID:
+                    mNetworkManager.setPlayerID(status.getPlayerID());
+                    break;
+                case USAGE_JOIN:
+                    mDebugInfo.append("\n " + status.getMsg());
+                    break;
             }
         } else {
             mDebugInfo.append("\n CONNECTION ERROR");
