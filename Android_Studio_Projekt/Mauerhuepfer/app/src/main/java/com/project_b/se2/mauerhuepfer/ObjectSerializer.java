@@ -15,7 +15,11 @@ import java.io.StreamCorruptedException;
  */
 public class ObjectSerializer {
 
-    public static byte[] Serialize(Serializable s)    {
+    private ObjectSerializer() {
+
+    }
+
+    public static byte[] Serialize(Serializable s) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
 
@@ -43,7 +47,7 @@ public class ObjectSerializer {
         return bytes;
     }
 
-    public static Serializable DeSerialize(byte[] b){
+    public static Serializable DeSerialize(byte[] b) {
         ByteArrayInputStream bis = new ByteArrayInputStream(b);
         ObjectInput in = null;
         Object o = null;

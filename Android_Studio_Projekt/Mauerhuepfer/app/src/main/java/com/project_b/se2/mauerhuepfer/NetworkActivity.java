@@ -1,5 +1,6 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +26,7 @@ public class NetworkActivity extends AppCompatActivity implements
     /* ------------------------------------------------------------------------------------------ */
 
     private static final String TAG = NetworkActivity.class.getSimpleName();
-    public static NetworkManager mNetworkManager;
+    private static NetworkManager mNetworkManager;
     private TextView mDebugInfo;
     private EditText mMessageText;
 
@@ -57,8 +58,12 @@ public class NetworkActivity extends AppCompatActivity implements
         mDebugInfo = (TextView) findViewById(R.id.debug_text);
         mDebugInfo.setMovementMethod(new ScrollingMovementMethod());
 
-        mNetworkManager = new NetworkManager(this);
+        initNetwork(this);
         mNetworkManager.addMessageReceiverListener(this);
+    }
+
+    private synchronized static void initNetwork(Context context) {
+        mNetworkManager = new NetworkManager(context);
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -120,6 +125,8 @@ public class NetworkActivity extends AppCompatActivity implements
                     mMessageText.setText(null);
                 }
                 break;
+            default:
+                Log.e(TAG, "unknown Button");
         }
     }
 
@@ -151,7 +158,7 @@ public class NetworkActivity extends AppCompatActivity implements
             case NetworkManager.STATE_NONETWORK:
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
-                findViewById(R.id.button_startGame).setVisibility(View.GONE);
+                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE); //TODO: GONE
                 mDebugInfo.append("\n no Network available!");
                 break;
             case NetworkManager.STATE_CONNECTED:
@@ -163,6 +170,8 @@ public class NetworkActivity extends AppCompatActivity implements
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.VISIBLE);
                 break;
+            default:
+                Log.e(TAG, "unknown STATE");
         }
     }
 
@@ -189,6 +198,8 @@ public class NetworkActivity extends AppCompatActivity implements
                 case USAGE_JOIN:
                     mDebugInfo.append("\n " + status.getMsg());
                     break;
+                default:
+                    Log.e(TAG, "unknown USAGE_CODE");
             }
         } else {
             mDebugInfo.append("\n CONNECTION ERROR");

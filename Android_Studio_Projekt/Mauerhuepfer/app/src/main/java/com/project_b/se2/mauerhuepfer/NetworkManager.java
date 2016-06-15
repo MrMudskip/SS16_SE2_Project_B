@@ -123,7 +123,7 @@ public class NetworkManager implements
         playerName = settings.getString("playerName", null);
 
         if (playerName == null || playerName.equals("")) {
-            playerName = "" + ((int) (Math.random() * 1000000));
+            playerName = Integer.toString((int) (Math.random() * 1000000));
         }
     }
 
@@ -184,7 +184,6 @@ public class NetworkManager implements
 
         Nearby.Connections.startAdvertising(mGoogleApiClient, hostName, appMetadata, TIMEOUT_ADVERTISE, this)
                 .setResultCallback(new ResultCallback<Connections.StartAdvertisingResult>() {
-
                     @Override
                     public void onResult(Connections.StartAdvertisingResult result) {
                         Log.d(TAG, "startAdvertising: onResult:" + result);
@@ -469,8 +468,7 @@ public class NetworkManager implements
         debugLog("onDisconnected:" + endpointId);
         if (mIsHost) {
             mClientIds.remove(mClientIds.indexOf(endpointId));
-            //playerCounter--;
-            if (mClientIds.size() < 1) {
+            if (mClientIds.isEmpty()) {
                 mGoogleApiClient.reconnect();
                 restartApp();
             }
