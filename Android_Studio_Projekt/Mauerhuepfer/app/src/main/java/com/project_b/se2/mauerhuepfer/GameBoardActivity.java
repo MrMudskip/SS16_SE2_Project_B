@@ -78,7 +78,13 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     @Override
     public void receiveMessage(UpdateState status) {
         if (status != null) {
-            game.handleUpdate(status);
+            if (status.getUsage() == USAGE_RESTART) {
+                Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+            } else {
+                game.handleUpdate(status);
+            }
         }
     }
 
