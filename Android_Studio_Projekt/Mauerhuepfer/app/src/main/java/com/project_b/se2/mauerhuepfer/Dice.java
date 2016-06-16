@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
+import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 
 /**
@@ -33,19 +34,23 @@ public class Dice {
     private SensorManager mSensorManager;
     private ShakeDetector mSensorListener;
     private Game game;
+    private INetworkManager networkManager;
+    private UpdateState update = new UpdateState();
 
     private boolean dice1Selected = false;
     private boolean dice2Selected = false;
     private boolean dice1removed = false;
     private boolean dice2removed = false;
     private boolean diceOne = true;
-    private boolean moved = false;
+    private boolean moved = true;
 
     MediaPlayer but_sound;
 
-    public Dice(Context current, Game game) {
+    public Dice(Context current, Game game, INetworkManager networkManager) {
         this.context = current;
         this.game = game;
+        this.networkManager = networkManager;
+
         diceImage1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
         diceImage2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
 
@@ -102,6 +107,14 @@ public class Dice {
         dice2Selected = false;
     }
 
+    public void setDiceOne(boolean diceOne) {
+        this.diceOne = diceOne;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
+    }
+
     public void setDice1removed(boolean dice1removed) {
         this.dice1removed = dice1removed;
     }
@@ -146,6 +159,7 @@ public class Dice {
         int diceImageBackground = backgroundColor;
         diceImage1.setColorFilter(diceImageBackground);
         diceImage1.setVisibility(View.INVISIBLE);
+        moved = true;
         dice1removed = true;
     }
 
@@ -153,6 +167,7 @@ public class Dice {
         int diceImageBackground = backgroundColor;
         diceImage2.setColorFilter(diceImageBackground);
         diceImage2.setVisibility(View.INVISIBLE);
+        moved = true;
         dice2removed = true;
     }
 
@@ -161,15 +176,25 @@ public class Dice {
             throwDice();
             ImageView image1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
             image1.clearColorFilter();
-            image1.setImageDrawable(getDiceImage(getDice1Value()));
+            image1.setImageDrawable(getDiceImage(dice1Value));
             diceImage1.setVisibility(View.VISIBLE);
 
             ImageView image2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
             image2.clearColorFilter();
-            image2.setImageDrawable(getDiceImage(getDice2Value()));
+            image2.setImageDrawable(getDiceImage(dice2Value));
             diceImage2.setVisibility(View.VISIBLE);
 
             infoText.setText(" ");
+
+            if (diceOne) {
+                diceOne = false;
+                update.setW1(dice1Value);
+                update.setW2(dice2Value);
+                update.setUsage(IReceiveMessage.USAGE_DICE);
+                networkManager.sendMessage(update);
+            } else {
+                Toast.makeText(context, "Achtung, bereits gewürfelt du Schummler!! ", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(context, "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
         }

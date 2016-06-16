@@ -118,7 +118,7 @@ public class Game {
         this.endColPos = -1;
         this.endRowPos = -1;
         this.networkManager = manager;
-        this.dice = new Dice(context, this);
+        this.dice = new Dice(context, this, networkManager);
         this.update = new UpdateState();
         this.myPID = PID;
 
@@ -201,7 +201,9 @@ public class Game {
         System.out.println("currenPlayerIndex = " + currentPlayerIndex);
 
         //Share created Game board with others
-        if (myPID == 0){
+        if (myPID == 0) {
+            dice.setMoved(false);
+            dice.setDiceOne(true);
             update.setUsage(IReceiveMessage.USAGE_GAMEBOARDCREATED);
             update.setGameBoard(gameBoard);
             networkManager.sendMessage(update);
@@ -211,8 +213,6 @@ public class Game {
     public Dice getDice() {
         return dice;
     }
-
-
 
     private boolean initialiseGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
@@ -502,7 +502,6 @@ public class Game {
         calculatePossibleMoves();
     }
 
-
     private void calculatePossibleMoves() {
         if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
             Figure ghostFig = new Figure(null);                                         //Create new invisible ghost figure
@@ -637,6 +636,11 @@ public class Game {
         playerView.invalidate();
         dice.setDice1removed(false);
         dice.setDice2removed(false);
+
+        if (numberOfPlayers == 1){
+            dice.setMoved(false);
+            dice.setDiceOne(true);
+        }
     }
 
     public void handleUpdate(UpdateState update) {
@@ -649,11 +653,15 @@ public class Game {
             }
             case IReceiveMessage.USAGE_NEXTPLAYER: {
                 increaseCurrentPlayerIndex();
+                if (currentPlayerIndex == myPID) {
+                    dice.setMoved(false);
+                    dice.setDiceOne(true);
+                }
             }
             case IReceiveMessage.USAGE_FIGUREMOVED: {
                 for (Player player : players) {
-                    for (Figure figure : player.getFigures()){
-                        if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()){
+                    for (Figure figure : player.getFigures()) {
+                        if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()) {
                             selectedFigure = figure;
                             selectedFigure.setPos(update.getFigure().getColPos(), update.getFigure().getRowPos());
                         }

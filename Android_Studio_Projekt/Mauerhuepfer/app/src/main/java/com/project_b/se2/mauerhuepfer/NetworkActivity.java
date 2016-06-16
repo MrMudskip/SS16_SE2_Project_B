@@ -155,7 +155,7 @@ public class NetworkActivity extends AppCompatActivity implements
                     findViewById(R.id.button_startGame).setVisibility(View.VISIBLE);
                 } else {
                     findViewById(R.id.button_startGame).setVisibility(View.GONE);
-                    debugInfo.append("\n CONNECTED");
+                    debugInfo.append("\n Connected");
                 }
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.VISIBLE);
@@ -187,7 +187,7 @@ public class NetworkActivity extends AppCompatActivity implements
                     Log.e(TAG, "unknown USAGE_CODE: " + status.getUsage());
             }
         } else {
-            debugInfo.append("\n CONNECTION ERROR");
+            Log.e(TAG, "Connection Problem: receiveMessage");
         }
     }
 
