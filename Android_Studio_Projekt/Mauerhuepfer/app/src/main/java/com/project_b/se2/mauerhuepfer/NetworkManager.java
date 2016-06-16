@@ -105,7 +105,7 @@ public class NetworkManager implements
 
         for (String id : mClientIds) {
             state.setPlayerID(playerOrder.remove(0));
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(state));
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.serialize(state));
         }
 
         playerID = playerOrder.remove(0);
@@ -436,10 +436,10 @@ public class NetworkManager implements
     public void sendMessage(UpdateState s) {
         if (mIsHost) {
             for (String id : mClientIds) {
-                Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.Serialize(s));
+                Nearby.Connections.sendReliableMessage(mGoogleApiClient, id, ObjectSerializer.serialize(s));
             }
         } else {
-            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mHostId, ObjectSerializer.Serialize(s));
+            Nearby.Connections.sendReliableMessage(mGoogleApiClient, mHostId, ObjectSerializer.serialize(s));
         }
     }
 
@@ -454,7 +454,7 @@ public class NetworkManager implements
      */
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
-        UpdateState updateS = (UpdateState) ObjectSerializer.DeSerialize(payload);
+        UpdateState updateS = (UpdateState) ObjectSerializer.deSerialize(payload);
         debugLog("onMessageReceived:" + endpointId);
         messageReciever(updateS);
 
