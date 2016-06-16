@@ -104,7 +104,7 @@ public class Game {
     };
 
 
-    public Game(Context context, int numberOfPlayers, INetworkManager manager, final int myPID) {
+    public Game(Context context, int numberOfPlayers, INetworkManager manager, int PID) {
         //Initialise variables
         this.context = context;
         this.resources = this.context.getResources();
@@ -120,7 +120,7 @@ public class Game {
         this.networkManager = manager;
         this.dice = new Dice(context, this);
         this.update = new UpdateState();
-        this.myPID = myPID;
+        this.myPID = PID;
 
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
@@ -136,8 +136,6 @@ public class Game {
         gameBoardView.setGameBoard(gameBoard);
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
-
-
         playerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -145,28 +143,35 @@ public class Game {
                     for (Player player : players) {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
-                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (fig.getOwner().getPID() == players[currentPlayerIndex].getPID() && fig.getOwner().getPID() == myPID) {
-                                    // Only handles taps on current player's figures.
-                                    if (selectedFigure != null) {
-                                        // Deselect previous selected figure.
-                                        selectedFigure.getImage().clearColorFilter();
+                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  //Clicked on a figure
+                                System.out.println("Figure-ID: " + fig.getOwner().getPID()); //TODO delete debug print lines.
+                                System.out.println("MyPID: " + myPID);
+                                if (fig.getOwner().getPID() == myPID) {                                         //It's my turn
+                                    System.out.println("CurrentPlayer-ID: " + players[currentPlayerIndex].getPID());
+                                    System.out.println("MyPID: " + myPID);
+                                    if (players[currentPlayerIndex].getPID() == myPID) {                        //It's my figure
+                                        if (selectedFigure != null) {
+                                            // Deselect previous selected figure.
+                                            selectedFigure.getImage().clearColorFilter();
+                                        }
+                                        if (fig == selectedFigure) {
+                                            // Deselect selected figure.
+                                            selectedFigure.getImage().clearColorFilter();
+                                            clearPossibleDestinationBlocks();
+                                            System.out.println("executed clearPossibleDestinationBlocks() because fig == selectedFigure");
+                                            selectedFigure = null;
+                                            playerView.invalidate();
+                                            gameBoardView.invalidate();
+                                        } else {
+                                            //TODO Do not allow selection of another figure after at least one dice was used on a figure.
+                                            // Select unselected figure.
+                                            selectedFigure = fig;
+                                            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
+                                            playerView.invalidate();
+                                            calculatePossibleMoves();
+                                        }
+                                        return true;
                                     }
-                                    if (fig == selectedFigure) {
-                                        // Deselect selected figure.
-                                        selectedFigure.getImage().clearColorFilter();
-                                        clearPossibleDestinationBlocks();
-                                        selectedFigure = null;
-                                        playerView.invalidate();
-                                    } else {
-                                        //TODO Do not allow selection of another figure after at least one dice was used on a figure.
-                                        // Select unselected figure.
-                                        selectedFigure = fig;
-                                        selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
-                                        playerView.invalidate();
-                                        calculatePossibleMoves();
-                                    }
-                                    return true;
                                 }
                             }
                         }
@@ -196,18 +201,15 @@ public class Game {
         // TODO Use netcode's player selection for this. (@Bernhard)
         // TODO Tell the current player it's his turn. [Maybe @Bernhard?)
         currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
+        System.out.println("numberOfPlayers = " + numberOfPlayers);
+        System.out.println("currenPlayerIndex = " + currentPlayerIndex);
     }
 
     public Dice getDice() {
         return dice;
     }
 
-    public void handleUpdate(UpdateState update) {
-        switch (update.getUsage()) {
-            case IReceiveMessage.USAGE_NEXTPLAYER:
-                increaseCurrentPlayerIndex();
-        }
-    }
+
 
     private boolean initialiseGameBoard() {
         for (int col = 0; col < gameBoard.length; col++) {
@@ -623,6 +625,14 @@ public class Game {
         playerView.invalidate();
         dice.setDice1removed(false);
         dice.setDice2removed(false);
+    }
+
+    public void handleUpdate(UpdateState update) {
+        System.out.println("PID " + myPID + "received update code: " + update.getUsage());
+        switch (update.getUsage()) {
+            case IReceiveMessage.USAGE_NEXTPLAYER:
+                increaseCurrentPlayerIndex();
+        }
     }
 
     /**

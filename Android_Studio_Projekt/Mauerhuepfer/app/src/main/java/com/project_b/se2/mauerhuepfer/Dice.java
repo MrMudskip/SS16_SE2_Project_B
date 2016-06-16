@@ -142,12 +142,14 @@ public class Dice {
     public void dice1Used() {
         int diceImageBackground = backgroundColor;
         diceImage1.setColorFilter(diceImageBackground);
+        diceImage1.setVisibility(View.INVISIBLE);
         dice1removed = true;
     }
 
     public void dice2Used() {
         int diceImageBackground = backgroundColor;
         diceImage2.setColorFilter(diceImageBackground);
+        diceImage2.setVisibility(View.INVISIBLE);
         dice2removed = true;
     }
 
@@ -157,10 +159,12 @@ public class Dice {
             ImageView image1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
             image1.clearColorFilter();
             image1.setImageDrawable(getDiceImage(getDice1Value()));
+            diceImage1.setVisibility(View.VISIBLE);
 
             ImageView image2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
             image2.clearColorFilter();
             image2.setImageDrawable(getDiceImage(getDice2Value()));
+            diceImage2.setVisibility(View.VISIBLE);
 
             infoText.setText(" ");
         } else {

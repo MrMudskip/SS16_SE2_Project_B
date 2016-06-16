@@ -29,11 +29,11 @@ public interface IReceiveMessage {
     int USAGE_DICE = 1029;
     int USAGE_MOVE1 = 1030;
     int USAGE_MOVE2 = 1031;
-    int USAGE_NEXTPLAYER = 1031;
-    int USAGE_STARTGAME = 1032;
-    int USAGE_MSG = 1033;
-    int USAGE_JOIN = 1034;
-    int USAGE_RESTART = 1035;
+    int USAGE_NEXTPLAYER = 1032;
+    int USAGE_STARTGAME = 1033;
+    int USAGE_MSG = 1034;
+    int USAGE_JOIN = 1035;
+    int USAGE_RESTART = 1036;
 
 
     /**
