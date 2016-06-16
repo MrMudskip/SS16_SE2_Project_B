@@ -49,6 +49,9 @@ public class Dice {
         diceImage1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
         diceImage2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
 
+        diceImage1.setVisibility(View.INVISIBLE);
+        diceImage2.setVisibility(View.INVISIBLE);
+
         infoText = (TextView) ((Activity) context).findViewById(R.id.textView);
         diceButton = (Button) ((Activity) context).findViewById(R.id.button1);
 
