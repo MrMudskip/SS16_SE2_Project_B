@@ -1,27 +1,17 @@
 package com.project_b.se2.mauerhuepfer;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
-import com.project_b.se2.mauerhuepfer.listener.ShakeDetector;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -99,7 +89,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
         mMyListDialog = new MyListDialog(this, builder, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (mMyListDialog.getItemValue(which).equals("kill")) {
+                if ("kill".equals(mMyListDialog.getItemValue(which))) {
                     cancelGame();
                 }
                 mMyListDialog.dismiss();

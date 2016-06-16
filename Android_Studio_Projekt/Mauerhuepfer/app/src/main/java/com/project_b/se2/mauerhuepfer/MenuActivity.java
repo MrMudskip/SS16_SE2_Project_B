@@ -6,9 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 
 public class MenuActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = "MenuActivityClass";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +34,8 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
                 myIntent = new Intent(MenuActivity.this, OptionsActivity.class);
                 MenuActivity.this.startActivity(myIntent);
                 break;
+            default:
+                Log.e(TAG, "unknown Button");
         }
     }
 }

@@ -53,10 +53,10 @@ public class NetworkManager implements
     private IUpdateView mContext;
 
     private boolean mIsHost;
-    private final int maxClients = 3;
+    private static final int maxClients = 3;
     private int playerID;
     private String playerName;
-    private static int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
+    private static final int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
 
     /* ------------------------------------------------------------------------------------------ */
 
@@ -97,6 +97,8 @@ public class NetworkManager implements
             case 0:
                 playerOrder.add(0);
                 break;
+            default:
+                Log.e(TAG, "sendPlayerIDs error");
         }
 
         Collections.shuffle(playerOrder, new SecureRandom());
@@ -132,7 +134,7 @@ public class NetworkManager implements
         SharedPreferences settings = ((Context) mContext).getSharedPreferences(((Context) mContext).getString(R.string.memory), 0);
         playerName = settings.getString("playerName", null);
 
-        if (playerName == null || playerName.equals("")) {
+        if (playerName == null || "".equals(playerName)) {
             playerName = Integer.toString((int) (Math.random() * 1000000));
         }
     }

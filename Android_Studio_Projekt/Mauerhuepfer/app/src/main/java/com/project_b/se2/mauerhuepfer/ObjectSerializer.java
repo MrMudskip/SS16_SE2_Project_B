@@ -10,14 +10,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.StreamCorruptedException;
-import java.util.logging.Logger;
 
 /**
  * Created by rohrbe on 14.05.2016.
  */
 public class ObjectSerializer {
-    private final static Logger LOGGER = Logger.getLogger("ObjectSerializerClass");
+    private static final String TAG = "ObjectSerializerClass";
 
     private ObjectSerializer() {
 
@@ -33,19 +31,19 @@ public class ObjectSerializer {
             out.writeObject(s);
             bytes = bos.toByteArray();
         } catch (IOException e) {
-            LOGGER.info(e.getMessage());
+            Log.e(TAG, e.getLocalizedMessage());
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
             } catch (IOException e) {
-                LOGGER.info(e.getMessage());
+                Log.e(TAG, e.getLocalizedMessage());
             }
             try {
                 bos.close();
             } catch (IOException e) {
-                LOGGER.info(e.getMessage());
+                Log.e(TAG, e.getLocalizedMessage());
             }
         }
         return bytes;
@@ -59,19 +57,19 @@ public class ObjectSerializer {
             in = new ObjectInputStream(bis);
             o = in.readObject();
         } catch (ClassNotFoundException | IOException e) {
-            LOGGER.info(e.getMessage());
+            Log.e(TAG, e.getLocalizedMessage());
         } finally {
             try {
                 bis.close();
             } catch (IOException e) {
-                LOGGER.info(e.getMessage());
+                Log.e(TAG, e.getLocalizedMessage());
             }
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException e) {
-                LOGGER.info(e.getMessage());
+                Log.e(TAG, e.getLocalizedMessage());
             }
         }
         return (Serializable) o;
