@@ -21,7 +21,7 @@ public class ObjectSerializer {
 
     }
 
-    public static byte[] Serialize(Serializable s) {
+    public static byte[] serialize(Serializable s) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
 
@@ -49,7 +49,7 @@ public class ObjectSerializer {
         return bytes;
     }
 
-    public static Serializable DeSerialize(byte[] b) {
+    public static Serializable deSerialize(byte[] b) {
         ByteArrayInputStream bis = new ByteArrayInputStream(b);
         ObjectInput in = null;
         Object o = null;
