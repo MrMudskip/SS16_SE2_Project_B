@@ -135,7 +135,7 @@ public class NetworkActivity extends AppCompatActivity implements
             case NetworkManager.STATE_READY:
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
-                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE); //TODO: GONE
+                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE);
                 mDebugInfo.append("\n >>>>> MAUERHÜPFER <<<<<");
                 break;
             case NetworkManager.STATE_ADVERTISING:
@@ -147,13 +147,14 @@ public class NetworkActivity extends AppCompatActivity implements
             case NetworkManager.STATE_NONETWORK:
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
                 findViewById(R.id.layout_message).setVisibility(View.GONE);
-                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE); //TODO: GONE
+                findViewById(R.id.button_startGame).setVisibility(View.VISIBLE);
                 mDebugInfo.append("\n no Network available!");
                 break;
             case NetworkManager.STATE_CONNECTED:
                 if (mNetworkManager.getHostinfo()) {
                     findViewById(R.id.button_startGame).setVisibility(View.VISIBLE);
                 } else {
+                    findViewById(R.id.button_startGame).setVisibility(View.GONE);
                     mDebugInfo.append("\n CONNECTED");
                 }
                 findViewById(R.id.layout_nearby_buttons).setVisibility(View.VISIBLE);
