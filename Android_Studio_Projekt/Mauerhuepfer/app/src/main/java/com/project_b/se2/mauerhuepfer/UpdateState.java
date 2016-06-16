@@ -14,10 +14,13 @@ public class UpdateState implements Serializable {
     private String msg;
     private String playerName;
     private int playerID = -1;
-    private int position = -1;
+    private int colPosition = -1;
+    private int rowPosition = -1;
     private int w1 = -1;
     private int w2 = -1;
     private int intValue;
+    private Figure figure;
+    private Block[][] gameBoard;
 
     public String getMsg() {
         return msg;
@@ -51,12 +54,20 @@ public class UpdateState implements Serializable {
         this.intValue = intValue;
     }
 
-    public int getPosition() {
-        return position;
+    public int getColPosition() {
+        return colPosition;
     }
 
-    public void setPosition(int position) {
-        this.position = position;
+    public void setColPosition(int colPosition) {
+        this.colPosition = colPosition;
+    }
+
+    public int getRowPosition() {
+        return rowPosition;
+    }
+
+    public void setRowPosition(int rowPosition) {
+        this.rowPosition = rowPosition;
     }
 
     public int getW1() {
@@ -81,6 +92,22 @@ public class UpdateState implements Serializable {
         } else {
             Log.e("ERROR", "Set w2 Failure: " + w2);
         }
+    }
+
+    public Figure getFigure() {
+        return figure;
+    }
+
+    public void setFigure(Figure figure) {
+        this.figure = figure;
+    }
+
+    public Block[][] getGameBoard() {
+        return gameBoard;
+    }
+
+    public void setGameBoard(Block[][] gameBoard) {
+        this.gameBoard = gameBoard;
     }
 
     public int getUsage() {

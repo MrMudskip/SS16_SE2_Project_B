@@ -144,33 +144,29 @@ public class Game {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
                             if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  //Clicked on a figure
-                                System.out.println("Figure-ID: " + fig.getOwner().getPID()); //TODO delete debug print lines.
-                                System.out.println("MyPID: " + myPID);
                                 if (fig.getOwner().getPID() == myPID) {                                         //It's my turn
-                                    System.out.println("CurrentPlayer-ID: " + players[currentPlayerIndex].getPID());
-                                    System.out.println("MyPID: " + myPID);
                                     if (players[currentPlayerIndex].getPID() == myPID) {                        //It's my figure
-                                        if (selectedFigure != null) {
-                                            // Deselect previous selected figure.
-                                            selectedFigure.getImage().clearColorFilter();
+                                        if (!dice.isDice1removed() && !dice.isDice2removed()) {                 //No dice used yet
+                                            if (selectedFigure != null) {
+                                                // Deselect previous selected figure.
+                                                selectedFigure.getImage().clearColorFilter();
+                                            }
+                                            if (fig == selectedFigure) {
+                                                // Deselect selected figure.
+                                                selectedFigure.getImage().clearColorFilter();
+                                                clearPossibleDestinationBlocks();
+                                                selectedFigure = null;
+                                                playerView.invalidate();
+                                                gameBoardView.invalidate();
+                                            } else {
+                                                // Select unselected figure.
+                                                selectedFigure = fig;
+                                                selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
+                                                playerView.invalidate();
+                                                calculatePossibleMoves();
+                                            }
+                                            return true;
                                         }
-                                        if (fig == selectedFigure) {
-                                            // Deselect selected figure.
-                                            selectedFigure.getImage().clearColorFilter();
-                                            clearPossibleDestinationBlocks();
-                                            System.out.println("executed clearPossibleDestinationBlocks() because fig == selectedFigure");
-                                            selectedFigure = null;
-                                            playerView.invalidate();
-                                            gameBoardView.invalidate();
-                                        } else {
-                                            //TODO Do not allow selection of another figure after at least one dice was used on a figure.
-                                            // Select unselected figure.
-                                            selectedFigure = fig;
-                                            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
-                                            playerView.invalidate();
-                                            calculatePossibleMoves();
-                                        }
-                                        return true;
                                     }
                                 }
                             }
@@ -203,6 +199,13 @@ public class Game {
         currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
         System.out.println("numberOfPlayers = " + numberOfPlayers);
         System.out.println("currenPlayerIndex = " + currentPlayerIndex);
+
+        //Share created Game board with others
+        if (myPID == 0){
+            update.setUsage(IReceiveMessage.USAGE_GAMEBOARDCREATED);
+            update.setGameBoard(gameBoard);
+            networkManager.sendMessage(update);
+        }
     }
 
     public Dice getDice() {
@@ -360,7 +363,7 @@ public class Game {
         players = new Player[numberOfPlayers];
         // TODO Maybe let the player choose their own colour?
         for (int colour = RED; colour < numberOfPlayers; colour++) {
-            int PID = colour; //TODO This should use the real PID generated by the netcode (@Bernhard).
+            int PID = colour;
             players[colour] = new Player(context, PID, colour);
         }
     }
@@ -495,7 +498,6 @@ public class Game {
     }
 
     public void setSelectedDiceNumber(int selectedDiceNumber) {
-        //TODO find a way to stop dices from being "used up" if they are only selected, but not used to move (@Markus).
         this.selectedDiceNumber = selectedDiceNumber;
         calculatePossibleMoves();
     }
@@ -557,15 +559,26 @@ public class Game {
     }
 
     private void moveSelectedFigureAndTidyUp(int col, int row) {
+        update.setUsage(IReceiveMessage.USAGE_FIGUREMOVED);
+        update.setColPosition(col);
+        update.setRowPosition(row);
+
+        clearSelectedDiceImage();
         selectedFigure.setPos(col, row);
         checkAndHandleFigureCollision();
         tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
         selectedDiceNumber = -1;
-        clearSelectedDiceImage();
-        playerView.invalidate(); //TODO Decide where this should be called.
-        gameBoardView.invalidate(); //TODO Decide where this should be called.
-        //TODO Make sure both dice are used on the same figure.
+
+        playerView.invalidate();
+        gameBoardView.invalidate();
+
+        update.setFigure(selectedFigure);
+        networkManager.sendMessage(update);
+
+        if (dice.isDice1removed() && dice.isDice2removed()) { // If both dice are used -> start next turn.
+            startNextTurn();
+        }
     }
 
     private void clearSelectedDiceImage() {
@@ -574,9 +587,6 @@ public class Game {
         }
         if (dice.isDice2Selected()) {
             dice.dice2Used();
-        }
-        if (dice.isDice1removed() && dice.isDice2removed()) {
-            startNextTurn();
         }
     }
 
@@ -594,8 +604,10 @@ public class Game {
     }
 
     private void tryMovingSelectedFigureIntoRespectiveGoal() {
-        if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos) { //TODO Also make sure that both dice are used.
-            selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
+        if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos) {
+            if (dice.isDice1removed() && dice.isDice2removed()) {
+                selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
+            }
         }
     }
 
@@ -630,8 +642,24 @@ public class Game {
     public void handleUpdate(UpdateState update) {
         System.out.println("PID " + myPID + "received update code: " + update.getUsage());
         switch (update.getUsage()) {
-            case IReceiveMessage.USAGE_NEXTPLAYER:
+            case IReceiveMessage.USAGE_GAMEBOARDCREATED: {
+                gameBoard = update.getGameBoard();
+                gameBoardView.setGameBoard(gameBoard);
+                gameBoardView.invalidate();
+            }
+            case IReceiveMessage.USAGE_NEXTPLAYER: {
                 increaseCurrentPlayerIndex();
+            }
+            case IReceiveMessage.USAGE_FIGUREMOVED: {
+                for (Player player : players) {
+                    for (Figure figure : player.getFigures()){
+                        if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()){
+                            selectedFigure = figure;
+                            selectedFigure.setPos(update.getFigure().getColPos(), update.getFigure().getRowPos());
+                        }
+                    }
+                }
+            }
         }
     }
 
