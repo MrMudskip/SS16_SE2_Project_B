@@ -31,19 +31,19 @@ public class ObjectSerializer {
             out.writeObject(s);
             bytes = bos.toByteArray();
         } catch (IOException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+            Log.e(TAG, "IO Exception serialize");
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, e.getLocalizedMessage());
+                Log.e(TAG, "IO Exception serialize");
             }
             try {
                 bos.close();
             } catch (IOException e) {
-                Log.e(TAG, e.getLocalizedMessage());
+                Log.e(TAG, "IO Exception serialize");
             }
         }
         return bytes;
@@ -57,19 +57,19 @@ public class ObjectSerializer {
             in = new ObjectInputStream(bis);
             o = in.readObject();
         } catch (ClassNotFoundException | IOException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+            Log.e(TAG, "class/IO Exception deserialize");
         } finally {
             try {
                 bis.close();
             } catch (IOException e) {
-                Log.e(TAG, e.getLocalizedMessage());
+                Log.e(TAG, "IO Exception deserialize");
             }
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, e.getLocalizedMessage());
+                Log.e(TAG, "IO Exception deserialize");
             }
         }
         return (Serializable) o;

@@ -56,6 +56,25 @@ public class NetworkManager implements
 
     /* ------------------------------------------------------------------------------------------ */
 
+    public NetworkManager(Context context) {
+        googleApiClient = new GoogleApiClient.Builder(context)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(com.google.android.gms.nearby.Nearby.CONNECTIONS_API)
+                .build();
+
+        TAG = NetworkManager.class.getSimpleName();
+        this.context = (IUpdateView) context;
+
+        SharedPreferences settings = context.getSharedPreferences(context.getString(R.string.memory), 0);
+        playerName = settings.getString("playerName", null);
+
+        if (playerName == null || "".equals(playerName)) {
+            playerName = Integer.toString((int) (Math.random() * 1000000));
+        }
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
     public boolean getHostInfo() {
         return isHost;
     }
@@ -113,26 +132,6 @@ public class NetworkManager implements
 
     public int getNumberOfPlayers() {
         return clientIds.size() + 1;
-    }
-
-    /* ------------------------------------------------------------------------------------------ */
-
-    public NetworkManager(Context context) {
-        googleApiClient = new GoogleApiClient.Builder(context)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(com.google.android.gms.nearby.Nearby.CONNECTIONS_API)
-                .build();
-
-        TAG = NetworkManager.class.getSimpleName();
-        this.context = (IUpdateView) context;
-
-        SharedPreferences settings = (context.getSharedPreferences(context.getString(R.string.memory), 0));
-        playerName = settings.getString("playerName", null);
-
-        if (playerName == null || "".equals(playerName)) {
-            playerName = Integer.toString((int) (Math.random() * 1000000));
-        }
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -452,6 +451,9 @@ public class NetworkManager implements
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
         UpdateState updateS = (UpdateState) ObjectSerializer.deSerialize(payload);
         debugLog("onMessageReceived:" + endpointId);
+        if(payload == null){
+            debugLog("onMessageReceived:" + endpointId + "EMPTY");
+        }
         messageReciever(updateS);
 
         if (isHost) {

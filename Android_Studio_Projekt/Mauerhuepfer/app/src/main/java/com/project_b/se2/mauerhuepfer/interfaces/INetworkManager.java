@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface INetworkManager {
 
-    /**
+    /*
      * Advertise and Discover Timeouts
      */
     long TIMEOUT_ADVERTISE = 1000L * 60L;

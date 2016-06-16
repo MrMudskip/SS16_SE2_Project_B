@@ -184,7 +184,7 @@ public class NetworkActivity extends AppCompatActivity implements
                     debugInfo.append("\n " + status.getMsg());
                     break;
                 default:
-                    Log.e(TAG, "unknown USAGE_CODE");
+                    Log.e(TAG, "unknown USAGE_CODE: " + status.getUsage());
             }
         } else {
             debugInfo.append("\n CONNECTION ERROR");
