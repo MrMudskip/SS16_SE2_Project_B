@@ -22,54 +22,54 @@ public class ObjectSerializer {
     }
 
     public static byte[] serialize(Serializable s) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectOutput out = null;
-
         byte[] bytes = new byte[0];
+
         try {
-            out = new ObjectOutputStream(bos);
+            out = new ObjectOutputStream(outputStream);
             out.writeObject(s);
-            bytes = bos.toByteArray();
+            bytes = outputStream.toByteArray();
         } catch (IOException e) {
-            Log.e(TAG, "IO Exception serialize");
+            Log.e(TAG, "IO Exception serialize: write");
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, "IO Exception serialize");
+                Log.e(TAG, "IO Exception serialize: close out");
             }
             try {
-                bos.close();
+                outputStream.close();
             } catch (IOException e) {
-                Log.e(TAG, "IO Exception serialize");
+                Log.e(TAG, "IO Exception serialize: close outputStream");
             }
         }
         return bytes;
     }
 
     public static Serializable deSerialize(byte[] b) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(b);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(b);
         ObjectInput in = null;
         Object o = null;
         try {
-            in = new ObjectInputStream(bis);
+            in = new ObjectInputStream(inputStream);
             o = in.readObject();
         } catch (ClassNotFoundException | IOException e) {
-            Log.e(TAG, "class/IO Exception deserialize");
+            Log.e(TAG, "class/IO Exception deserialize: read");
         } finally {
-            try {
-                bis.close();
-            } catch (IOException e) {
-                Log.e(TAG, "IO Exception deserialize");
-            }
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, "IO Exception deserialize");
+                Log.e(TAG, "IO Exception deserialize: close in");
+            }
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                Log.e(TAG, "IO Exception deserialize: close inputStream");
             }
         }
         return (Serializable) o;
