@@ -82,9 +82,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     public void receiveMessage(UpdateState status) {
         if (status != null) {
             if (status.getUsage() == USAGE_RESTART) {
-                Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                cancelGame();
             } else {
                 game.handleUpdate(status);
             }
@@ -114,7 +112,10 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     }
 
     private void cancelGame() {
-        super.onBackPressed();
+        mNetworkManager.disconnect();
+        Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
     }
 
     @Override
