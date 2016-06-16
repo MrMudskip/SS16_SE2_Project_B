@@ -330,5 +330,7 @@ public class Dice {
         game.setSelectedDiceNumber(getDice2Value());
     }
 
-
+    public void printInfo(String msg) {
+        infoText.setText(msg);
+    }
 }

@@ -12,7 +12,7 @@ import android.widget.EditText;
  * Created by rohrbe on 29.05.16.
  */
 public class OptionsActivity extends AppCompatActivity {
-    private static String PREFS_NAME;
+    private String PREFS_NAME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

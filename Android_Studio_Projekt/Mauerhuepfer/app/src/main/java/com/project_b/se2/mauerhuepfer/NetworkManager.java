@@ -39,6 +39,7 @@ public class NetworkManager implements
         INetworkManager {
 
     private static String TAG;
+    private long time;
     private ArrayList MessageReceiverListeners = new ArrayList();
 
     /**
@@ -68,7 +69,7 @@ public class NetworkManager implements
     }
 
     public void setPlayerID(int player) {
-        if (0 < player && player <= maxClients) {
+        if (0 <= player && player <= maxClients) {
             playerID = player;
         } else {
             playerID = -1;
@@ -325,7 +326,8 @@ public class NetworkManager implements
     public void onEndpointFound(final String endpointId, String deviceId, String serviceId, final String endpointName) {
         Log.d(TAG, "onEndpointFound:" + endpointId + ":" + endpointName);
 
-        if (mMyListDialog == null) {
+        if (mMyListDialog == null || (System.currentTimeMillis() - time) > (TIMEOUT_DISCOVER + 1)) {
+            time = System.currentTimeMillis();
             AlertDialog.Builder builder = new AlertDialog.Builder((Context) mContext)
                     .setTitle("Endpoint(s) Found")
                     .setCancelable(true)
@@ -347,7 +349,6 @@ public class NetworkManager implements
                 }
             });
         }
-
         mMyListDialog.addItem(endpointName, endpointId);
         mMyListDialog.show();
     }
@@ -537,4 +538,6 @@ public class NetworkManager implements
             ((IReceiveMessage) l).receiveMessage(s);
         }
     }
+
+    /* ------------------------------------------------------------------------------------------ */
 }

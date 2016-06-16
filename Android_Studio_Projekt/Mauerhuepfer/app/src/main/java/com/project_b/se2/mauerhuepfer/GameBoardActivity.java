@@ -1,6 +1,8 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
@@ -33,6 +35,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     private int playerID;
     private String playerName;
     private INetworkManager mNetworkManager;
+    private MyListDialog mMyListDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +55,12 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
                 playerID = b.getInt("playerID");
                 playerName = b.getString("playerName");
                 numberOfPlayers = b.getInt("numberOfPlayers");
-                //dice.infoText.setText(playerName + " du bist Spieler " + playerID);
             }
 
             // start a new game
             this.game = new Game(this, numberOfPlayers, mNetworkManager, playerID);
             dice = game.getDice();
+            dice.printInfo(playerName + " du bist Spieler " + (playerID + 1));
         }
     }
 
@@ -91,7 +94,27 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     @Override
     public void onBackPressed() {
         Log.d("GAME", "onBackPressed");
-        // Do nothing
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Spiel Beenden?")
+                .setCancelable(false);
+
+        mMyListDialog = new MyListDialog(this, builder, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mMyListDialog.getItemValue(which).equals("kill")) {
+                    cancelGame();
+                }
+                mMyListDialog.dismiss();
+            }
+        });
+
+        mMyListDialog.addItem("     JA ", "kill");
+        mMyListDialog.addItem("    NEIN ", "doNothing");
+        mMyListDialog.show();
+    }
+
+    private void cancelGame() {
+        super.onBackPressed();
     }
 
     @Override

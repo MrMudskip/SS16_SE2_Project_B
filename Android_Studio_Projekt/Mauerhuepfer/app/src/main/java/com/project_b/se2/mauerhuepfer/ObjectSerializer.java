@@ -1,5 +1,7 @@
 package com.project_b.se2.mauerhuepfer;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,6 +16,7 @@ import java.io.StreamCorruptedException;
  * Created by rohrbe on 14.05.2016.
  */
 public class ObjectSerializer {
+    private static final String TAG = "ObjectSerializerClass";
 
     private ObjectSerializer() {
 
@@ -29,19 +32,19 @@ public class ObjectSerializer {
             out.writeObject(s);
             bytes = bos.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
             }
             try {
                 bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
         return bytes;
@@ -54,24 +57,20 @@ public class ObjectSerializer {
         try {
             in = new ObjectInputStream(bis);
             o = in.readObject();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (StreamCorruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException | IOException e) {
+            Log.e(TAG, e.getMessage());
         } finally {
             try {
                 bis.close();
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
             }
             try {
                 if (in != null) {
                     in.close();
                 }
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
         return (Serializable) o;
