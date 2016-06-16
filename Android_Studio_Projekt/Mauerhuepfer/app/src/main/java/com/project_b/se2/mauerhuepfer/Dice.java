@@ -25,10 +25,6 @@ public class Dice {
     private Context context;
     private int dice1Value;
     private int dice2Value;
-    /*private boolean isDice1ValueSelected = false;
-    private boolean isDice2ValueSelected = false;
-    private boolean isDice1ValueMoved = true;
-    private boolean isDice2ValueMoved = true;*/
     private final int backgroundColor = Color.parseColor("#5b5533");
     private ImageView diceImage1;
     private ImageView diceImage2;
@@ -37,13 +33,15 @@ public class Dice {
     private SensorManager mSensorManager;
     private ShakeDetector mSensorListener;
     private Game game;
+
     private boolean dice1Selected = false;
     private boolean dice2Selected = false;
     private boolean dice1removed = false;
     private boolean dice2removed = false;
+    private boolean diceOne = true;
+    private boolean moved = false;
 
     MediaPlayer but_sound;
-
 
     public Dice(Context current, Game game) {
         this.context = current;
@@ -78,7 +76,7 @@ public class Dice {
         mSensorListener.setOnShakeListener(new ShakeDetector.OnShakeListener() {
             @Override
             public void onShake() {
-                if (true) {
+                if (!moved) {
                     diceButton();
                     but_sound = MediaPlayer.create(context, R.raw.klack);
                     but_sound.setVolume(1.0f, 1.0f);
@@ -99,10 +97,6 @@ public class Dice {
         this.dice2Value = getRandom();
         dice1Selected = false;
         dice2Selected = false;
-       /* this.isDice1ValueSelected = false;
-        this.isDice2ValueSelected = false;
-        this.isDice1ValueMoved = false;
-        this.isDice2ValueMoved = false;*/
     }
 
     public void setDice1removed(boolean dice1removed) {
@@ -145,81 +139,20 @@ public class Dice {
         return this.dice2Value;
     }
 
-    public int getBackgroundColor() {
-        return this.backgroundColor;
-    }
-
-    /*public boolean checkDicePermission() {
-        return (this.isDice1ValueMoved && this.isDice2ValueMoved);
-    }
-
-    public boolean isDice1ValueSelected() {
-        return this.isDice1ValueSelected;
-    }
-
-    public boolean isDice2ValueSelected() {
-        return this.isDice2ValueSelected;
-    }
-
-    public void selectDice1Value() {
-        this.isDice1ValueSelected = true;
-    }
-
-    public void selectDice2Value() {
-        this.isDice2ValueSelected = true;
-    }
-
-    public void deselectDice1Value() {
-        this.isDice1ValueSelected = false;
-    }
-
-    public void deselectDice2Value() {
-        this.isDice2ValueSelected = false;
-    }
-
-    public void moveDice1Value() {
-        this.isDice1ValueMoved = true;
-    }
-
-    public void moveDive2Value() {
-        this.isDice2ValueMoved = true;
-    }
-
-    public boolean isDice1ValueMoved() {
-        return this.isDice1ValueMoved;
-    }
-
-    public boolean isDice2ValueMoved() {
-        return this.isDice2ValueMoved;
-    }*/
-
-    /*public void moveDiceValue() {
-        int diceImageBackground = this.getBackgroundColor();
-
-        if (isDice1ValueSelected()) {
-            diceImage1.setColorFilter(diceImageBackground);
-            this.moveDice1Value();
-        }
-        if (isDice2ValueSelected()) {
-            diceImage2.setColorFilter(diceImageBackground);
-            moveDive2Value();
-        }
-    }*/
-
     public void dice1Used() {
-        int diceImageBackground = this.getBackgroundColor();
+        int diceImageBackground = backgroundColor;
         diceImage1.setColorFilter(diceImageBackground);
         dice1removed = true;
     }
 
     public void dice2Used() {
-        int diceImageBackground = this.getBackgroundColor();
+        int diceImageBackground = backgroundColor;
         diceImage2.setColorFilter(diceImageBackground);
         dice2removed = true;
     }
 
     public void diceButton() {
-        if (true) {
+        if (!moved) {
             throwDice();
             ImageView image1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
             image1.clearColorFilter();
@@ -238,7 +171,6 @@ public class Dice {
     public Drawable getDiceImage(int zu) {
         Drawable temp = null;
         switch (zu) {
-
             case 1:
                 temp = context.getResources().getDrawable(R.drawable.w1n);
                 break;
@@ -261,51 +193,6 @@ public class Dice {
         return temp;
     }
 
-   /* private void clickOnDice1() {
-        if (checkDicePermission()) {
-            Toast.makeText(context, "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-            infoText.setText("Bitte würfeln");
-        }
-        if (!isDice2ValueMoved() && !isDice1ValueMoved()) {
-            //  diceImage2.clearColorFilter();
-            deselectDice2Value();
-
-        }
-        if (!isDice1ValueSelected() && !isDice1ValueMoved()) {
-            //int diceImage1Background = getBackgroundColor();
-            diceImage1.setColorFilter(getBackgroundColor(), PorterDuff.Mode.MULTIPLY);
-            infoText.setText("Mögliche Züge mit " + getDice1Value());
-            game.setSelectedDiceNumber(getDice1Value());
-            selectDice1Value();
-        }
-//        else if (isDice1ValueSelected() && !isDice1ValueMoved()) {
-//            isDice1ValueSelected = true;
-//        }
-    }
-
-    private void clickOnDice2() {
-        if (checkDicePermission()) {
-            Toast.makeText(context, "Bitte würfeln!! ", Toast.LENGTH_SHORT).show();
-            infoText.setText("Bitte würfeln");
-        }
-        if (!isDice1ValueMoved() && !isDice2ValueMoved()) {
-            //   diceImage1.clearColorFilter();
-            deselectDice1Value();
-
-
-        }
-        if (!isDice2ValueSelected() && !isDice2ValueMoved()) {
-            int diceImage2Background = getBackgroundColor();
-            diceImage2.setColorFilter(diceImage2Background, PorterDuff.Mode.MULTIPLY);
-            infoText.setText("Mögliche Züge mit " + getDice2Value());
-            game.setSelectedDiceNumber(getDice2Value());
-            selectDice2Value();
-        }
-//        else if (isDice2ValueSelected() && !isDice2ValueMoved()) {
-//            isDice2ValueSelected = true;
-//        }
-    }*/
-
     private void dice1() {
         dice1Selected = true;
         dice2Selected = false;
@@ -313,7 +200,7 @@ public class Dice {
             diceImage2.clearColorFilter();
             diceImage2.setImageDrawable(getDiceImage(getDice2Value()));
         }
-        diceImage1.setColorFilter(getBackgroundColor(), PorterDuff.Mode.MULTIPLY);
+        diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice1Value());
         game.setSelectedDiceNumber(getDice1Value());
     }
@@ -325,7 +212,7 @@ public class Dice {
             diceImage1.clearColorFilter();
             diceImage1.setImageDrawable(getDiceImage(getDice1Value()));
         }
-        diceImage2.setColorFilter(getBackgroundColor(), PorterDuff.Mode.MULTIPLY);
+        diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice2Value());
         game.setSelectedDiceNumber(getDice2Value());
     }

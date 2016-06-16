@@ -84,8 +84,8 @@ public class NetworkManager implements
             case 2:
                 playerOrder.add(2);
             case 1:
-            case 0:
                 playerOrder.add(1);
+            case 0:
                 playerOrder.add(0);
                 break;
         }
