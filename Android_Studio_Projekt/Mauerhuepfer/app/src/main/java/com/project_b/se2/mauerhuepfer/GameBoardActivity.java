@@ -24,8 +24,8 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
     private int numberOfPlayers;
     private int playerID;
     private String playerName;
-    private INetworkManager mNetworkManager;
-    private MyListDialog mMyListDialog;
+    private INetworkManager networkManager;
+    private MyListDialog myListDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +36,10 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
         }
 
         setContentView(R.layout.activity_game_board);
-        mNetworkManager = NetworkActivity.getmNetworkManager();
+        networkManager = NetworkActivity.getNetworkManager();
 
-        if (mNetworkManager != null) {
-            mNetworkManager.addMessageReceiverListener(this);
+        if (networkManager != null) {
+            networkManager.addMessageReceiverListener(this);
             Bundle b = getIntent().getExtras();
             if (b != null) {
                 playerID = b.getInt("playerID");
@@ -48,7 +48,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             }
 
             // start a new game
-            this.game = new Game(this, numberOfPlayers, mNetworkManager, playerID);
+            this.game = new Game(this, numberOfPlayers, networkManager, playerID);
             dice = game.getDice();
             dice.printInfo(playerName + " du bist Spieler " + (playerID + 1));
         }
@@ -70,7 +70,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
 
     @Override
     protected void onDestroy() {
-        mNetworkManager.disconnect();
+        networkManager.disconnect();
         super.onDestroy();
     }
 
@@ -92,23 +92,23 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
                 .setTitle("Spiel Beenden?")
                 .setCancelable(false);
 
-        mMyListDialog = new MyListDialog(this, builder, new DialogInterface.OnClickListener() {
+        myListDialog = new MyListDialog(this, builder, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if ("kill".equals(mMyListDialog.getItemValue(which))) {
+                if ("kill".equals(myListDialog.getItemValue(which))) {
                     cancelGame();
                 }
-                mMyListDialog.dismiss();
+                myListDialog.dismiss();
             }
         });
 
-        mMyListDialog.addItem("     JA ", "kill");
-        mMyListDialog.addItem("    NEIN ", "doNothing");
-        mMyListDialog.show();
+        myListDialog.addItem("     JA ", "kill");
+        myListDialog.addItem("    NEIN ", "doNothing");
+        myListDialog.show();
     }
 
     private void cancelGame() {
-        mNetworkManager.disconnect();
+        networkManager.disconnect();
         Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
