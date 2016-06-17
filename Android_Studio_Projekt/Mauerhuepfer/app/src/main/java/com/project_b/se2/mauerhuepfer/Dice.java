@@ -185,7 +185,7 @@ public class Dice {
                 update.setW1(dice1Value);
                 update.setW2(dice2Value);
                 update.setPlayerName(playerName);
-                update.setUsage(IReceiveMessage.USAGE_DICE);
+                update.setUsage(IReceiveMessage.USAGE_DICE_ROLLED);
                 networkManager.sendMessage(update);
             } else {
                 Toast.makeText(context, "Achtung, bereits gewürfelt du Schummler!! ", Toast.LENGTH_SHORT).show();

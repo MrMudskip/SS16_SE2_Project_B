@@ -193,21 +193,24 @@ public class Game {
             }
         });
 
-        // TODO Use netcode's player selection for this. (@Bernhard)
-        // TODO Tell the current player it's his turn. (Maybe @Bernhard?)
-        currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
-/*
-        //Share created Game board with others
-        if (numberOfPlayers > 1 && myPID == 0) {
-            update.setUsage(IReceiveMessage.USAGE_GAMEBOARDCREATED);
-            update.setGameBoard(deepCopyGameBoard(gameBoard));
-            networkManager.sendMessage(update); //TODO get this working.
-        }
-*/
-        //Allow myself to roll the dice if I am current player.
-        if (players[currentPlayerIndex].getPID() == myPID){
-            dice.setDiceRollAllowed(true);
-            dice.setFirstDiceRollThisTurn(true);
+        //Set everything that only one player needs to do (if you have PID=0).
+        if (myPID == 0) {
+            //Determine starting player.
+            currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1); // TODO Tell the current player it's his turn. (Maybe @Bernhard?)
+
+            //Allow myself to roll the dice if I am current player.
+            if (players[currentPlayerIndex].getPID() == myPID){
+                dice.setDiceRollAllowed(true);
+                dice.setFirstDiceRollThisTurn(true);
+            }
+
+            //Share created info with others
+            if (numberOfPlayers > 1) {
+                update.setUsage(IReceiveMessage.USAGE_GAME_INITIALISED);
+                //update.setGameBoard(deepCopyGameBoard(gameBoard)); //TODO get this working.
+                update.setIntValue(currentPlayerIndex);
+                networkManager.sendMessage(update);
+            }
         }
     }
 
@@ -502,8 +505,8 @@ public class Game {
     public void setSelectedDiceNumber(int selectedDiceNumber, boolean share) {
         if (share) {
             //Share selected dice number with others
-            update.setUsage(IReceiveMessage.USAGE_DICE);
-            update.setW1(selectedDiceNumber);
+            update.setUsage(IReceiveMessage.USAGE_DICE_SELECTED);
+            update.setIntValue(selectedDiceNumber);
             networkManager.sendMessage(update);
         }
         this.selectedDiceNumber = selectedDiceNumber;
@@ -661,11 +664,19 @@ public class Game {
     public void handleUpdate(UpdateState update) {
         System.out.println("PID " + myPID + "received update code: " + update.getUsage());
         switch (update.getUsage()) {
-            case IReceiveMessage.USAGE_GAMEBOARDCREATED:
-                gameBoard = deepCopyGameBoard(update.getGameBoard());
+            case IReceiveMessage.USAGE_GAME_INITIALISED:
+                /*gameBoard = deepCopyGameBoard(update.getGameBoard());
                 initialiseGameBoard();
                 gameBoardView.setGameBoard(gameBoard);
-                gameBoardView.invalidate();
+                gameBoardView.invalidate();*/
+
+                currentPlayerIndex = update.getIntValue();
+
+                //Allow myself to roll the dice if I am current player.
+                if (players[currentPlayerIndex].getPID() == myPID){
+                    dice.setDiceRollAllowed(true);
+                    dice.setFirstDiceRollThisTurn(true);
+                }
                 break;
             case IReceiveMessage.USAGE_CLICKEDPLAYER:
                 for (Player player : players) {
@@ -679,37 +690,15 @@ public class Game {
             case IReceiveMessage.USAGE_CLICKEDBLOCK:
                 handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition());
                 break;
-/*
-            case IReceiveMessage.USAGE_NEXTPLAYER:
-                increaseCurrentPlayerIndex();
-                if (currentPlayerIndex == myPID) {
-                    dice.setDiceRollAllowed(true);
-                    dice.setFirstDiceRollThisTurn(true);
-                }
+            case IReceiveMessage.USAGE_DICE_SELECTED:
+                setSelectedDiceNumber(update.getIntValue(), false);
                 break;
-*/
-            case IReceiveMessage.USAGE_DICE:
-                setSelectedDiceNumber(update.getW1(), false);
-                break;
-
-/*
-            case IReceiveMessage.USAGE_FIGURESELECTED:
-                for (Player player : players) {
-                    for (Figure figure : player.getFigures()) {
-                        if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()) {
-                            selectedFigure = figure;
-                        }
-                    }
-                }
-                break;
-*/
-/*
-            case IReceiveMessage.USAGE_DICE:
+            case IReceiveMessage.USAGE_DICE_ROLLED:
                 dice.setDiceImage(update.getW1(), 1);
                 dice.setDiceImage(update.getW2(), 2);
                 dice.printInfo(update.getPlayerName() + " würfelt : " + update.getW1() + " und: " + update.getW2());
                 break;
-*/
+
         }
     }
 

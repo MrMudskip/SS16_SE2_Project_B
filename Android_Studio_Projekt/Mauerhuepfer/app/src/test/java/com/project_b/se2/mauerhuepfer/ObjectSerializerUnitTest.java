@@ -31,7 +31,7 @@ public class ObjectSerializerUnitTest {
         byte[] test = ObjectSerializer.serialize(updateState);
         UpdateState update = (UpdateState) ObjectSerializer.deSerialize(test);
 
-        Assert.assertNotEquals(update.getUsage(), IReceiveMessage.USAGE_DICE);
+        Assert.assertNotEquals(update.getUsage(), IReceiveMessage.USAGE_DICE_ROLLED);
     }
 
     @Test

@@ -105,7 +105,7 @@ public class NetworkActivityUnitTest {
     @Test
     public void testReceiveMessage5() {
         UpdateState update = new UpdateState();
-        update.setUsage(IReceiveMessage.USAGE_GAMEBOARDCREATED);
+        update.setUsage(IReceiveMessage.USAGE_GAME_INITIALISED);
         networkActivity.receiveMessage(update);
     }
 
