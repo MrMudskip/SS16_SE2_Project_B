@@ -14,7 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * Created by rohrbe on 17.06.16.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NetworkManagerUnitTest {
+public class NetworkActivityUnitTest {
 
     @Mock
     NetworkActivity networkActivity;
