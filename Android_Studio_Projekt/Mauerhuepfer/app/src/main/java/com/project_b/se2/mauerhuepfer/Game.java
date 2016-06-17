@@ -63,6 +63,7 @@ public class Game {
     private int numberOfPlayers;
     private Player[] players;
     private int myPID;
+    private String playerName;
     private int currentPlayerIndex;
     private Figure selectedFigure;
     private int selectedDiceNumber;
@@ -104,7 +105,7 @@ public class Game {
     };
 
 
-    public Game(Context context, int numberOfPlayers, INetworkManager manager, int PID) {
+    public Game(Context context, int numberOfPlayers, INetworkManager manager, int PID, String playerName) {
         //Initialise variables
         this.context = context;
         this.resources = this.context.getResources();
@@ -118,9 +119,11 @@ public class Game {
         this.endColPos = -1;
         this.endRowPos = -1;
         this.networkManager = manager;
-        this.dice = new Dice(context, this, networkManager);
+        this.playerName = playerName;
+        this.dice = new Dice(context, this, networkManager, playerName);
         this.update = new UpdateState();
         this.myPID = PID;
+
 
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
@@ -637,7 +640,7 @@ public class Game {
         dice.setDice1removed(false);
         dice.setDice2removed(false);
 
-        if (numberOfPlayers == 1){
+        if (numberOfPlayers == 1) {
             dice.setMoved(false);
             dice.setDiceOne(true);
         }
@@ -668,6 +671,12 @@ public class Game {
                     }
                 }
             }
+            break;
+            case IReceiveMessage.USAGE_DICE:
+                dice.setDiceImage(update.getW1(), 1);
+                dice.setDiceImage(update.getW2(), 2);
+                dice.printInfo(update.getPlayerName()+" würfelt : " + update.getW1() + " und: " + update.getW2());
+                break;
         }
     }
 

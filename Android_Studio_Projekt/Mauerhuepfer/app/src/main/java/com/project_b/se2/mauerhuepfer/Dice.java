@@ -44,12 +44,14 @@ public class Dice {
     private boolean diceOne = true;
     private boolean moved = true;
 
+    private String playerName;
     MediaPlayer but_sound;
 
-    public Dice(Context current, Game game, INetworkManager networkManager) {
+    public Dice(Context current, Game game, INetworkManager networkManager, String playerName) {
         this.context = current;
         this.game = game;
         this.networkManager = networkManager;
+        this.playerName = playerName;
 
         diceImage1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
         diceImage2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
@@ -174,22 +176,15 @@ public class Dice {
     public void diceButton() {
         if (!moved) {
             throwDice();
-            ImageView image1 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
-            image1.clearColorFilter();
-            image1.setImageDrawable(getDiceImage(dice1Value));
-            diceImage1.setVisibility(View.VISIBLE);
-
-            ImageView image2 = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
-            image2.clearColorFilter();
-            image2.setImageDrawable(getDiceImage(dice2Value));
-            diceImage2.setVisibility(View.VISIBLE);
-
+            setDiceImage(dice1Value, 1);
+            setDiceImage(dice2Value, 2);
             infoText.setText(" ");
 
             if (diceOne) {
                 diceOne = false;
                 update.setW1(dice1Value);
                 update.setW2(dice2Value);
+                update.setPlayerName(playerName);
                 update.setUsage(IReceiveMessage.USAGE_DICE);
                 networkManager.sendMessage(update);
             } else {
@@ -197,6 +192,20 @@ public class Dice {
             }
         } else {
             Toast.makeText(context, "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void setDiceImage(int diceValue, int dice) {
+        if (dice == 1) {
+            ImageView image = (ImageView) ((Activity) context).findViewById(R.id.wuerfel);
+            image.clearColorFilter();
+            image.setImageDrawable(getDiceImage(diceValue));
+            diceImage1.setVisibility(View.VISIBLE);
+        } else {
+            ImageView image = (ImageView) ((Activity) context).findViewById(R.id.wuerfel2);
+            image.clearColorFilter();
+            image.setImageDrawable(getDiceImage(diceValue));
+            diceImage2.setVisibility(View.VISIBLE);
         }
     }
 

@@ -48,7 +48,7 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             }
 
             // start a new game
-            this.game = new Game(this, numberOfPlayers, networkManager, playerID);
+            this.game = new Game(this, numberOfPlayers, networkManager, playerID, playerName);
             dice = game.getDice();
             dice.printInfo(playerName + " du bist Spieler " + (playerID + 1));
         }
