@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.project_b.se2.mauerhuepfer">
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -8,8 +9,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
         <meta-data android:name="com.google.android.gms.nearby.connection.SERVICE_ID" android:value="@string/service_id" />
+
         <activity
             android:name=".MenuActivity"
             android:screenOrientation="portrait">
@@ -19,6 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".GameBoardActivity"
             android:screenOrientation="portrait"
@@ -30,6 +33,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.project_b.se2.mauerhuepfer.MenuActivity" />
         </activity>
+
         <activity
             android:label="@string/app_name"
             android:name=".NetworkActivity"
