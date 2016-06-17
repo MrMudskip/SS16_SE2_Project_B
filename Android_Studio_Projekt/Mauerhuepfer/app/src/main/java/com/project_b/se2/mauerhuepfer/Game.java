@@ -755,4 +755,16 @@ public class Game {
         }
         return result;
     }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
+
+    public Player[] getPlayers() {
+        return players;
+    }
+
+    public int getMyPID() {
+        return myPID;
+    }
 }

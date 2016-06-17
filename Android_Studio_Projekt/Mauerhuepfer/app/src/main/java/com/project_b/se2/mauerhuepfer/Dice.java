@@ -196,10 +196,10 @@ public class Dice {
                 update.setUsage(IReceiveMessage.USAGE_DICE_ROLLED);
                 networkManager.sendMessage(update);
             } else {
-                Toast.makeText(context, "Achtung, bereits gewürfelt du Schummler!! ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Achtung, bereits gewürfelt du Schummler! ", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(context, "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Du bist nicht drann!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -243,27 +243,31 @@ public class Dice {
     }
 
     private void dice1() {
-        dice1Selected = true;
-        dice2Selected = false;
-        if (!dice2removed) {
-            diceImage2.clearColorFilter();
-            diceImage2.setImageDrawable(getDiceImage(getDice2Value()));
+        if (game.getPlayers()[game.getCurrentPlayerIndex()].getPID() == game.getMyPID()) { // It's my turn
+            dice1Selected = true;
+            dice2Selected = false;
+            if (!dice2removed) {
+                diceImage2.clearColorFilter();
+                diceImage2.setImageDrawable(getDiceImage(getDice2Value()));
+            }
+            diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
+            infoText.setText("Mögliche Züge mit " + getDice1Value());
+            game.setSelectedDiceNumber(getDice1Value(), 1, true);
         }
-        diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
-        infoText.setText("Mögliche Züge mit " + getDice1Value());
-        game.setSelectedDiceNumber(getDice1Value(), 1, true);
     }
 
     private void dice2() {
-        dice1Selected = false;
-        dice2Selected = true;
-        if (!dice1removed) {
-            diceImage1.clearColorFilter();
-            diceImage1.setImageDrawable(getDiceImage(getDice1Value()));
+        if (game.getPlayers()[game.getCurrentPlayerIndex()].getPID() == game.getMyPID()) { // It's my turn
+            dice1Selected = false;
+            dice2Selected = true;
+            if (!dice1removed) {
+                diceImage1.clearColorFilter();
+                diceImage1.setImageDrawable(getDiceImage(getDice1Value()));
+            }
+            diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
+            infoText.setText("Mögliche Züge mit " + getDice2Value());
+            game.setSelectedDiceNumber(getDice2Value(), 2, true);
         }
-        diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
-        infoText.setText("Mögliche Züge mit " + getDice2Value());
-        game.setSelectedDiceNumber(getDice2Value(), 2, true);
     }
 
     public void printInfo(String msg) {
