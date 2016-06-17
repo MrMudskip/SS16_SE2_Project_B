@@ -13,6 +13,7 @@ import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -132,7 +133,7 @@ public class Game {
         initialiseGameBoard();
 
         //Set up game views
-        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
+        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // ODO find a way to make sure the gameBoardView is centered.
         gameBoardView.setGameBoard(gameBoard);
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
@@ -143,10 +144,18 @@ public class Game {
                     for (Player player : players) {
                         Figure[] figures = player.getFigures();
                         for (Figure fig : figures) {
-                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  //Clicked on a figure
-                                if (fig.getOwner().getPID() == myPID) {                                         //It's my turn
-                                    if (players[currentPlayerIndex].getPID() == myPID) {                        //It's my figure
-                                        if (!dice.isDice1removed() && !dice.isDice2removed()) {                 //No dice used yet
+                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  // Clicked on a figure
+                                if (fig.getOwner().getPID() == myPID) {                                         // It's my turn
+                                    if (players[currentPlayerIndex].getPID() == myPID) {                        // It's my figure
+                                        if (!dice.isDice1removed() && !dice.isDice2removed()) {                 // No dice used yet
+                                            // Share click with others
+                                            update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
+                                            update.setColPosition(fig.getColPos());
+                                            update.setRowPosition(fig.getRowPos());
+                                            networkManager.sendMessage(update);
+
+                                            return handleAuthorizedClickOnFigure(fig);
+/*
                                             if (selectedFigure != null) {
                                                 // Deselect previous selected figure.
                                                 selectedFigure.getImage().clearColorFilter();
@@ -161,11 +170,17 @@ public class Game {
                                             } else {
                                                 // Select unselected figure.
                                                 selectedFigure = fig;
-                                                selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure // TODO look into this way of colouring
+                                                selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
                                                 playerView.invalidate();
                                                 calculatePossibleMoves();
+
+                                                // Share selection with others
+                                                update.setUsage(IReceiveMessage.USAGE_FIGURESELECTED);
+                                                update.setFigure(selectedFigure);
+                                                networkManager.sendMessage(update);
                                             }
                                             return true;
+*/
                                         }
                                     }
                                 }
@@ -184,8 +199,17 @@ public class Game {
                     if (!possibleDestinationBlocks.isEmpty()) {
                         for (Block block : possibleDestinationBlocks) {
                             if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
+                                // Share click with others
+                                update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
+                                update.setColPosition(block.getColPos());
+                                update.setRowPosition(block.getRowPos());
+                                networkManager.sendMessage(update);
+
+                                return handleAuthorizedClickOnBlock(block.getColPos(), block.getRowPos());
+                                /*
                                 moveSelectedFigureAndTidyUp(block.getColPos(), block.getRowPos());
                                 return true;
+                                */
                             }
                         }
                     }
@@ -195,18 +219,17 @@ public class Game {
         });
 
         // TODO Use netcode's player selection for this. (@Bernhard)
-        // TODO Tell the current player it's his turn. [Maybe @Bernhard?)
+        // TODO Tell the current player it's his turn. (Maybe @Bernhard?)
         currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
-        System.out.println("numberOfPlayers = " + numberOfPlayers);
-        System.out.println("currenPlayerIndex = " + currentPlayerIndex);
 
-        //Share created Game board with others
+        //Share created game board with others
         if (myPID == 0){
             update.setUsage(IReceiveMessage.USAGE_GAMEBOARDCREATED);
-            update.setGameBoard(gameBoard);
-            networkManager.sendMessage(update);
+            update.setGameBoard(deepCopyGameBoard(gameBoard));
+            networkManager.sendMessage(update); //TODO get this working.
         }
     }
+
 
     public Dice getDice() {
         return dice;
@@ -497,7 +520,13 @@ public class Game {
         return true;
     }
 
-    public void setSelectedDiceNumber(int selectedDiceNumber) {
+    public void setSelectedDiceNumber(int selectedDiceNumber, boolean share) {
+        if (share) {
+            //Share seleceted dice number with others
+            update.setUsage(IReceiveMessage.USAGE_DICE);
+            update.setW1(selectedDiceNumber);
+            networkManager.sendMessage(update);
+        }
         this.selectedDiceNumber = selectedDiceNumber;
         calculatePossibleMoves();
     }
@@ -559,10 +588,13 @@ public class Game {
     }
 
     private void moveSelectedFigureAndTidyUp(int col, int row) {
+/*
+        //Share info with others
         update.setUsage(IReceiveMessage.USAGE_FIGUREMOVED);
         update.setColPosition(col);
         update.setRowPosition(row);
-
+        networkManager.sendMessage(update);
+*/
         clearSelectedDiceImage();
         selectedFigure.setPos(col, row);
         checkAndHandleFigureCollision();
@@ -572,9 +604,6 @@ public class Game {
 
         playerView.invalidate();
         gameBoardView.invalidate();
-
-        update.setFigure(selectedFigure);
-        networkManager.sendMessage(update);
 
         if (dice.isDice1removed() && dice.isDice2removed()) { // If both dice are used -> start next turn.
             startNextTurn();
@@ -630,10 +659,10 @@ public class Game {
         selectedFigure.getImage().clearColorFilter();
         selectedFigure = null;
         increaseCurrentPlayerIndex();
-
+/*
         update.setUsage(IReceiveMessage.USAGE_NEXTPLAYER);
         networkManager.sendMessage(update);
-
+*/
         playerView.invalidate();
         dice.setDice1removed(false);
         dice.setDice2removed(false);
@@ -643,24 +672,70 @@ public class Game {
         System.out.println("PID " + myPID + "received update code: " + update.getUsage());
         switch (update.getUsage()) {
             case IReceiveMessage.USAGE_GAMEBOARDCREATED: {
-                gameBoard = update.getGameBoard();
+                gameBoard = deepCopyGameBoard(update.getGameBoard());
                 gameBoardView.setGameBoard(gameBoard);
                 gameBoardView.invalidate();
             }
-            case IReceiveMessage.USAGE_NEXTPLAYER: {
-                increaseCurrentPlayerIndex();
-            }
-            case IReceiveMessage.USAGE_FIGUREMOVED: {
+            case IReceiveMessage.USAGE_CLICKEDPLAYER: {
                 for (Player player : players) {
                     for (Figure figure : player.getFigures()){
                         if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()){
-                            selectedFigure = figure;
-                            selectedFigure.setPos(update.getFigure().getColPos(), update.getFigure().getRowPos());
+                            handleAuthorizedClickOnFigure(figure); // Simulate click on figure
                         }
                     }
                 }
             }
+            case IReceiveMessage.USAGE_CLICKEDBLOCK: {
+                handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition());
+            }
+            case IReceiveMessage.USAGE_DICE: {
+               setSelectedDiceNumber(update.getW1(), false);
+            }
+/*
+            case IReceiveMessage.USAGE_FIGURESELECTED: {
+                for (Player player : players) {
+                    for (Figure figure : player.getFigures()){
+                        if (figure.getColPos() == update.getFigure().getColPos() && figure.getRowPos() == update.getFigure().getRowPos()){
+                            selectedFigure = figure;
+                        }
+                    }
+                }
+            }
+            case IReceiveMessage.USAGE_FIGUREMOVED: {
+                moveSelectedFigureAndTidyUp(update.getColPosition(), update.getRowPosition());
+            }
+            case IReceiveMessage.USAGE_NEXTPLAYER: {
+                increaseCurrentPlayerIndex();
+            }
+*/
         }
+    }
+
+    private boolean handleAuthorizedClickOnFigure(Figure fig){
+        if (selectedFigure != null) {
+            // Deselect previous selected figure.
+            selectedFigure.getImage().clearColorFilter();
+        }
+        if (fig == selectedFigure) {
+            // Deselect selected figure.
+            selectedFigure.getImage().clearColorFilter();
+            clearPossibleDestinationBlocks();
+            selectedFigure = null;
+            playerView.invalidate();
+            gameBoardView.invalidate();
+        } else {
+            // Select unselected figure.
+            selectedFigure = fig;
+            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
+            playerView.invalidate();
+            calculatePossibleMoves();
+        }
+        return true;
+    }
+
+    private boolean handleAuthorizedClickOnBlock(int col, int row){
+        moveSelectedFigureAndTidyUp(col, row);
+        return true;
     }
 
     /**
@@ -670,5 +745,18 @@ public class Game {
      */
     private int getRandomNumberBetweenMinMax(int min, int max) {
         return min + (int) (Math.random() * ((max - min) + 1));
+    }
+
+
+
+    private Block[][] deepCopyGameBoard(Block[][] original) {
+        if (original == null) {
+            return null;
+        }
+        Block[][] result = new Block[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            result[i] = Arrays.copyOf(original[i], original[i].length);
+        }
+        return result;
     }
 }

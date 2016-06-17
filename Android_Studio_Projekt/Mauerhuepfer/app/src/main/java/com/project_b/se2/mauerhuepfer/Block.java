@@ -2,10 +2,12 @@ package com.project_b.se2.mauerhuepfer;
 
 import android.graphics.drawable.Drawable;
 
+import java.io.Serializable;
+
 /**
  * Created by Julian Janda on 24.05.2016.
  */
-public class Block {
+public class Block implements Serializable{
 
     private int type;
     private int colPos;
