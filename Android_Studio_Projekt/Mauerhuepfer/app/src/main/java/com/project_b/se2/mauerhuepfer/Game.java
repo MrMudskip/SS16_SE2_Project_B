@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
@@ -60,19 +61,21 @@ public class Game {
     //Measurement variables
     static int unit;
 
+
     //Game variables
     private int numberOfPlayers;
     private Player[] players;
     private int myPID;
     private String playerName;
     private int currentPlayerIndex;
+    List<Block> possibleDestinationBlocks;
     private Figure selectedFigure;
     private int selectedDiceNumber;
-    List<Block> possibleDestinationBlocks;
     private int startColPos;
     private int startRowPos;
     private int endColPos;
     private int endRowPos;
+    private boolean gameWon;
 
     //Other variables
     private Context context;
@@ -106,9 +109,9 @@ public class Game {
     };
 
 
-    public Game(Context context, final int numOfPlayers, INetworkManager manager, int PID, String playerName) {
+    public Game(final Context contxt, final int numOfPlayers, INetworkManager manager, int PID, String playerName) {
         //Initialise variables
-        this.context = context;
+        this.context = contxt;
         this.resources = this.context.getResources();
         this.numberOfPlayers = numOfPlayers;
         this.currentPlayerIndex = 0;
@@ -121,9 +124,10 @@ public class Game {
         this.endRowPos = -1;
         this.networkManager = manager;
         this.playerName = playerName;
-        this.dice = new Dice(context, this, networkManager, playerName);
+        this.dice = new Dice(contxt, this, networkManager, playerName);
         this.update = new UpdateState();
         this.myPID = PID;
+        this.gameWon = false;
 
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
@@ -135,22 +139,22 @@ public class Game {
         initialiseGameBoard();
 
         //Set up game views
-        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
+        gameBoardView = (CustomGameBoardView) ((Activity) contxt).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
         gameBoardView.setGameBoard(gameBoard);
-        playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
+        playerView = (CustomPlayerView) ((Activity) contxt).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
         playerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (players[currentPlayerIndex].getPID() == myPID){                                             // It's my turn
+                    if (players[currentPlayerIndex].getPID() == myPID) {                                             // It's my turn
                         for (Player player : players) {
                             Figure[] figures = player.getFigures();
                             for (Figure fig : figures) {
                                 if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  // Clicked on a figure
                                     if (fig.getOwner().getPID() == myPID) {                                         // It's my figure
                                         if (!dice.isDice1removed() && !dice.isDice2removed()) {                     // No dice used yet
-                                            if (numberOfPlayers > 1){
+                                            if (numberOfPlayers > 1) {
                                                 // Share click with others
                                                 update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
                                                 update.setColPosition(fig.getColPos());
@@ -158,6 +162,8 @@ public class Game {
                                                 networkManager.sendMessage(update);
                                             }
                                             return handleAuthorizedClickOnFigure(fig);
+                                        } else { // at least one dice has been used and the player wanted to switch to another figure
+                                            Toast.makeText(context, "Du musst beide Würfel auf die selbe Figur verwenden!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 }
@@ -173,7 +179,7 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (players[currentPlayerIndex].getPID() == myPID){                                                 // It's my turn
+                    if (players[currentPlayerIndex].getPID() == myPID) {                                                 // It's my turn
                         if (!possibleDestinationBlocks.isEmpty()) {                                                     // There are blocks to click on
                             for (Block block : possibleDestinationBlocks) {
                                 if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {    // The click happened on a valid block
@@ -196,16 +202,11 @@ public class Game {
 
         //Set everything that only one player needs to do (if you have PID=0).
         if (myPID == 0) {
-            //Determine starting player.
-            // TODO Tell the current player it's his turn. (Maybe @Bernhard?) --> nicht notwendig... start bei PID 0 (PID's werden schon zufällig verwürfelt)
-            //currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
-
             //Allow myself to roll the dice if I am current player.
-            if (players[currentPlayerIndex].getPID() == myPID){
+            if (players[currentPlayerIndex].getPID() == myPID) {
                 dice.setDiceRollAllowed(true);
                 dice.setFirstDiceRollThisTurn(true);
             }
-
             //Share created info with others
             if (numberOfPlayers > 1) {
                 update.setUsage(IReceiveMessage.USAGE_GAME_INITIALISED);
@@ -213,6 +214,13 @@ public class Game {
                 update.setIntValue(currentPlayerIndex);
                 networkManager.sendMessage(update);
             }
+            //Use this code to test win condition
+            /*
+            players[currentPlayerIndex].getFigures()[0].setPos(players[currentPlayerIndex].getFigures()[0].getGoalColPos(), players[currentPlayerIndex].getFigures()[0].getGoalRowPos());
+            players[currentPlayerIndex].getFigures()[1].setPos(players[currentPlayerIndex].getFigures()[1].getGoalColPos(), players[currentPlayerIndex].getFigures()[1].getGoalRowPos());
+            players[currentPlayerIndex].getFigures()[2].setPos(players[currentPlayerIndex].getFigures()[2].getGoalColPos(), players[currentPlayerIndex].getFigures()[2].getGoalRowPos());
+            players[currentPlayerIndex].getFigures()[3].setPos(2,2);
+            */
         }
     }
 
@@ -504,8 +512,12 @@ public class Game {
             //Share selected dice number with others
             update.setUsage(IReceiveMessage.USAGE_DICE_SELECTED);
             update.setIntValue(dice1or2);
-            if (dice1or2 == 1){update.setW1(selectedDiceNumber);}
-            if (dice1or2 == 2){update.setW2(selectedDiceNumber);}
+            if (dice1or2 == 1) {
+                update.setW1(selectedDiceNumber);
+            }
+            if (dice1or2 == 2) {
+                update.setW2(selectedDiceNumber);
+            }
             networkManager.sendMessage(update);
         }
         this.selectedDiceNumber = selectedDiceNumber;
@@ -569,7 +581,7 @@ public class Game {
 
     private void moveSelectedFigureAndTidyUp(int col, int row) {
         clearSelectedDiceImage();
-        selectedFigure.setPos(col, row); //TODO Find out why sometimes selectedFigure is not set through update here (Nullpointer Exception) - hint: it may be something with clearSelectedDiceImage().
+        selectedFigure.setPos(col, row);
         checkAndHandleFigureCollision();
         tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
@@ -609,12 +621,31 @@ public class Game {
         if (selectedFigure.getColPos() == endColPos && selectedFigure.getRowPos() == endRowPos) {
             if (dice.isDice1removed() && dice.isDice2removed()) {
                 selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
+                checkForWinCondition();
             }
         }
     }
 
     private void checkForWinCondition() {
-        //TODO Implement this.
+        int figuresInGoal;
+        for (Player player : players) {
+            figuresInGoal = 0;
+            for (Figure figure : player.getFigures()) {
+                if (figure.getColPos() == figure.getGoalColPos() && figure.getRowPos() == figure.getGoalRowPos()) {
+                    figuresInGoal++;
+                }
+            }
+            if (figuresInGoal >= player.getFigures().length) {
+                if (players[currentPlayerIndex].getPID() == myPID){
+                    Toast.makeText(context, "Glückwunsch, du hast gewonnen!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(context, playerName + " hat gewonnen!", Toast.LENGTH_LONG).show();
+                }
+                //TODO End the game after a few seconds.
+                myPID = -1; // Basically stops everybody from having a turn.
+                gameWon = true;
+            }
+        }
     }
 
     private void clearPossibleDestinationBlocks() {
@@ -645,19 +676,18 @@ public class Game {
         increaseCurrentPlayerIndex();
 
         //Allow me to roll dice if I am the current player now.
-        if (players[currentPlayerIndex].getPID() == myPID){
+        if (players[currentPlayerIndex].getPID() == myPID) {
             dice.setDiceRollAllowed(true);
             dice.setFirstDiceRollThisTurn(true);
+            dice.setHasCheated(false);
+            Toast.makeText(context, "Du bist an der Reihe.", Toast.LENGTH_SHORT).show();
         }
-/*
-        update.setUsage(IReceiveMessage.USAGE_NEXTPLAYER);
-        networkManager.sendMessage(update);
-*/
+
         //Update view
         playerView.invalidate();
     }
 
-    private boolean handleAuthorizedClickOnFigure(Figure fig){
+    private boolean handleAuthorizedClickOnFigure(Figure fig) {
         if (selectedFigure != null) {
             // Deselect previous selected figure.
             selectedFigure.getImage().clearColorFilter();
@@ -679,7 +709,7 @@ public class Game {
         return true;
     }
 
-    private boolean handleAuthorizedClickOnBlock(int col, int row){
+    private boolean handleAuthorizedClickOnBlock(int col, int row) {
         moveSelectedFigureAndTidyUp(col, row);
         return true;
     }
@@ -696,9 +726,10 @@ public class Game {
                 currentPlayerIndex = update.getIntValue();
 
                 //Allow myself to roll the dice if I am current player.
-                if (players[currentPlayerIndex].getPID() == myPID){
+                if (players[currentPlayerIndex].getPID() == myPID) {
                     dice.setDiceRollAllowed(true);
                     dice.setFirstDiceRollThisTurn(true);
+                    dice.setHasCheated(false);
                 }
                 break;
             case IReceiveMessage.USAGE_CLICKEDPLAYER:
@@ -729,7 +760,7 @@ public class Game {
             case IReceiveMessage.USAGE_DICE_ROLLED:
                 dice.setDiceImage(update.getW1(), 1);
                 dice.setDiceImage(update.getW2(), 2);
-                dice.printInfo(update.getPlayerName() + " würfelt : " + update.getW1() + " und: " + update.getW2());
+                dice.printInfo(update.getPlayerName() + " würfelt " + update.getW1() + " und " + update.getW2());
                 break;
 
         }
@@ -766,5 +797,9 @@ public class Game {
 
     public int getMyPID() {
         return myPID;
+    }
+
+    public boolean isGameWon() {
+        return gameWon;
     }
 }

@@ -43,6 +43,7 @@ public class Dice {
     private boolean dice2removed = false;
     private boolean firstDiceRollThisTurn = true;
     private boolean diceRollAllowed = false;
+    private boolean hasCheated = false;
 
     private String playerName;
     MediaPlayer but_sound;
@@ -92,7 +93,7 @@ public class Dice {
                     but_sound.setVolume(1.0f, 1.0f);
                     but_sound.start();
                 } else {
-                    Toast.makeText(context, "Nicht möglich!! ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Du bist nicht an der Reihe!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -115,6 +116,14 @@ public class Dice {
 
     public void setDiceRollAllowed(boolean diceRollAllowed) {
         this.diceRollAllowed = diceRollAllowed;
+    }
+
+    public void setHasCheated(boolean hasCheated) {
+        this.hasCheated = hasCheated;
+    }
+
+    public boolean isHasCheated() {
+        return hasCheated;
     }
 
     public void setDice1removed(boolean dice1removed) {
@@ -195,11 +204,17 @@ public class Dice {
                 update.setPlayerName(playerName);
                 update.setUsage(IReceiveMessage.USAGE_DICE_ROLLED);
                 networkManager.sendMessage(update);
-            } else {
-                Toast.makeText(context, "Achtung, bereits gewürfelt du Schummler! ", Toast.LENGTH_SHORT).show();
+            } else if (!hasCheated){
+                Toast.makeText(context, "Du hast bereits gewürfelt du Schummler! ", Toast.LENGTH_SHORT).show();
+                hasCheated = true;
             }
         } else {
-            Toast.makeText(context, "Du bist nicht drann!", Toast.LENGTH_SHORT).show();
+            if (game.isGameWon()){
+                Toast.makeText(context, "Game Over", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, "Du bist nicht an der Reihe!", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
