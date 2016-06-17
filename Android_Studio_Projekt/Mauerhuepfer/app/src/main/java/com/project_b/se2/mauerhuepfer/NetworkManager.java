@@ -22,7 +22,6 @@ import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 import com.project_b.se2.mauerhuepfer.interfaces.IUpdateView;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +49,7 @@ public class NetworkManager implements
     private IUpdateView context;
 
     private boolean isHost;
-    private static final int maxClients = 3;
+    private static final int MAX_CLIENTS = 3;
     private int playerID;
     private String playerName;
     private static final int[] NETWORK_TYPES = {ConnectivityManager.TYPE_WIFI};
@@ -71,11 +70,12 @@ public class NetworkManager implements
         playerName = settings.getString("playerName", null);
 
         if (playerName == null || "".equals(playerName)) {
-            playerName = Integer.toString((int) (Math.random() * 1000000));
+            playerName = Integer.toString((int) (Math.random() * 1048576));
         }
     }
 
     /* ------------------------------------------------------------------------------------------ */
+
     public boolean getHostInfo() {
         return isHost;
     }
@@ -85,7 +85,7 @@ public class NetworkManager implements
     }
 
     public void setPlayerID(int player) {
-        if (0 <= player && player <= maxClients) {
+        if (0 <= player && player <= MAX_CLIENTS) {
             playerID = player;
         } else {
             playerID = -1;
@@ -213,6 +213,9 @@ public class NetworkManager implements
                 });
     }
 
+    /**
+     * Stop advertising
+     */
     public void stopAdvertising() {
         Nearby.Connections.stopAdvertising(googleApiClient);
     }
@@ -291,7 +294,7 @@ public class NetworkManager implements
     @Override
     public void onConnectionRequest(final String endpointId, String deviceId, String endpointName, byte[] payload) {
         debugLog("onConnectionRequest:" + endpointId + ":" + endpointName);
-        if (clientIds.size() < maxClients) {
+        if (clientIds.size() < MAX_CLIENTS) {
             if (isHost) {
                 Nearby.Connections.acceptConnectionRequest(googleApiClient, endpointId, payload, this)
                         .setResultCallback(new ResultCallback<Status>() {
