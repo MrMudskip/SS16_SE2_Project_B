@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by rohrbe on 14.05.16.
@@ -116,7 +117,7 @@ public class NetworkManager implements
                 Log.e(TAG, "sendPlayerIDs error");
         }
 
-        Collections.shuffle(playerOrder, new SecureRandom());
+        Collections.shuffle(playerOrder, new Random());
 
         for (String id : clientIds) {
             state.setPlayerID(playerOrder.remove(0));

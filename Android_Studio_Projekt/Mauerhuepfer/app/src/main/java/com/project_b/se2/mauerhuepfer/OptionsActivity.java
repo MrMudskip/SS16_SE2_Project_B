@@ -37,10 +37,14 @@ public class OptionsActivity extends AppCompatActivity {
         // Save Changes
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("playerName", ((EditText) findViewById(R.id.text_player)).getText().toString());
-        editor.putString("hostName", ((EditText) findViewById(R.id.text_host)).getText().toString());
+        if (findViewById(R.id.text_player) != null) {
+            editor.putString("playerName", ((EditText) findViewById(R.id.text_player)).getText().toString());
+        }
+        if (findViewById(R.id.text_host) != null) {
+            editor.putString("hostName", ((EditText) findViewById(R.id.text_host)).getText().toString());
+        }
 
         // Commit the edits!
-        editor.commit();
+        editor.apply();
     }
 }
