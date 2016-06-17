@@ -38,21 +38,28 @@ public class ObjectSerializerUnitTest {
     public void testSerialize3() {
         UpdateState updateState = new UpdateState();
         Block[][] game = new Block[2][2];
+        game[0][0] = new Block(1);
+        game[0][1] = new Block(2);
+        game[1][0] = new Block(3);
+        game[1][1] = new Block(4);
 
-        for (int i = 0; i < game[0].length; i++) {
-            for (int j = 0; j < game.length; j++) {
-                game[i][j] = new Block(1);
-            }
-        }
+        game[0][0].setColPos(1);
+        game[0][1].setNextBlock(5);
+        game[0][1].setPreviousBlock(5);
+        game[1][0].setRowPos(4);
+        game[1][1].setType(5);
+        game[1][1].setWallNumber(5);
+
         updateState.setGameBoard(game);
-
         byte[] test = ObjectSerializer.serialize(updateState);
         UpdateState update = (UpdateState) ObjectSerializer.deSerialize(test);
 
-        Assert.assertEquals(update.getGameBoard()[0][0].getType(), updateState.getGameBoard()[0][0].getType());
-        Assert.assertEquals(update.getGameBoard()[0][1].getType(), updateState.getGameBoard()[0][1].getType());
-        Assert.assertEquals(update.getGameBoard()[1][0].getType(), updateState.getGameBoard()[1][0].getType());
+        Assert.assertEquals(update.getGameBoard()[0][0].getColPos(), updateState.getGameBoard()[0][0].getColPos());
+        Assert.assertEquals(update.getGameBoard()[0][1].getNextBlock(), updateState.getGameBoard()[0][1].getNextBlock());
+        Assert.assertEquals(update.getGameBoard()[0][1].getPreviousBlock(), updateState.getGameBoard()[0][1].getPreviousBlock());
+        Assert.assertEquals(update.getGameBoard()[1][0].getRowPos(), updateState.getGameBoard()[1][0].getRowPos());
         Assert.assertEquals(update.getGameBoard()[1][1].getType(), updateState.getGameBoard()[1][1].getType());
+        Assert.assertEquals(update.getGameBoard()[1][1].getWallNumber(), updateState.getGameBoard()[1][1].getWallNumber());
     }
 
     @Test
@@ -66,6 +73,30 @@ public class ObjectSerializerUnitTest {
 
         Assert.assertEquals(update.getW1(), updateState.getW1());
         Assert.assertEquals(update.getW2(), updateState.getW2());
+    }
+
+    @Test
+    public void testSerialize5() {
+        UpdateState updateState = new UpdateState();
+        updateState.setPlayerName("Hubert");
+        updateState.setMsg("Hallo");
+
+        byte[] test = ObjectSerializer.serialize(updateState);
+        UpdateState update = (UpdateState) ObjectSerializer.deSerialize(test);
+
+        Assert.assertEquals(update.getPlayerName(), updateState.getPlayerName());
+        Assert.assertEquals(update.getMsg(), updateState.getMsg());
+    }
+
+    @Test
+    public void testSerialize6() {
+        UpdateState updateState = new UpdateState();
+        updateState.setIntValue(55);
+
+        byte[] test = ObjectSerializer.serialize(updateState);
+        UpdateState update = (UpdateState) ObjectSerializer.deSerialize(test);
+
+        Assert.assertEquals(update.getIntValue(), updateState.getIntValue());
     }
 
 }
