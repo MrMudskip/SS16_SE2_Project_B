@@ -111,7 +111,7 @@ public class Game {
         this.context = context;
         this.resources = this.context.getResources();
         this.numberOfPlayers = numOfPlayers;
-        this.currentPlayerIndex = -1;
+        this.currentPlayerIndex = 0;
         this.selectedFigure = null;
         this.selectedDiceNumber = -1;
         this.possibleDestinationBlocks = new ArrayList<Block>();
@@ -195,7 +195,8 @@ public class Game {
         //Set everything that only one player needs to do (if you have PID=0).
         if (myPID == 0) {
             //Determine starting player.
-            currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1); // TODO Tell the current player it's his turn. (Maybe @Bernhard?)
+            // TODO Tell the current player it's his turn. (Maybe @Bernhard?) --> nicht notwendig... start bei PID 0 (PID's werden schon zufällig verwürfelt)
+            //currentPlayerIndex = getRandomNumberBetweenMinMax(0, numberOfPlayers - 1);
 
             //Allow myself to roll the dice if I am current player.
             if (players[currentPlayerIndex].getPID() == myPID){
