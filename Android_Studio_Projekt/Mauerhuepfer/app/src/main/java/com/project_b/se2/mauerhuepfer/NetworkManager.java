@@ -449,12 +449,9 @@ public class NetworkManager implements
      */
     @Override
     public void onMessageReceived(String endpointId, byte[] payload, boolean isReliable) {
-        UpdateState updateS = (UpdateState) ObjectSerializer.deSerialize(payload);
+        UpdateState update = (UpdateState) ObjectSerializer.deSerialize(payload);
         debugLog("onMessageReceived:" + endpointId);
-        if(payload == null){
-            debugLog("onMessageReceived:" + endpointId + "EMPTY");
-        }
-        messageReciever(updateS);
+        messageReciever(update);
 
         if (isHost) {
             for (String id : clientIds) {
