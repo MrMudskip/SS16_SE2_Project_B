@@ -135,7 +135,7 @@ public class Game {
         initialiseGameBoard();
 
         //Set up game views
-        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // ODO find a way to make sure the gameBoardView is centered.
+        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
         gameBoardView.setGameBoard(gameBoard);
         playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
@@ -143,13 +143,13 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    for (Player player : players) {
-                        Figure[] figures = player.getFigures();
-                        for (Figure fig : figures) {
-                            if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  // Clicked on a figure
-                                if (fig.getOwner().getPID() == myPID) {                                         // It's my turn
-                                    if (players[currentPlayerIndex].getPID() == myPID) {                        // It's my figure
-                                        if (!dice.isDice1removed() && !dice.isDice2removed()) {                 // No dice used yet
+                    if (players[currentPlayerIndex].getPID() == myPID){                                             // It's my turn
+                        for (Player player : players) {
+                            Figure[] figures = player.getFigures();
+                            for (Figure fig : figures) {
+                                if (fig.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {  // Clicked on a figure
+                                    if (fig.getOwner().getPID() == myPID) {                                         // It's my figure
+                                        if (!dice.isDice1removed() && !dice.isDice2removed()) {                     // No dice used yet
                                             if (numberOfPlayers > 1){
                                                 // Share click with others
                                                 update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
@@ -173,17 +173,19 @@ public class Game {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (!possibleDestinationBlocks.isEmpty()) {
-                        for (Block block : possibleDestinationBlocks) {
-                            if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
-                                if (numberOfPlayers > 1) {
-                                    // Share click with others
-                                    update.setUsage(IReceiveMessage.USAGE_CLICKEDBLOCK);
-                                    update.setColPosition(block.getColPos());
-                                    update.setRowPosition(block.getRowPos());
-                                    networkManager.sendMessage(update);
+                    if (players[currentPlayerIndex].getPID() == myPID){                                                 // It's my turn
+                        if (!possibleDestinationBlocks.isEmpty()) {                                                     // There are blocks to click on
+                            for (Block block : possibleDestinationBlocks) {
+                                if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {    // The click happened on a valid block
+                                    if (numberOfPlayers > 1) {
+                                        // Share click with others
+                                        update.setUsage(IReceiveMessage.USAGE_CLICKEDBLOCK);
+                                        update.setColPosition(block.getColPos());
+                                        update.setRowPosition(block.getRowPos());
+                                        networkManager.sendMessage(update);
+                                    }
+                                    return handleAuthorizedClickOnBlock(block.getColPos(), block.getRowPos());
                                 }
-                                return handleAuthorizedClickOnBlock(block.getColPos(), block.getRowPos());
                             }
                         }
                     }
@@ -714,9 +716,11 @@ public class Game {
             case IReceiveMessage.USAGE_DICE_SELECTED:
                 if (update.getIntValue() == 1) {
                     dice.setDice1Selected(true);
+                    dice.setDice2Selected(false);
                     setSelectedDiceNumber(update.getW1(), update.getIntValue(), false);
                 }
                 if (update.getIntValue() == 2) {
+                    dice.setDice1Selected(false);
                     dice.setDice2Selected(true);
                     setSelectedDiceNumber(update.getW2(), update.getIntValue(), false);
                 }
