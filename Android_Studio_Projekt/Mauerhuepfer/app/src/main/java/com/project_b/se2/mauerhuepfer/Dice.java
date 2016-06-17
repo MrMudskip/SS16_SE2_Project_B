@@ -243,7 +243,7 @@ public class Dice {
         }
         diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice1Value());
-        game.setSelectedDiceNumber(getDice1Value());
+        game.setSelectedDiceNumber(getDice1Value(), true);
     }
 
     private void dice2() {
@@ -255,7 +255,7 @@ public class Dice {
         }
         diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice2Value());
-        game.setSelectedDiceNumber(getDice2Value());
+        game.setSelectedDiceNumber(getDice2Value(), true);
     }
 
     public void printInfo(String msg) {
