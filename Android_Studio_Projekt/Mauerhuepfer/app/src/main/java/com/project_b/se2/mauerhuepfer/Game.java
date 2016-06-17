@@ -6,8 +6,13 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
@@ -130,18 +135,34 @@ public class Game {
         this.gameWon = false;
 
         //Calculate measurement unit
-        int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
-        int horizontal = (int) ((this.resources.getDisplayMetrics().widthPixels / gameBoard[0].length) * 0.8);
-        unit = Math.min(vertical, horizontal); // TODO: Find a way to get view size instead of screen size, so the scaling with 0.8 isn't necessary.
+        FrameLayout frameLayout = (FrameLayout) ((Activity) context).findViewById(R.id.game_frameLayout);
+        LinearLayout linearLayout = (LinearLayout) ((Activity) context).findViewById(R.id.fullscreen_content_controls);
+        Button button = (Button) ((Activity) context).findViewById(R.id.button1);
+        int totalHeight = this.resources.getDisplayMetrics().heightPixels;
+        int totalWidth = this.resources.getDisplayMetrics().widthPixels;
+        int usableHeight = totalHeight
+                - frameLayout.getPaddingTop()
+                - linearLayout.getPaddingTop()
+                - button.getPaddingTop()
+                - button.getMinimumHeight()
+                - button.getPaddingBottom()
+                - linearLayout.getPaddingBottom()
+                - frameLayout.getPaddingBottom();
+        unit = usableHeight / gameBoard.length;
+
+        //Create the illusion that the game FrameLayout content is centered.
+        int usableWidth = unit * gameBoard[0].length;
+        int requiredPaddingLeft = (totalWidth - usableWidth) / 2;
+        frameLayout.setPadding(requiredPaddingLeft, frameLayout.getPaddingTop(), frameLayout.getPaddingRight(), frameLayout.getPaddingBottom());
 
         //Set up game logic
         initializePlayers();
         initialiseGameBoard();
 
         //Set up game views
-        gameBoardView = (CustomGameBoardView) ((Activity) contxt).findViewById(R.id.CustomGameBoardView); // TODO find a way to make sure the gameBoardView is centered.
+        gameBoardView = (CustomGameBoardView) ((Activity) context).findViewById(R.id.CustomGameBoardView);
         gameBoardView.setGameBoard(gameBoard);
-        playerView = (CustomPlayerView) ((Activity) contxt).findViewById(R.id.CustomPlayerView);
+        playerView = (CustomPlayerView) ((Activity) context).findViewById(R.id.CustomPlayerView);
         playerView.setPlayers(players);
         playerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -636,7 +657,7 @@ public class Game {
                 }
             }
             if (figuresInGoal >= player.getFigures().length) {
-                if (players[currentPlayerIndex].getPID() == myPID){
+                if (players[currentPlayerIndex].getPID() == myPID) {
                     Toast.makeText(context, "Glückwunsch, du hast gewonnen!", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(context, playerName + " hat gewonnen!", Toast.LENGTH_LONG).show();
