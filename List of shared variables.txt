@@ -1,4 +1,0 @@
-Wall Numbers
-figure.setPos()
-nextTurn()
-Dice numbers (first roll only)

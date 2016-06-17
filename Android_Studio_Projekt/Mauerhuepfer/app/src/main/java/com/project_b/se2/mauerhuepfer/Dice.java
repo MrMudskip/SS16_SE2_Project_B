@@ -149,6 +149,14 @@ public class Dice {
         return dice2Selected;
     }
 
+    public void setDice1Selected(boolean dice1Selected) {
+        this.dice1Selected = dice1Selected;
+    }
+
+    public void setDice2Selected(boolean dice2Selected) {
+        this.dice2Selected = dice2Selected;
+    }
+
     public int getDice1Value() {
         return this.dice1Value;
     }
@@ -243,7 +251,7 @@ public class Dice {
         }
         diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice1Value());
-        game.setSelectedDiceNumber(getDice1Value(), true);
+        game.setSelectedDiceNumber(getDice1Value(), 1, true);
     }
 
     private void dice2() {
@@ -255,7 +263,7 @@ public class Dice {
         }
         diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
         infoText.setText("Mögliche Züge mit " + getDice2Value());
-        game.setSelectedDiceNumber(getDice2Value(), true);
+        game.setSelectedDiceNumber(getDice2Value(), 2, true);
     }
 
     public void printInfo(String msg) {

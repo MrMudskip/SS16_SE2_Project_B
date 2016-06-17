@@ -125,7 +125,6 @@ public class Game {
         this.update = new UpdateState();
         this.myPID = PID;
 
-
         //Calculate measurement unit
         int vertical = (int) ((this.resources.getDisplayMetrics().heightPixels / gameBoard.length) * 0.8);
         int horizontal = (int) ((this.resources.getDisplayMetrics().widthPixels / gameBoard[0].length) * 0.8);
@@ -179,7 +178,7 @@ public class Game {
                             if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {
                                 if (numberOfPlayers > 1) {
                                     // Share click with others
-                                    update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
+                                    update.setUsage(IReceiveMessage.USAGE_CLICKEDBLOCK);
                                     update.setColPosition(block.getColPos());
                                     update.setRowPosition(block.getRowPos());
                                     networkManager.sendMessage(update);
@@ -441,11 +440,6 @@ public class Game {
         }
     }
 
-    public void rollDice() {
-        //TODO Do something meaningful here or delete this method. (currently only used as workaround).
-
-    }
-
     private boolean moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
         switch (direction) {
@@ -502,11 +496,13 @@ public class Game {
         return true;
     }
 
-    public void setSelectedDiceNumber(int selectedDiceNumber, boolean share) {
+    public void setSelectedDiceNumber(int selectedDiceNumber, int dice1or2, boolean share) {
         if (share) {
             //Share selected dice number with others
             update.setUsage(IReceiveMessage.USAGE_DICE_SELECTED);
-            update.setIntValue(selectedDiceNumber);
+            update.setIntValue(dice1or2);
+            if (dice1or2 == 1){update.setW1(selectedDiceNumber);}
+            if (dice1or2 == 2){update.setW2(selectedDiceNumber);}
             networkManager.sendMessage(update);
         }
         this.selectedDiceNumber = selectedDiceNumber;
@@ -514,7 +510,7 @@ public class Game {
     }
 
     private void calculatePossibleMoves() {
-        if (selectedFigure != null && selectedDiceNumber != -1) {// TODO maybe add an "else" branch which gives some sort of indication to the user?
+        if (selectedFigure != null && selectedDiceNumber != -1) {
             Figure ghostFig = new Figure(null);                                         //Create new invisible ghost figure
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
@@ -569,15 +565,8 @@ public class Game {
     }
 
     private void moveSelectedFigureAndTidyUp(int col, int row) {
-/*
-        //Share info with others
-        update.setUsage(IReceiveMessage.USAGE_FIGUREMOVED);
-        update.setColPosition(col);
-        update.setRowPosition(row);
-        networkManager.sendMessage(update);
-*/
         clearSelectedDiceImage();
-        selectedFigure.setPos(col, row);
+        selectedFigure.setPos(col, row); //TODO Find out why sometimes selectedFigure is not set through update here (Nullpointer Exception) - hint: it may be something with clearSelectedDiceImage().
         checkAndHandleFigureCollision();
         tryMovingSelectedFigureIntoRespectiveGoal();
         clearPossibleDestinationBlocks();
@@ -621,6 +610,10 @@ public class Game {
         }
     }
 
+    private void checkForWinCondition() {
+        //TODO Implement this.
+    }
+
     private void clearPossibleDestinationBlocks() {
         for (Block block : possibleDestinationBlocks) {
             block.getImage().clearColorFilter();
@@ -661,6 +654,33 @@ public class Game {
         playerView.invalidate();
     }
 
+    private boolean handleAuthorizedClickOnFigure(Figure fig){
+        if (selectedFigure != null) {
+            // Deselect previous selected figure.
+            selectedFigure.getImage().clearColorFilter();
+        }
+        if (fig == selectedFigure) {
+            // Deselect selected figure.
+            selectedFigure.getImage().clearColorFilter();
+            clearPossibleDestinationBlocks();
+            selectedFigure = null;
+            playerView.invalidate();
+            gameBoardView.invalidate();
+        } else {
+            // Select unselected figure.
+            selectedFigure = fig;
+            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
+            playerView.invalidate();
+            calculatePossibleMoves();
+        }
+        return true;
+    }
+
+    private boolean handleAuthorizedClickOnBlock(int col, int row){
+        moveSelectedFigureAndTidyUp(col, row);
+        return true;
+    }
+
     public void handleUpdate(UpdateState update) {
         System.out.println("PID " + myPID + "received update code: " + update.getUsage());
         switch (update.getUsage()) {
@@ -691,7 +711,15 @@ public class Game {
                 handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition());
                 break;
             case IReceiveMessage.USAGE_DICE_SELECTED:
-                setSelectedDiceNumber(update.getIntValue(), false);
+                if (update.getIntValue() == 1) {
+                    dice.setDice1Selected(true);
+                    setSelectedDiceNumber(update.getW1(), update.getIntValue(), false);
+                }
+                if (update.getIntValue() == 2) {
+                    dice.setDice2Selected(true);
+                    setSelectedDiceNumber(update.getW2(), update.getIntValue(), false);
+                }
+
                 break;
             case IReceiveMessage.USAGE_DICE_ROLLED:
                 dice.setDiceImage(update.getW1(), 1);
@@ -702,33 +730,6 @@ public class Game {
         }
     }
 
-    private boolean handleAuthorizedClickOnFigure(Figure fig){
-        if (selectedFigure != null) {
-            // Deselect previous selected figure.
-            selectedFigure.getImage().clearColorFilter();
-        }
-        if (fig == selectedFigure) {
-            // Deselect selected figure.
-            selectedFigure.getImage().clearColorFilter();
-            clearPossibleDestinationBlocks();
-            selectedFigure = null;
-            playerView.invalidate();
-            gameBoardView.invalidate();
-        } else {
-            // Select unselected figure.
-            selectedFigure = fig;
-            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
-            playerView.invalidate();
-            calculatePossibleMoves();
-        }
-        return true;
-    }
-
-    private boolean handleAuthorizedClickOnBlock(int col, int row){
-        moveSelectedFigureAndTidyUp(col, row);
-        return true;
-    }
-
     /**
      * @param min lowest integer allowed.
      * @param max highest integer allowed.
@@ -737,7 +738,6 @@ public class Game {
     private int getRandomNumberBetweenMinMax(int min, int max) {
         return min + (int) (Math.random() * ((max - min) + 1));
     }
-
 
 
     private Block[][] deepCopyGameBoard(Block[][] original) {
