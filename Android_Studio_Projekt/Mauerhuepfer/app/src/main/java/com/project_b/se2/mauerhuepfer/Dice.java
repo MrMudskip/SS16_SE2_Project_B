@@ -41,8 +41,8 @@ public class Dice {
     private boolean dice2Selected = false;
     private boolean dice1removed = false;
     private boolean dice2removed = false;
-    private boolean diceOne = true;
-    private boolean moved = true;
+    private boolean firstDiceRollThisTurn = true;
+    private boolean diceRollAllowed = false;
 
     private String playerName;
     MediaPlayer but_sound;
@@ -86,7 +86,7 @@ public class Dice {
         mSensorListener.setOnShakeListener(new ShakeDetector.OnShakeListener() {
             @Override
             public void onShake() {
-                if (!moved) {
+                if (diceRollAllowed) {
                     diceButton();
                     but_sound = MediaPlayer.create(context, R.raw.klack);
                     but_sound.setVolume(1.0f, 1.0f);
@@ -109,12 +109,12 @@ public class Dice {
         dice2Selected = false;
     }
 
-    public void setDiceOne(boolean diceOne) {
-        this.diceOne = diceOne;
+    public void setFirstDiceRollThisTurn(boolean firstDiceRollThisTurn) {
+        this.firstDiceRollThisTurn = firstDiceRollThisTurn;
     }
 
-    public void setMoved(boolean moved) {
-        this.moved = moved;
+    public void setDiceRollAllowed(boolean diceRollAllowed) {
+        this.diceRollAllowed = diceRollAllowed;
     }
 
     public void setDice1removed(boolean dice1removed) {
@@ -161,7 +161,7 @@ public class Dice {
         int diceImageBackground = backgroundColor;
         diceImage1.setColorFilter(diceImageBackground);
         diceImage1.setVisibility(View.INVISIBLE);
-        moved = true;
+        diceRollAllowed = false;
         dice1removed = true;
     }
 
@@ -169,19 +169,19 @@ public class Dice {
         int diceImageBackground = backgroundColor;
         diceImage2.setColorFilter(diceImageBackground);
         diceImage2.setVisibility(View.INVISIBLE);
-        moved = true;
+        diceRollAllowed = false;
         dice2removed = true;
     }
 
     public void diceButton() {
-        if (!moved) {
+        if (diceRollAllowed) {
             throwDice();
             setDiceImage(dice1Value, 1);
             setDiceImage(dice2Value, 2);
             infoText.setText(" ");
 
-            if (diceOne) {
-                diceOne = false;
+            if (firstDiceRollThisTurn) {
+                firstDiceRollThisTurn = false;
                 update.setW1(dice1Value);
                 update.setW2(dice2Value);
                 update.setPlayerName(playerName);
