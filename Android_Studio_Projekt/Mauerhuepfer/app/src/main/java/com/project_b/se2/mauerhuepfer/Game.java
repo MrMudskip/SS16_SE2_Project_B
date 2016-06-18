@@ -17,11 +17,11 @@ import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 
+@SuppressWarnings("deprecation")
 public class Game {
 
     //Colours
@@ -126,7 +126,7 @@ public class Game {
         this.currentPlayerIndex = 0;
         this.selectedFigure = null;
         this.selectedDiceNumber = -1;
-        this.possibleDestinationBlocks = new ArrayList<Block>();
+        this.possibleDestinationBlocks = new ArrayList<>();
         this.startColPos = -1;
         this.startRowPos = -1;
         this.endColPos = -1;
@@ -401,9 +401,11 @@ public class Game {
                 drawable = resources.getDrawable(R.drawable.empty);
         }
 
+        assert drawable != null;
         Drawable clone = drawable.getConstantState().newDrawable().mutate(); //Deep copy to avoid blocks sharing the same image.
         int lengthPos = col * unit;
         int heightPos = row * unit;
+        //noinspection SuspiciousNameCombination
         clone.setBounds(heightPos, lengthPos, (heightPos + unit), (lengthPos + unit));
         currentBlock.setImage(clone);
     }
@@ -411,8 +413,7 @@ public class Game {
     private void initializePlayers() {
         players = new Player[numberOfPlayers];
         for (int colour = RED; colour < numberOfPlayers; colour++) {
-            int PID = colour;
-            players[colour] = new Player(context, PID, colour);
+            players[colour] = new Player(context, colour, colour); // colour is also used as PID here.
         }
     }
 
@@ -565,6 +566,7 @@ public class Game {
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
             //Check way forward.
+            //noinspection StatementWithEmptyBody
             for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {
             }    //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
@@ -573,6 +575,7 @@ public class Game {
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                                    //Reset ghost figures position.
 
             //Check way backward.
+            //noinspection StatementWithEmptyBody
             for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {
             }   //Move ghost figure backward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
@@ -691,7 +694,7 @@ public class Game {
             if (dice.isDice1removed() && dice.isDice2removed()) {
                 selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
                 checkForWinCondition();
-            } else if (players[currentPlayerIndex].getPID() == myPID){ //It's my turn
+            } else if (players[currentPlayerIndex].getPID() == myPID) { //It's my turn
                 Toast.makeText(context, "Du musst beide Würfel verwenden um ins Ziel zu gelangen!", Toast.LENGTH_SHORT).show();
             }
         }
