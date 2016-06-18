@@ -19,6 +19,7 @@ public class UpdateState implements Serializable {
     private int w1 = -1;
     private int w2 = -1;
     private int intValue;
+    private long seed;
     private Figure figure;
     //private Block[][] gameBoard;
 
@@ -52,6 +53,14 @@ public class UpdateState implements Serializable {
 
     public void setIntValue(int intValue) {
         this.intValue = intValue;
+    }
+
+    public long getSeed() {
+        return seed;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 
     public int getColPosition() {

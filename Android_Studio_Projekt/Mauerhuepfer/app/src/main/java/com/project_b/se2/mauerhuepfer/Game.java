@@ -6,12 +6,10 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -21,6 +19,7 @@ import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 
 public class Game {
@@ -66,6 +65,9 @@ public class Game {
     //Measurement variables
     static int unit;
 
+    //Random variables
+    private long originalSeed;
+    private long currentSeed;
 
     //Game variables
     private int numberOfPlayers;
@@ -118,6 +120,8 @@ public class Game {
         //Initialise variables
         this.context = contxt;
         this.resources = this.context.getResources();
+        this.originalSeed = -1;
+        this.currentSeed = -1;
         this.numberOfPlayers = numOfPlayers;
         this.currentPlayerIndex = 0;
         this.selectedFigure = null;
@@ -223,6 +227,14 @@ public class Game {
 
         //Set everything that only one player needs to do (if you have PID=0).
         if (myPID == 0) {
+            //Generate a seed for everybody
+            originalSeed = (long) (Math.random() * 10000);
+            currentSeed = originalSeed;
+
+            //Update gameBoard with seed
+            initialiseGameBoard();
+            gameBoardView.invalidate();
+
             //Allow myself to roll the dice if I am current player.
             if (players[currentPlayerIndex].getPID() == myPID) {
                 dice.setDiceRollAllowed(true);
@@ -231,7 +243,7 @@ public class Game {
             //Share created info with others
             if (numberOfPlayers > 1) {
                 update.setUsage(IReceiveMessage.USAGE_GAME_INITIALISED);
-                //update.setGameBoard(deepCopyGameBoard(gameBoard)); //TODO get this working.
+                update.setSeed(originalSeed);
                 update.setIntValue(currentPlayerIndex);
                 networkManager.sendMessage(update);
             }
@@ -320,7 +332,7 @@ public class Game {
                 endRowPos = row;
                 break;
             case W:
-                int wallNumber = getRandomNumberBetweenMinMax(1, 6);
+                int wallNumber = generatePseudoRandomWallNumberMinMax(1, 6);
                 currentBlock.setWallNumber(wallNumber);
                 switch (wallNumber) {
                     case 1:
@@ -736,13 +748,12 @@ public class Game {
     }
 
     public void handleUpdate(UpdateState update) {
-        System.out.println("PID " + myPID + "received update code: " + update.getUsage());
         switch (update.getUsage()) {
             case IReceiveMessage.USAGE_GAME_INITIALISED:
-                /*gameBoard = deepCopyGameBoard(update.getGameBoard());
+                originalSeed = update.getSeed();
+                currentSeed = originalSeed;
                 initialiseGameBoard();
-                gameBoardView.setGameBoard(gameBoard);
-                gameBoardView.invalidate();*/
+                gameBoardView.invalidate();
 
                 currentPlayerIndex = update.getIntValue();
 
@@ -787,16 +798,6 @@ public class Game {
         }
     }
 
-    /**
-     * @param min lowest integer allowed.
-     * @param max highest integer allowed.
-     * @return random integer  in the interval [min,max].
-     */
-    private int getRandomNumberBetweenMinMax(int min, int max) {
-        return min + (int) (Math.random() * ((max - min) + 1));
-    }
-
-
     private Block[][] deepCopyGameBoard(Block[][] original) {
         if (original == null) {
             return null;
@@ -822,5 +823,13 @@ public class Game {
 
     public boolean isGameWon() {
         return gameWon;
+    }
+
+    public int generatePseudoRandomWallNumberMinMax(int min, int max) {
+        Random generator = new Random(currentSeed);
+        double result = (Math.abs((double) (generator.nextLong() % 0.001) * 1000));
+        int wallNumber = min + (int) (result * ((max - min) + 1));
+        currentSeed--;
+        return wallNumber;
     }
 }
