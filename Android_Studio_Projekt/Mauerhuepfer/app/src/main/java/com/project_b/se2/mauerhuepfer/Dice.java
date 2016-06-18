@@ -196,6 +196,7 @@ public class Dice {
             setDiceImage(dice1Value, 1);
             setDiceImage(dice2Value, 2);
             infoText.setText(" ");
+            game.clearPossibleDestinationBlocks();
 
             if (firstDiceRollThisTurn) {
                 firstDiceRollThisTurn = false;

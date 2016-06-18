@@ -718,7 +718,7 @@ public class Game {
         }
     }
 
-    private void clearPossibleDestinationBlocks() {
+    public void clearPossibleDestinationBlocks() {
         //Remove highlighting from blocks.
         for (Block block : possibleDestinationBlocks) {
             block.getImage().clearColorFilter();
@@ -732,6 +732,7 @@ public class Game {
             }
         }
         playerView.invalidate();
+        gameBoardView.invalidate();
 
         //Empty the container for possible destination blocks.
         possibleDestinationBlocks.clear();
