@@ -189,6 +189,7 @@ public class Game {
                                             return handleAuthorizedClickOnFigure(fig);
                                         } else { // at least one dice has been used and the player wanted to switch to another figure
                                             Toast.makeText(context, "Du musst beide Würfel auf die selbe Figur verwenden!", Toast.LENGTH_SHORT).show();
+                                            return true;
                                         }
                                     }
                                 }
@@ -563,11 +564,9 @@ public class Game {
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
-
             //Check way forward.
             int blocksMoved;                                                                                            //Number of actually traversed blocks.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {
-            }    //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {}    //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
@@ -575,8 +574,7 @@ public class Game {
 
 
             //Check way backward.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {
-            }   //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {}   //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
@@ -697,10 +695,11 @@ public class Game {
     }
 
     public void startNextTurn() {
+        //Reset selected figure.
         selectedFigure.getImage().clearColorFilter();
         selectedFigure = null;
 
-        //reset dices
+        //Reset dices.
         dice.setDice1removed(false);
         dice.setDice2removed(false);
         dice.setDiceRollAllowed(false);
@@ -715,31 +714,33 @@ public class Game {
             dice.setHasCheated(false);
             Toast.makeText(context, "Du bist an der Reihe.", Toast.LENGTH_SHORT).show();
         }
-
         //Update view
         playerView.invalidate();
     }
 
     private boolean handleAuthorizedClickOnFigure(Figure fig) {
-        if (selectedFigure != null) {
-            // Deselect previous selected figure.
-            selectedFigure.getImage().clearColorFilter();
+        if (fig != null) {
+            if (selectedFigure != null) {
+                // Deselect previous selected figure.
+                selectedFigure.getImage().clearColorFilter();
+            }
+            if (fig == selectedFigure) {
+                // Deselect selected figure.
+                selectedFigure.getImage().clearColorFilter();
+                clearPossibleDestinationBlocks();
+                selectedFigure = null;
+                playerView.invalidate();
+                gameBoardView.invalidate();
+            } else {
+                // Select unselected figure.
+                selectedFigure = fig;
+                selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
+                playerView.invalidate();
+                calculatePossibleMoves();
+            }
+            return true;
         }
-        if (fig == selectedFigure) {
-            // Deselect selected figure.
-            selectedFigure.getImage().clearColorFilter();
-            clearPossibleDestinationBlocks();
-            selectedFigure = null;
-            playerView.invalidate();
-            gameBoardView.invalidate();
-        } else {
-            // Select unselected figure.
-            selectedFigure = fig;
-            selectedFigure.getImage().setColorFilter(FilterColor, FilterMode); //Change new selected figure
-            playerView.invalidate();
-            calculatePossibleMoves();
-        }
-        return true;
+        return false;
     }
 
     private boolean handleAuthorizedClickOnBlock(int col, int row) {
@@ -754,7 +755,6 @@ public class Game {
                 currentSeed = originalSeed;
                 initialiseGameBoard();
                 gameBoardView.invalidate();
-
                 currentPlayerIndex = update.getIntValue();
 
                 //Allow myself to roll the dice if I am current player.
@@ -774,7 +774,7 @@ public class Game {
                 }
                 break;
             case IReceiveMessage.USAGE_CLICKEDBLOCK:
-                handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition());
+                handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition()); // Simulate click on block
                 break;
             case IReceiveMessage.USAGE_DICE_SELECTED:
                 if (update.getIntValue() == 1) {
@@ -787,7 +787,6 @@ public class Game {
                     dice.setDice2Selected(true);
                     setSelectedDiceNumber(update.getW2(), update.getIntValue(), false);
                 }
-
                 break;
             case IReceiveMessage.USAGE_DICE_ROLLED:
                 dice.setDiceImage(update.getW1(), 1);
@@ -798,15 +797,12 @@ public class Game {
         }
     }
 
-    private Block[][] deepCopyGameBoard(Block[][] original) {
-        if (original == null) {
-            return null;
-        }
-        Block[][] result = new Block[original.length][];
-        for (int i = 0; i < original.length; i++) {
-            result[i] = Arrays.copyOf(original[i], original[i].length);
-        }
-        return result;
+    public int generatePseudoRandomWallNumberMinMax(int min, int max) {
+        Random generator = new Random(currentSeed);
+        double result = (Math.abs((generator.nextLong() % 0.001) * 1000));
+        int wallNumber = min + (int) (result * ((max - min) + 1));
+        currentSeed--;
+        return wallNumber;
     }
 
     public int getCurrentPlayerIndex() {
@@ -823,13 +819,5 @@ public class Game {
 
     public boolean isGameWon() {
         return gameWon;
-    }
-
-    public int generatePseudoRandomWallNumberMinMax(int min, int max) {
-        Random generator = new Random(currentSeed);
-        double result = (Math.abs((double) (generator.nextLong() % 0.001) * 1000));
-        int wallNumber = min + (int) (result * ((max - min) + 1));
-        currentSeed--;
-        return wallNumber;
     }
 }
