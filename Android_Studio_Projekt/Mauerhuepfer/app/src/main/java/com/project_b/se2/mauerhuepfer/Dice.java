@@ -212,9 +212,13 @@ public class Dice {
             if (game.isGameWon()){
                 Toast.makeText(context, "Game Over", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(context, "Du bist nicht an der Reihe!", Toast.LENGTH_SHORT).show();
+                if ((dice1removed || dice2removed) && game.getPlayers()[game.getCurrentPlayerIndex()].getPID() == game.getMyPID()) {
+                    //It's my turn and one dice has already been used, but I still tried to roll the dices
+                    Toast.makeText(context, "Du kannst jetzt nicht mehr würfeln!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Du bist nicht an der Reihe!", Toast.LENGTH_SHORT).show();
+                }
             }
-
         }
     }
 

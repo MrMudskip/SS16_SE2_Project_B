@@ -410,7 +410,6 @@ public class Game {
 
     private void initializePlayers() {
         players = new Player[numberOfPlayers];
-        // TODO Maybe let the player choose their own colour?
         for (int colour = RED; colour < numberOfPlayers; colour++) {
             int PID = colour;
             players[colour] = new Player(context, PID, colour);
@@ -560,26 +559,26 @@ public class Game {
 
     private void calculatePossibleMoves() {
         if (selectedFigure != null && selectedDiceNumber != -1) {
+            int blocksMoved; //Number of actually traversed blocks.
             Figure ghostFig = new Figure(null);                                         //Create new invisible ghost figure
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());    //Place the ghost figure on the selected figure.
             clearPossibleDestinationBlocks();                                           //Clear the list to remove any blocks from previous uses.
 
             //Check way forward.
-            int blocksMoved;                                                                                            //Number of actually traversed blocks.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {}    //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureForward(ghostFig); blocksMoved++) {
+            }    //Move ghost figure forward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                                    //Reset ghost figures position.
-
 
             //Check way backward.
-            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {}   //Move ghost figure forward for the amount on selected dice.
+            for (blocksMoved = 0; blocksMoved < selectedDiceNumber && moveFigureBackward(ghostFig); blocksMoved++) {
+            }   //Move ghost figure backward for the amount on selected dice.
             if (blocksMoved == selectedDiceNumber) {                                                                    //Check if all of the possible moves were used.
                 possibleDestinationBlocks.add(gameBoard[ghostFig.getColPos()][ghostFig.getRowPos()]);                   //Add ghost figures position as new possible destination block.
             }
             ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                                    //Reset ghost figures position.
-
 
             //Check way up.
             if (ghostFig.getColPos() - 1 > 0) {                                                             //Check if there is a block above.
@@ -601,10 +600,48 @@ public class Game {
                 ghostFig.setPos(selectedFigure.getColPos(), selectedFigure.getRowPos());                    //Reset ghost figures position.
             }
 
-            // TODO Do not highlight blocks that are already occupied by another figure of SAME colour.
+/*
+            //Check for trapped figure
+            System.out.println("possibleDestinationBlocks.size()" + possibleDestinationBlocks.size());
+            boolean trapped = false;
+            if (dice.isDice1removed() || dice.isDice2removed()) {
+                trapped = true;
+                for (Block block : possibleDestinationBlocks) {
+                    if (block.getColPos() != selectedFigure.getColPos() || block.getRowPos() != selectedFigure.getRowPos()){
+                        trapped = false;
+                    }
+                }
+            }
+            if (trapped) {
+                if (players[currentPlayerIndex].getPID() == myPID){
+                    Toast.makeText(context, "Du kannst nicht mehr ziehen. Zug wird beendet.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, playerName + " kann nicht mehr ziehen. Zug wird beendet.", Toast.LENGTH_SHORT).show();
+                }
+                startNextTurn();
+            }
+*/
+
             //Highlight possible destination blocks
             for (Block block : possibleDestinationBlocks) {
+
+                //Highlight block
                 block.getImage().setColorFilter(FilterColor, FilterMode);
+
+                //Check for occupying players
+                for (Player player : players) {
+                    for (Figure figure : player.getFigures()) {
+                        if (figure.getColPos() == block.getColPos() && figure.getRowPos() == block.getRowPos()) {
+                            //There is a figure on the block.
+                            if (figure.getOwner().getPID() == players[currentPlayerIndex].getPID()) {   //It's one of my own figures.
+                                block.getImage().clearColorFilter();                                    //Remove the highlighting of the block underneath.
+                            } else {                                                                    //It's an opponent's figure.
+                                figure.getImage().setColorFilter(FilterColor, FilterMode);              //Highlight opponent's figure.
+                                playerView.invalidate();
+                            }
+                        }
+                    }
+                }
             }
             gameBoardView.invalidate();
         }
@@ -643,6 +680,7 @@ public class Game {
             for (Figure figure : player.getFigures()) {
                 if (colPos == figure.getColPos() && rowPos == figure.getRowPos() && PID != figure.getOwner().getPID()) {
                     figure.setPos(figure.getBaseColPos(), figure.getBaseRowPos()); //Send figure back to base.
+                    figure.getImage().clearColorFilter(); //Remove highlighting from figure.
                 }
             }
         }
@@ -653,6 +691,8 @@ public class Game {
             if (dice.isDice1removed() && dice.isDice2removed()) {
                 selectedFigure.setPos(selectedFigure.getGoalColPos(), selectedFigure.getGoalRowPos());
                 checkForWinCondition();
+            } else if (players[currentPlayerIndex].getPID() == myPID){ //It's my turn
+                Toast.makeText(context, "Du musst beide Würfel verwenden um ins Ziel zu gelangen!", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -672,7 +712,6 @@ public class Game {
                 } else {
                     Toast.makeText(context, playerName + " hat gewonnen!", Toast.LENGTH_LONG).show();
                 }
-                //TODO End the game after a few seconds.
                 myPID = -1; // Basically stops everybody from having a turn.
                 gameWon = true;
             }
@@ -680,9 +719,21 @@ public class Game {
     }
 
     private void clearPossibleDestinationBlocks() {
+        //Remove highlighting from blocks.
         for (Block block : possibleDestinationBlocks) {
             block.getImage().clearColorFilter();
         }
+        //Remove highlighting from opponent's figures.
+        for (Player player : players) {
+            for (Figure figure : player.getFigures()) {
+                if (figure.getOwner().getPID() != players[currentPlayerIndex].getPID()) {
+                    figure.getImage().clearColorFilter();
+                }
+            }
+        }
+        playerView.invalidate();
+
+        //Empty the container for possible destination blocks.
         possibleDestinationBlocks.clear();
     }
 
@@ -793,7 +844,6 @@ public class Game {
                 dice.setDiceImage(update.getW2(), 2);
                 dice.printInfo(update.getPlayerName() + " würfelt " + update.getW1() + " und " + update.getW2());
                 break;
-
         }
     }
 
