@@ -60,7 +60,16 @@
             android:text="Bitte würfeln"
             android:textAlignment="center"
             android:layout_marginRight="5dp"
-            android:layout_marginLeft="5dp" />
+            android:layout_marginLeft="5dp"
+            android:paddingTop="5dp"
+            android:layout_gravity="bottom|top" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="C"
+            android:id="@+id/button_cheater" />
 
         <Button
             android:id="@+id/button1"

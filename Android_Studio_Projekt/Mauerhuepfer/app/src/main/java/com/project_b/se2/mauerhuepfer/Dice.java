@@ -208,6 +208,9 @@ public class Dice {
             } else if (!hasCheated){
                 Toast.makeText(context, "Du hast bereits gewürfelt du Schummler! ", Toast.LENGTH_SHORT).show();
                 hasCheated = true;
+                update.setPlayerName(playerName);
+                update.setUsage(IReceiveMessage.USAGE_CHEATED);
+                networkManager.sendMessage(update);
             }
         } else {
             if (game.isGameWon()){

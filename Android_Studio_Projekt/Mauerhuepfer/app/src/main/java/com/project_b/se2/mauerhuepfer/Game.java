@@ -74,6 +74,7 @@ public class Game {
     private Player[] players;
     private int myPID;
     private String playerName;
+    private int lastPlayerIndex;
     private int currentPlayerIndex;
     List<Block> possibleDestinationBlocks;
     private Figure selectedFigure;
@@ -83,6 +84,10 @@ public class Game {
     private int endColPos;
     private int endRowPos;
     private boolean gameWon;
+    private boolean lastPlayerCheated;
+    private boolean currentPlayerCheated;
+    private boolean cheaterButtonPressed;
+
 
     //Other variables
     private Context context;
@@ -137,6 +142,9 @@ public class Game {
         this.update = new UpdateState();
         this.myPID = PID;
         this.gameWon = false;
+        this.lastPlayerCheated = false;
+        this.lastPlayerIndex = -1;
+        this.cheaterButtonPressed = false;
 
         //Calculate measurement unit
         FrameLayout frameLayout = (FrameLayout) ((Activity) context).findViewById(R.id.game_frameLayout);
@@ -226,6 +234,25 @@ public class Game {
             }
         });
 
+        (((Activity) context).findViewById(R.id.button_cheater)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!cheaterButtonPressed) {
+                    // check if last Player Cheated
+                    if (lastPlayerCheated) {
+                        // send random figure of cheater back to base
+                        sendRandomFigureToBase(lastPlayerIndex);
+                    } else {
+                        // if the player doesn't Cheat your own figure will send to the base
+                        sendRandomFigureToBase(myPID);
+                    }
+                    cheaterButtonPressed = true;
+                } else {
+                    Toast.makeText(context, "Cheater Button nur einmal pro Runde nutzbar!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         //Set everything that only one player needs to do (if you have PID=0).
         if (myPID == 0) {
             //Generate a seed for everybody
@@ -256,6 +283,26 @@ public class Game {
             players[currentPlayerIndex].getFigures()[3].setPos(2,2);
             */
         }
+    }
+
+    private void sendRandomFigureToBase(int playerIndex) {
+        Figure[] figures = players[playerIndex].getFigures();
+        boolean figureMoved = false;
+
+        for (Figure figure : figures) {
+            if (!figureMoved && !(figure.getColPos() == figure.getBaseColPos() && figure.getRowPos() == figure.getBaseRowPos())) {
+                update.setUsage(IReceiveMessage.USAGE_REMOVE_FIGURE);
+                update.setColPosition(figure.getColPos());
+                update.setRowPosition(figure.getRowPos());
+                update.setPlayerID(playerIndex);
+                networkManager.sendMessage(update);
+                figure.setPos(figure.getBaseColPos(), figure.getBaseRowPos()); //Send figure back to base.
+                figureMoved = true;
+            }
+        }
+        clearPossibleDestinationBlocks();
+        playerView.invalidate();
+        gameBoardView.invalidate();
     }
 
 
@@ -487,34 +534,16 @@ public class Game {
 
     private boolean moveFigureForward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getNextBlock();
-        switch (direction) {
-            case UP:
-                figure.walkUp();
-                break;
-            case RIGHT:
-                figure.walkRight();
-                break;
-            case DOWN:
-                figure.walkDown();
-                break;
-            case LEFT:
-                figure.walkLeft();
-                break;
-            case BASE:
-                return false;
-            case GOAL:
-                return false;
-            case START:
-                figure.setPos(startColPos, startRowPos);
-                break;
-            default:
-                return false;
-        }
-        return true;
+        return moveFigure(direction, figure);
     }
+
 
     private boolean moveFigureBackward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
+        return moveFigure(direction, figure);
+    }
+
+    private boolean moveFigure(int direction, Figure figure) {
         switch (direction) {
             case UP:
                 figure.walkUp();
@@ -742,6 +771,7 @@ public class Game {
     }
 
     private void increaseCurrentPlayerIndex() {
+        lastPlayerIndex = currentPlayerIndex;
         if (currentPlayerIndex + 1 >= numberOfPlayers) {
             currentPlayerIndex = 0;
         } else {
@@ -750,6 +780,11 @@ public class Game {
     }
 
     public void startNextTurn() {
+        //Cheat
+        lastPlayerCheated = currentPlayerCheated;
+        currentPlayerCheated = false;
+        cheaterButtonPressed = false;
+
         //Reset selected figure.
         selectedFigure.getImage().clearColorFilter();
         selectedFigure = null;
@@ -847,6 +882,20 @@ public class Game {
                 dice.setDiceImage(update.getW1(), 1);
                 dice.setDiceImage(update.getW2(), 2);
                 dice.printInfo(update.getPlayerName() + " würfelt " + update.getW1() + " und " + update.getW2());
+                break;
+            case IReceiveMessage.USAGE_CHEATED:
+                currentPlayerCheated = true;
+                break;
+            case IReceiveMessage.USAGE_REMOVE_FIGURE:
+                Figure[] figures = players[update.getPlayerID()].getFigures();
+                for (Figure figure : figures) {
+                    if ((figure.getColPos() == update.getColPosition()) && (figure.getRowPos() == update.getRowPosition())) {
+                        figure.setPos(figure.getBaseColPos(), figure.getBaseRowPos()); //Send figure back to base.
+                        clearPossibleDestinationBlocks();
+                        playerView.invalidate();
+                        gameBoardView.invalidate();
+                    }
+                }
                 break;
         }
     }

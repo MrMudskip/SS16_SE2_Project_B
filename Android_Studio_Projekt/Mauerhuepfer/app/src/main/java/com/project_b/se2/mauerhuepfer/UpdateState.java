@@ -20,8 +20,6 @@ public class UpdateState implements Serializable {
     private int w2 = -1;
     private int intValue;
     private long seed;
-    private Figure figure;
-    //private Block[][] gameBoard;
 
     public String getMsg() {
         return msg;
@@ -103,22 +101,6 @@ public class UpdateState implements Serializable {
         }
     }
 
-    public Figure getFigure() {
-        return figure;
-    }
-
-    public void setFigure(Figure figure) {
-        this.figure = figure;
-    }
-/*
-    public Block[][] getGameBoard() {
-        return gameBoard;
-    }
-
-    public void setGameBoard(Block[][] gameBoard) {
-        this.gameBoard = gameBoard;
-    }
-*/
     public int getUsage() {
         return usage;
     }
