@@ -79,6 +79,7 @@ public class Game {
     List<Block> possibleDestinationBlocks;
     private Figure selectedFigure;
     private int selectedDiceNumber;
+
     private int startColPos;
     private int startRowPos;
     private int endColPos;
@@ -86,7 +87,7 @@ public class Game {
     private boolean gameWon;
     private boolean lastPlayerCheated;
     private boolean currentPlayerCheated;
-    private boolean cheaterButtonPressed;
+    private boolean figureRemoved;
 
 
     //Other variables
@@ -144,7 +145,7 @@ public class Game {
         this.gameWon = false;
         this.lastPlayerCheated = false;
         this.lastPlayerIndex = -1;
-        this.cheaterButtonPressed = false;
+        this.figureRemoved = false;
 
         //Calculate measurement unit
         FrameLayout frameLayout = (FrameLayout) ((Activity) context).findViewById(R.id.game_frameLayout);
@@ -237,7 +238,7 @@ public class Game {
         (((Activity) context).findViewById(R.id.button_cheater)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!cheaterButtonPressed) {
+                if (!figureRemoved) {
                     // check if last Player Cheated
                     if (lastPlayerCheated) {
                         // send random figure of cheater back to base
@@ -246,9 +247,9 @@ public class Game {
                         // if the player doesn't Cheat your own figure will send to the base
                         sendRandomFigureToBase(myPID);
                     }
-                    cheaterButtonPressed = true;
+                    figureRemoved = true;
                 } else {
-                    Toast.makeText(context, "Cheater Button nur einmal pro Runde nutzbar!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "nicht möglich!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -304,7 +305,6 @@ public class Game {
         playerView.invalidate();
         gameBoardView.invalidate();
     }
-
 
     public Dice getDice() {
         return dice;
@@ -537,7 +537,6 @@ public class Game {
         return moveFigure(direction, figure);
     }
 
-
     private boolean moveFigureBackward(Figure figure) {
         int direction = gameBoard[figure.getColPos()][figure.getRowPos()].getPreviousBlock();
         return moveFigure(direction, figure);
@@ -690,6 +689,7 @@ public class Game {
         playerView.invalidate();
         gameBoardView.invalidate();
 
+
         if (dice.isDice1removed() && dice.isDice2removed()) { // If both dice are used -> start next turn.
             startNextTurn();
         }
@@ -783,7 +783,7 @@ public class Game {
         //Cheat
         lastPlayerCheated = currentPlayerCheated;
         currentPlayerCheated = false;
-        cheaterButtonPressed = false;
+        figureRemoved = false;
 
         //Reset selected figure.
         selectedFigure.getImage().clearColorFilter();
@@ -891,6 +891,7 @@ public class Game {
                 for (Figure figure : figures) {
                     if ((figure.getColPos() == update.getColPosition()) && (figure.getRowPos() == update.getRowPosition())) {
                         figure.setPos(figure.getBaseColPos(), figure.getBaseRowPos()); //Send figure back to base.
+                        figureRemoved = true;
                         clearPossibleDestinationBlocks();
                         playerView.invalidate();
                         gameBoardView.invalidate();
