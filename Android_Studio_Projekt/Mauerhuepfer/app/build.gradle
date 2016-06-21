@@ -48,8 +48,10 @@ android {
         unitTests.returnDefaultValues = true
     }
     dexOptions {
-        javaMaxHeapSize "4g"
+        incremental true
+        javaMaxHeapSize "5g"
         preDexLibraries = false
+        maxProcessCount 4
     }
 }
 
