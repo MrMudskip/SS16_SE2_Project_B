@@ -201,15 +201,16 @@ public class Dice {
                 update.setPlayerName(playerName);
                 update.setUsage(IReceiveMessage.USAGE_DICE_ROLLED);
                 networkManager.sendMessage(update);
-            } else if (!hasCheated){
+            } else if (!hasCheated) {
                 Toast.makeText(context, "Du hast bereits gewürfelt du Schummler! ", Toast.LENGTH_SHORT).show();
                 hasCheated = true;
+                game.setCurrentPlayerCheated(true);
                 update.setPlayerName(playerName);
                 update.setUsage(IReceiveMessage.USAGE_CHEATED);
                 networkManager.sendMessage(update);
             }
         } else {
-            if (game.isGameWon()){
+            if (game.isGameWon()) {
                 Toast.makeText(context, "Game Over", Toast.LENGTH_SHORT).show();
             } else {
                 if ((dice1removed || dice2removed) && game.getPlayers()[game.getCurrentPlayerIndex()].getPID() == game.getMyPID()) {

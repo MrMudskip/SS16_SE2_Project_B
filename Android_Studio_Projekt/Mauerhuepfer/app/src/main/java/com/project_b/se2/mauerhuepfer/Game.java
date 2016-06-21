@@ -289,6 +289,10 @@ public class Game {
         }
     }
 
+    public void setCurrentPlayerCheated(boolean cheated) {
+        currentPlayerCheated = cheated;
+    }
+
     private void sendRandomFigureToBase(int playerIndex) {
         Figure[] figures = players[playerIndex].getFigures();
         boolean figureMoved = false;
