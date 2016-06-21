@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
+import android.widget.Toast;
 
 import com.project_b.se2.mauerhuepfer.interfaces.INetworkManager;
 import com.project_b.se2.mauerhuepfer.interfaces.IReceiveMessage;
@@ -50,7 +51,8 @@ public class GameBoardActivity extends AppCompatActivity implements IReceiveMess
             // start a new game
             this.game = new Game(this, numberOfPlayers, networkManager, playerID, playerName);
             dice = game.getDice();
-            dice.printInfo(playerName + " du bist Spieler " + (playerID + 1));
+            Toast.makeText(this, playerName + " du bist Spieler " + (playerID + 1), Toast.LENGTH_SHORT).show();
+
         }
     }
 

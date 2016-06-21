@@ -30,7 +30,6 @@ public class Dice {
     private ImageView diceImage1;
     private ImageView diceImage2;
     private Button diceButton;
-    private TextView infoText;
     private SensorManager mSensorManager;
     private ShakeDetector mSensorListener;
     private Game game;
@@ -59,8 +58,6 @@ public class Dice {
 
         diceImage1.setVisibility(View.INVISIBLE);
         diceImage2.setVisibility(View.INVISIBLE);
-
-        infoText = (TextView) ((Activity) context).findViewById(R.id.textView);
         diceButton = (Button) ((Activity) context).findViewById(R.id.button1);
 
         diceButton.setOnClickListener(new View.OnClickListener() {
@@ -195,7 +192,6 @@ public class Dice {
             throwDice();
             setDiceImage(dice1Value, 1);
             setDiceImage(dice2Value, 2);
-            infoText.setText(" ");
             game.clearPossibleDestinationBlocks();
 
             if (firstDiceRollThisTurn) {
@@ -274,7 +270,6 @@ public class Dice {
                 diceImage2.setImageDrawable(getDiceImage(getDice2Value()));
             }
             diceImage1.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
-            infoText.setText("Mögliche Züge mit " + getDice1Value());
             game.setSelectedDiceNumber(getDice1Value(), 1, true);
         }
     }
@@ -288,12 +283,7 @@ public class Dice {
                 diceImage1.setImageDrawable(getDiceImage(getDice1Value()));
             }
             diceImage2.setColorFilter(backgroundColor, PorterDuff.Mode.MULTIPLY);
-            infoText.setText("Mögliche Züge mit " + getDice2Value());
             game.setSelectedDiceNumber(getDice2Value(), 2, true);
         }
-    }
-
-    public void printInfo(String msg) {
-        infoText.setText(msg);
     }
 }

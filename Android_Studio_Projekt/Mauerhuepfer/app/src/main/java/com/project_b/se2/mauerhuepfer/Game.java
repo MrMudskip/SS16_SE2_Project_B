@@ -242,9 +242,11 @@ public class Game {
                     // check if last Player Cheated
                     if (lastPlayerCheated) {
                         // send random figure of cheater back to base
+                        Toast.makeText(context, "Anschuldigung berechtigt! Cheater erwischt!!", Toast.LENGTH_SHORT).show();
                         sendRandomFigureToBase(lastPlayerIndex);
                     } else {
                         // if the player doesn't Cheat your own figure will send to the base
+                        Toast.makeText(context, "Unberechtigte Anschuldigung! Deine Figur kommt in die Basis zurück!", Toast.LENGTH_SHORT).show();
                         sendRandomFigureToBase(myPID);
                     }
                     checkIfReallyWon();
@@ -877,7 +879,6 @@ public class Game {
             case IReceiveMessage.USAGE_DICE_ROLLED:
                 dice.setDiceImage(update.getW1(), 1);
                 dice.setDiceImage(update.getW2(), 2);
-                dice.printInfo(update.getPlayerName() + " würfelt " + update.getW1() + " und " + update.getW2());
                 break;
             case IReceiveMessage.USAGE_CHEATED:
                 currentPlayerCheated = true;
