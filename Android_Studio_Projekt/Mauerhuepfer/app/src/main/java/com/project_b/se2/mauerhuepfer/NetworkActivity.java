@@ -90,12 +90,12 @@ public class NetworkActivity extends AppCompatActivity implements
             case R.id.button_startGame:
                 networkManager.stopAdvertising();
                 UpdateState state = new UpdateState();
-                state.setUsage(USAGE_PLAYERID);
+                state.setUsage(USAGE_PLAYER_ID);
                 networkManager.sendPlayerIDs(state);
                 startGame(null);
 
                 UpdateState starterState = new UpdateState();
-                starterState.setUsage(USAGE_STARTGAME);
+                starterState.setUsage(USAGE_START_GAME);
                 starterState.setIntValue(networkManager.getNumberOfPlayers());
                 networkManager.sendMessage(starterState);
                 break;
@@ -174,17 +174,17 @@ public class NetworkActivity extends AppCompatActivity implements
                 case USAGE_MSG:
                     debugInfo.append("\n " + status.getPlayerName() + ": " + status.getMsg());
                     break;
-                case USAGE_STARTGAME:
+                case USAGE_START_GAME:
                     startGame(status);
                     break;
-                case USAGE_PLAYERID:
+                case USAGE_PLAYER_ID:
                     networkManager.setPlayerID(status.getPlayerID());
                     break;
                 case USAGE_JOIN:
                     debugInfo.append("\n " + status.getMsg());
                     break;
                 default:
-                    Log.e(TAG, "unknown USAGE_CODE: " + status.getUsage());
+                    Log.i(TAG, "unknown USAGE_CODE: " + status.getUsage());
             }
         } else {
             Log.e(TAG, "Connection Problem: receiveMessage");

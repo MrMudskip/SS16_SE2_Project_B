@@ -190,7 +190,7 @@ public class Game {
                                         if (!dice.isDice1removed() && !dice.isDice2removed()) {                     // No dice used yet
                                             if (numberOfPlayers > 1) {
                                                 // Share click with others
-                                                update.setUsage(IReceiveMessage.USAGE_CLICKEDPLAYER);
+                                                update.setUsage(IReceiveMessage.USAGE_CLICKED_PLAYER);
                                                 update.setColPosition(fig.getColPos());
                                                 update.setRowPosition(fig.getRowPos());
                                                 networkManager.sendMessage(update);
@@ -220,7 +220,7 @@ public class Game {
                                 if (block.getImage().getBounds().contains((int) event.getX(), (int) event.getY())) {    // The click happened on a valid block
                                     if (numberOfPlayers > 1) {
                                         // Share click with others
-                                        update.setUsage(IReceiveMessage.USAGE_CLICKEDBLOCK);
+                                        update.setUsage(IReceiveMessage.USAGE_CLICKED_BLOCK);
                                         update.setColPosition(block.getColPos());
                                         update.setRowPosition(block.getRowPos());
                                         networkManager.sendMessage(update);
@@ -247,6 +247,7 @@ public class Game {
                         // if the player doesn't Cheat your own figure will send to the base
                         sendRandomFigureToBase(myPID);
                     }
+                    checkIfReallyWon();
                     figureRemoved = true;
                 } else {
                     Toast.makeText(context, "nicht möglich!", Toast.LENGTH_SHORT).show();
@@ -744,7 +745,7 @@ public class Game {
                 } else {
                     Toast.makeText(context, playerName + " hat gewonnen!", Toast.LENGTH_LONG).show();
                 }
-                myPID = -1; // Basically stops everybody from having a turn.
+                myPID -= 5; // Basically stops everybody from having a turn.
                 gameWon = true;
             }
         }
@@ -798,12 +799,7 @@ public class Game {
         increaseCurrentPlayerIndex();
 
         //Allow me to roll dice if I am the current player now.
-        if (players[currentPlayerIndex].getPID() == myPID) {
-            dice.setDiceRollAllowed(true);
-            dice.setFirstDiceRollThisTurn(true);
-            dice.setHasCheated(false);
-            Toast.makeText(context, "Du bist an der Reihe.", Toast.LENGTH_SHORT).show();
-        }
+        checkIfMyTurn();
         //Update view
         playerView.invalidate();
     }
@@ -854,7 +850,7 @@ public class Game {
                     dice.setHasCheated(false);
                 }
                 break;
-            case IReceiveMessage.USAGE_CLICKEDPLAYER:
+            case IReceiveMessage.USAGE_CLICKED_PLAYER:
                 for (Player player : players) {
                     for (Figure figure : player.getFigures()) {
                         if (figure.getColPos() == update.getColPosition() && figure.getRowPos() == update.getRowPosition()) {
@@ -863,7 +859,7 @@ public class Game {
                     }
                 }
                 break;
-            case IReceiveMessage.USAGE_CLICKEDBLOCK:
+            case IReceiveMessage.USAGE_CLICKED_BLOCK:
                 handleAuthorizedClickOnBlock(update.getColPosition(), update.getRowPosition()); // Simulate click on block
                 break;
             case IReceiveMessage.USAGE_DICE_SELECTED:
@@ -895,9 +891,28 @@ public class Game {
                         clearPossibleDestinationBlocks();
                         playerView.invalidate();
                         gameBoardView.invalidate();
+                        checkIfReallyWon();
                     }
                 }
                 break;
+        }
+    }
+
+    private void checkIfReallyWon() {
+        if (gameWon && lastPlayerCheated) {
+            myPID += 5;
+            gameWon = false;
+            Toast.makeText(context, "Schummler gewinnen nicht! Weiter gehts!", Toast.LENGTH_SHORT).show();
+            checkIfMyTurn();
+        }
+    }
+
+    private void checkIfMyTurn() {
+        if (players[currentPlayerIndex].getPID() == myPID) {
+            dice.setDiceRollAllowed(true);
+            dice.setFirstDiceRollThisTurn(true);
+            dice.setHasCheated(false);
+            Toast.makeText(context, "Du bist an der Reihe.", Toast.LENGTH_SHORT).show();
         }
     }
 
